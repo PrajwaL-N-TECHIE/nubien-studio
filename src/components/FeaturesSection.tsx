@@ -1,3 +1,5 @@
+import { useRef } from "react";
+import { motion, useInView } from "framer-motion";
 import { Zap, Shield, Mic, Activity, Eye, Layers, BarChart } from "lucide-react";
 
 const featureCards = [
@@ -48,7 +50,7 @@ const ApiVisual = () => (
 const AuthVisual = () => (
   <div className="p-4 rounded-xl mt-4 overflow-hidden relative" style={{ background: "hsl(240 10% 6%)", height: "120px" }}>
     <div className="flex flex-wrap gap-2 opacity-60">
-      {["Intelligent", "Cognitive", "Data Analysis", "Infrastructure", "Capabilities", "Chatbots", "Intelligence", "Intelligent", "Cognitive", "Data Analysis"].map((tag, i) => (
+      {["Intelligent", "Cognitive", "Data Analysis", "Infrastructure", "Capabilities", "Chatbots", "Intelligence"].map((tag, i) => (
         <span key={i} className="text-xs px-2 py-0.5 rounded" style={{ color: "hsl(var(--muted-foreground))", fontSize: "11px" }}>{tag}</span>
       ))}
     </div>
@@ -73,14 +75,12 @@ const SpeechVisual = () => (
       </div>
       <div className="flex gap-0.5 flex-1">
         {Array.from({ length: 20 }).map((_, i) => (
-          <div
+          <motion.div
             key={i}
             className="flex-1 rounded-full"
-            style={{
-              background: "hsl(var(--muted-foreground))",
-              height: `${Math.random() * 20 + 4}px`,
-              minHeight: "4px",
-            }}
+            style={{ background: "hsl(var(--muted-foreground))", minHeight: "4px" }}
+            animate={{ height: [`${Math.random() * 16 + 4}px`, `${Math.random() * 16 + 4}px`, `${Math.random() * 16 + 4}px`] }}
+            transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.05 }}
           />
         ))}
       </div>
@@ -88,7 +88,26 @@ const SpeechVisual = () => (
   </div>
 );
 
+const orbPositions = [
+  { top: "10%", left: "35%", size: 80, rotate: "-10deg" },
+  { top: "5%", left: "44%", size: 90, rotate: "5deg" },
+  { top: "8%", left: "54%", size: 80, rotate: "12deg" },
+  { top: "20%", left: "62%", size: 85, rotate: "20deg" },
+  { top: "20%", left: "26%", size: 75, rotate: "-20deg" },
+  { top: "40%", left: "68%", size: 80, rotate: "28deg" },
+  { top: "45%", left: "16%", size: 70, rotate: "-30deg" },
+  { top: "60%", left: "72%", size: 75, rotate: "38deg" },
+  { top: "65%", left: "8%", size: 65, rotate: "-42deg" },
+];
+
 const FeaturesSection = () => {
+  const ref = useRef(null);
+  const cardsRef = useRef(null);
+  const miniRef = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-80px" });
+  const cardsInView = useInView(cardsRef, { once: true, margin: "-80px" });
+  const miniInView = useInView(miniRef, { once: true, margin: "-80px" });
+
   return (
     <section id="features" className="py-24 px-6">
       <div className="max-w-7xl mx-auto">
@@ -96,20 +115,12 @@ const FeaturesSection = () => {
         <div className="relative h-64 mb-16 overflow-hidden">
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="relative w-full max-w-3xl h-64">
-              {/* Rotating gallery images in arc */}
-              {[
-                { top: "10%", left: "35%", size: 80, rotate: "-10deg" },
-                { top: "5%", left: "44%", size: 90, rotate: "5deg" },
-                { top: "8%", left: "54%", size: 80, rotate: "12deg" },
-                { top: "20%", left: "62%", size: 85, rotate: "20deg" },
-                { top: "20%", left: "26%", size: 75, rotate: "-20deg" },
-                { top: "40%", left: "68%", size: 80, rotate: "28deg" },
-                { top: "45%", left: "16%", size: 70, rotate: "-30deg" },
-                { top: "60%", left: "72%", size: 75, rotate: "38deg" },
-                { top: "65%", left: "8%", size: 65, rotate: "-42deg" },
-              ].map((item, i) => (
-                <div
+              {orbPositions.map((item, i) => (
+                <motion.div
                   key={i}
+                  initial={{ opacity: 0, scale: 0.5 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.6, delay: i * 0.1, ease: "backOut" }}
                   className="absolute rounded-2xl overflow-hidden"
                   style={{
                     top: item.top,
@@ -127,38 +138,70 @@ const FeaturesSection = () => {
                       background: `linear-gradient(135deg, hsl(${260 + i * 20} 40% 20%), hsl(${280 + i * 10} 20% 10%))`,
                     }}
                   />
-                </div>
+                </motion.div>
               ))}
             </div>
           </div>
         </div>
 
         {/* Section header */}
-        <div className="text-center mb-16">
-          <div className="badge-pill inline-flex mb-6">
+        <div ref={ref} className="text-center mb-16">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6 }}
+            className="badge-pill inline-flex mb-6"
+          >
             <span className="badge-dot">
               <div className="w-2 h-2 rounded-full border border-white/60" />
             </span>
             <span style={{ color: "hsl(var(--muted-foreground))" }}>Features</span>
-          </div>
-          <h2 className="text-4xl md:text-6xl font-light mb-4" style={{ color: "hsl(var(--foreground))" }}>
+          </motion.div>
+
+          <motion.h2
+            initial={{ opacity: 0, y: 30 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.7, delay: 0.15 }}
+            className="text-4xl md:text-6xl font-light mb-4"
+            style={{ color: "hsl(var(--foreground))" }}
+          >
             Packed with Innovation.
-          </h2>
-          <p className="text-base max-w-md mx-auto" style={{ color: "hsl(var(--muted-foreground))" }}>
+          </motion.h2>
+
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="text-base max-w-md mx-auto"
+            style={{ color: "hsl(var(--muted-foreground))" }}
+          >
             Nubien is packed with cutting-edge features designed to elevate your agency or portfolio.
-          </p>
-          <button
-            className="mt-8 px-8 py-4 rounded-2xl text-sm font-semibold transition-all duration-200"
+          </motion.p>
+
+          <motion.button
+            initial={{ opacity: 0, y: 20 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.5, delay: 0.45 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.97 }}
+            className="mt-8 px-8 py-4 rounded-2xl text-sm font-semibold"
             style={{ background: "hsl(var(--primary))", color: "white" }}
           >
             Book an Appointment
-          </button>
+          </motion.button>
         </div>
 
-        {/* Feature Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+        {/* Feature Cards — staggered */}
+        <div ref={cardsRef} className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
           {featureCards.map((card, i) => (
-            <div key={i} className="card-dark p-8 rounded-2xl">
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 40 }}
+              animate={cardsInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.6, delay: i * 0.15, ease: [0.16, 1, 0.3, 1] }}
+              whileHover={{ y: -6, transition: { duration: 0.3 } }}
+              className="card-dark p-8 rounded-2xl"
+            >
               <div
                 className="w-12 h-12 rounded-full flex items-center justify-center mb-6 mx-auto"
                 style={{ background: "hsl(var(--primary))" }}
@@ -174,14 +217,20 @@ const FeaturesSection = () => {
               {card.visual === "api" && <ApiVisual />}
               {card.visual === "auth" && <AuthVisual />}
               {card.visual === "speech" && <SpeechVisual />}
-            </div>
+            </motion.div>
           ))}
         </div>
 
-        {/* Mini Features Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+        {/* Mini Features Grid — staggered */}
+        <div ref={miniRef} className="grid grid-cols-2 md:grid-cols-4 gap-8">
           {miniFeatures.map((feat, i) => (
-            <div key={i} className="flex flex-col gap-2">
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 30 }}
+              animate={miniInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.5, delay: i * 0.12 }}
+              className="flex flex-col gap-2"
+            >
               <div className="flex items-center gap-2 mb-1">
                 <feat.icon size={16} style={{ color: "hsl(var(--foreground))" }} />
                 <span className="text-sm font-semibold" style={{ color: "hsl(var(--foreground))" }}>
@@ -191,7 +240,7 @@ const FeaturesSection = () => {
               <p className="text-sm leading-relaxed" style={{ color: "hsl(var(--muted-foreground))" }}>
                 {feat.desc}
               </p>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>
