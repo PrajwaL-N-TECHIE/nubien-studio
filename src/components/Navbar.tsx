@@ -2,6 +2,7 @@ import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -13,7 +14,7 @@ const Navbar = () => {
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
       className="fixed top-0 left-0 right-0 z-50 px-6 py-4"
-      style={{ background: "hsl(0 0% 4% / 0.85)", backdropFilter: "blur(12px)", borderBottom: "1px solid hsl(240 6% 15% / 0.5)" }}
+      style={{ background: "hsl(var(--background) / 0.85)", backdropFilter: "blur(12px)", borderBottom: "1px solid hsl(var(--border) / 0.5)" }}
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         {/* Logo */}
@@ -28,7 +29,7 @@ const Navbar = () => {
               <div className="w-1.5 h-1.5 rounded-full bg-white" />
             </div>
           </div>
-          <span className="text-lg font-semibold text-foreground">Nubien</span>
+          <span className="text-lg font-semibold" style={{ color: "hsl(var(--foreground))" }}>Nubien</span>
         </motion.div>
 
         {/* Desktop Nav */}
@@ -50,13 +51,14 @@ const Navbar = () => {
           ))}
         </div>
 
-        {/* CTA */}
+        {/* CTA + Theme */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.55 }}
-          className="hidden md:block"
+          className="hidden md:flex items-center gap-3"
         >
+          <ThemeToggle />
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.97 }}
@@ -68,9 +70,12 @@ const Navbar = () => {
         </motion.div>
 
         {/* Mobile */}
-        <button className="md:hidden text-foreground" onClick={() => setIsOpen(!isOpen)}>
-          {isOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
+        <div className="md:hidden flex items-center gap-2">
+          <ThemeToggle />
+          <button style={{ color: "hsl(var(--foreground))" }} onClick={() => setIsOpen(!isOpen)}>
+            {isOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
       </div>
 
       {isOpen && (
