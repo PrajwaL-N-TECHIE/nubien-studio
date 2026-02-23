@@ -1,183 +1,326 @@
-import { useRef, useState } from "react";
-import { motion, useInView, AnimatePresence } from "framer-motion";
-import { Check, Sparkles } from "lucide-react";
+import { useRef, useMemo, useState, Suspense } from "react";
+import { motion, useInView, useScroll, useTransform, useSpring, useMotionTemplate } from "framer-motion";
+import { Canvas, useFrame } from "@react-three/fiber";
+import * as THREE from "three";
+import { 
+  Search, Lightbulb, Code, TestTube, Rocket, RefreshCw,
+  Sparkles, ArrowRight, Cpu, Zap
+} from "lucide-react";
 
-const plans = [
+// The "Buttery" Apple-tier easing curve
+const customEase = [0.22, 1, 0.36, 1];
+
+// --------------------------------------------------------------------------
+// DATA
+// --------------------------------------------------------------------------
+const steps = [
   {
-    name: "Starter",
-    monthlyPrice: 49,
-    yearlyPrice: 39,
-    description: "Perfect for small teams getting started with AI.",
-    features: ["1 AI Model Integration", "5,000 API Calls/mo", "Email Support", "Basic Analytics", "1 Team Member"],
-    highlighted: false,
+    icon: Search,
+    title: "Discovery",
+    description: "Deep dive into business logic to uncover high-impact AI opportunities.",
+    duration: "1-2 weeks",
   },
   {
-    name: "Pro",
-    monthlyPrice: 149,
-    yearlyPrice: 119,
-    description: "For growing businesses that need advanced AI capabilities.",
-    features: ["5 AI Model Integrations", "50,000 API Calls/mo", "Priority Support", "Advanced Analytics", "10 Team Members", "Custom Training"],
-    highlighted: true,
+    icon: Lightbulb,
+    title: "Strategy",
+    description: "Tailored roadmaps designed for scalability and measurable ROI.",
+    duration: "2-3 weeks",
   },
   {
-    name: "Enterprise",
-    monthlyPrice: 499,
-    yearlyPrice: 399,
-    description: "Full-scale AI infrastructure for large organizations.",
-    features: ["Unlimited Integrations", "Unlimited API Calls", "24/7 Dedicated Support", "Real-time Analytics", "Unlimited Team", "Custom Models", "SLA Guarantee"],
-    highlighted: false,
+    icon: Code,
+    title: "Development",
+    description: "Agile neural architecture construction with continuous feedback loops.",
+    duration: "4-12 weeks",
+  },
+  {
+    icon: TestTube,
+    title: "Testing",
+    description: "Multi-layered stress testing to ensure peak reliability and precision.",
+    duration: "2-4 weeks",
+  },
+  {
+    icon: Rocket,
+    title: "Deployment",
+    description: "Zero-downtime integration into your existing cloud infrastructure.",
+    duration: "1-2 weeks",
+  },
+  {
+    icon: RefreshCw,
+    title: "Optimization",
+    description: "Continuous self-learning updates to maintain the competitive edge.",
+    duration: "Ongoing",
   },
 ];
 
-const PricingSection = () => {
-  const [isYearly, setIsYearly] = useState(false);
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-80px" });
+// --------------------------------------------------------------------------
+// THREE.JS BACKGROUND
+// --------------------------------------------------------------------------
+const DataWave = () => {
+  const pointsRef = useRef<THREE.Points>(null);
+  const particleCount = 3000;
+
+  const positions = useMemo(() => {
+    const pos = new Float32Array(particleCount * 3);
+    for (let i = 0; i < particleCount; i++) {
+      pos[i * 3] = (Math.random() - 0.5) * 40; 
+      pos[i * 3 + 1] = (Math.random() - 0.5) * 40; 
+      pos[i * 3 + 2] = (Math.random() - 0.5) * 15 - 5; 
+    }
+    return pos;
+  }, []);
+
+  useFrame((state) => {
+    if (!pointsRef.current) return;
+    const t = state.clock.elapsedTime;
+    const positions = pointsRef.current.geometry.attributes.position.array as Float32Array;
+
+    for (let i = 0; i < particleCount; i++) {
+      const i3 = i * 3;
+      const x = positions[i3];
+      const y = positions[i3 + 1];
+      positions[i3 + 2] += Math.sin(t + x * 0.5 + y * 0.5) * 0.01;
+    }
+    
+    pointsRef.current.geometry.attributes.position.needsUpdate = true;
+    pointsRef.current.rotation.y = Math.sin(t * 0.1) * 0.2;
+    pointsRef.current.rotation.x = Math.cos(t * 0.1) * 0.1;
+  });
 
   return (
-    <section className="py-24 px-6">
-      <div ref={ref} className="max-w-7xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.5 }}
-          className="text-center mb-12"
-        >
-          <div className="badge-pill inline-flex mb-6">
-            <span className="badge-dot"><div className="w-2 h-2 rounded-full border border-white/60" /></span>
-            <span style={{ color: "hsl(var(--muted-foreground))" }}>Pricing</span>
-          </div>
-          <motion.h2
-            initial={{ opacity: 0, y: 30 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.7, delay: 0.15 }}
-            className="text-4xl md:text-6xl font-light mb-3"
-            style={{ color: "hsl(var(--foreground))" }}
-          >
-            Simple, Transparent
-          </motion.h2>
-          <motion.h2
-            initial={{ opacity: 0, y: 30 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.7, delay: 0.25 }}
-            className="text-4xl md:text-6xl font-light mb-8"
-            style={{ color: "hsl(var(--muted-foreground))" }}
-          >
-            Pricing for Everyone.
-          </motion.h2>
+    <points ref={pointsRef}>
+      <bufferGeometry>
+        <bufferAttribute attach="attributes-position" count={particleCount} array={positions} itemSize={3} />
+      </bufferGeometry>
+      <pointsMaterial 
+        size={0.06} 
+        color="#a855f7" 
+        transparent 
+        opacity={0.4} 
+        sizeAttenuation 
+        blending={THREE.AdditiveBlending}
+        depthWrite={false}
+      />
+    </points>
+  );
+};
 
-          {/* Toggle */}
+// --------------------------------------------------------------------------
+// SUPER-SMOOTH SPOTLIGHT CARD
+// --------------------------------------------------------------------------
+const ProcessCard = ({ step, index, isInView }: { step: any, index: number, isInView: boolean }) => {
+  const cardRef = useRef<HTMLDivElement>(null);
+  
+  // 1. Spring-loaded Spotlight Coordinates (No more harsh snapping)
+  const spotX = useSpring(0, { stiffness: 150, damping: 25, mass: 0.5 });
+  const spotY = useSpring(0, { stiffness: 150, damping: 25, mass: 0.5 });
+
+  // 2. Softened 3D Tilt Mechanics
+  const rotateX = useSpring(0, { stiffness: 100, damping: 30, mass: 0.5 });
+  const rotateY = useSpring(0, { stiffness: 100, damping: 30, mass: 0.5 });
+  const scale = useSpring(1, { stiffness: 150, damping: 25 });
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    // Fluidly update spotlight
+    spotX.set(x);
+    spotY.set(y);
+
+    // Fluidly update tilt
+    const rX = (y - rect.height / 2) / 25;
+    const rY = -(x - rect.width / 2) / 25;
+    rotateX.set(rX);
+    rotateY.set(rY);
+    scale.set(1.02);
+  };
+
+  const handleMouseLeave = () => {
+    rotateX.set(0);
+    rotateY.set(0);
+    scale.set(1);
+  };
+
+  const spotlight = useMotionTemplate`radial-gradient(400px circle at ${spotX}px ${spotY}px, rgba(168, 85, 247, 0.15), transparent 80%)`;
+  const Icon = step.icon;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 50, rotateX: -10 }}
+      animate={isInView ? { opacity: 1, y: 0, rotateX: 0 } : {}}
+      transition={{ duration: 1, delay: index * 0.15, ease: customEase }}
+      style={{ perspective: 1000 }}
+      className="group h-full relative"
+    >
+      <motion.div
+        ref={cardRef}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        style={{ rotateX, rotateY, scale, transformStyle: "preserve-3d" }}
+        className="relative p-8 rounded-[32px] h-full flex flex-col bg-[#0C0C12]/80 backdrop-blur-xl border border-white/5 transition-colors duration-500 hover:border-purple-500/30 shadow-2xl"
+      >
+        {/* Spring-Loaded Spotlight */}
+        <motion.div
+          className="pointer-events-none absolute inset-0 rounded-[32px] opacity-0 transition-opacity duration-500 group-hover:opacity-100 z-0"
+          style={{ background: spotlight }}
+        />
+
+        {/* Giant Watermark Number */}
+        <div className="absolute bottom-4 right-6 text-[8rem] font-black text-white/[0.02] leading-none z-0 transition-all duration-700 group-hover:text-purple-500/[0.05] group-hover:scale-110 group-hover:-rotate-3 font-mono">
+          0{index + 1}
+        </div>
+
+        {/* Icon Container */}
+        <div className="relative z-10 w-16 h-16 rounded-2xl mb-8 flex items-center justify-center bg-[#13131A] border border-white/10 group-hover:border-purple-500/40 transition-colors duration-500 shadow-[0_0_20px_rgba(0,0,0,0.5)]">
+          <motion.div 
+             animate={{ scale: [1, 1.2, 1], opacity: [0.2, 0.5, 0.2] }}
+             transition={{ duration: 4, repeat: Infinity, delay: index * 0.2, ease: "easeInOut" }}
+             className="absolute inset-2 blur-xl rounded-full bg-purple-600" 
+          />
+          <Icon size={24} className="text-zinc-400 relative z-10 group-hover:scale-110 group-hover:text-white transition-all duration-500" />
+        </div>
+
+        {/* Content */}
+        <div className="relative z-10 flex-grow">
+          <h3 className="text-2xl font-bold text-white mb-3 tracking-tight group-hover:text-purple-400 transition-colors duration-300">
+            {step.title}
+          </h3>
+          <p className="text-zinc-400 text-sm leading-relaxed font-medium">
+            {step.description}
+          </p>
+        </div>
+
+        {/* Metadata Dock */}
+        <div className="relative z-10 flex items-center gap-3 pt-8 mt-auto border-t border-white/5 group-hover:border-purple-500/20 transition-colors duration-500">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/5 text-[10px] font-bold uppercase tracking-widest text-zinc-300 group-hover:bg-purple-500/10 group-hover:border-purple-500/20 group-hover:text-purple-300 transition-colors duration-500">
+            <Cpu size={12} />
+            {step.duration}
+          </div>
+          <Zap size={14} className="text-zinc-600 ml-auto group-hover:text-purple-400 transition-colors duration-500" />
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+};
+
+// --------------------------------------------------------------------------
+// MAIN SECTION
+// --------------------------------------------------------------------------
+const ProcessSection = () => {
+  const containerRef = useRef(null);
+  const isInView = useInView(containerRef, { once: true, margin: "-100px" });
+  
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start end", "end start"],
+  });
+
+  // Smoother Parallax Scroll
+  const smoothProgress = useSpring(scrollYProgress, { stiffness: 50, damping: 20 });
+  const titleY = useTransform(smoothProgress, [0, 1], [80, -80]);
+
+  const title1 = "From Concept".split("");
+  const title2 = "to Deployment.".split("");
+
+  // Buttery Letter Reveal Variant
+  const letterVariants = {
+    hidden: { opacity: 0, y: 40, filter: "blur(10px)", rotateX: -20 },
+    visible: (i: number) => ({
+      opacity: 1,
+      y: 0,
+      filter: "blur(0px)",
+      rotateX: 0,
+      transition: { delay: i * 0.03, duration: 1, ease: customEase },
+    }),
+  };
+
+  return (
+    <section ref={containerRef} id="process" className="relative py-40 px-6 bg-[#050507] overflow-hidden">
+      
+      {/* 3D BACKGROUND (Optimized dpr for sharp/smooth rendering) */}
+      <div className="absolute inset-0 pointer-events-none z-0">
+        <Suspense fallback={null}>
+          <Canvas camera={{ position: [0, 0, 15], fov: 60 }} dpr={[1, 2]}>
+            <DataWave />
+          </Canvas>
+        </Suspense>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,transparent_0%,#050507_100%)] opacity-90" />
+      </div>
+
+      <div className="max-w-7xl mx-auto relative z-10">
+        
+        {/* HEADER */}
+        <motion.div style={{ y: titleY }} className="text-center mb-24 flex flex-col items-center">
           <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.5, delay: 0.35 }}
-            className="inline-flex items-center gap-3 p-1.5 rounded-full"
-            style={{ background: "hsl(var(--surface))", border: "1px solid hsl(var(--border))" }}
+            initial={{ opacity: 0, y: 20, scale: 0.9 }}
+            whileInView={{ opacity: 1, y: 0, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 1, ease: customEase }}
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#12121A]/80 border border-white/10 backdrop-blur-xl mb-8 shadow-xl"
           >
-            <button
-              onClick={() => setIsYearly(false)}
-              className="px-5 py-2 rounded-full text-sm font-medium transition-all"
-              style={{
-                background: !isYearly ? "hsl(var(--primary))" : "transparent",
-                color: !isYearly ? "white" : "hsl(var(--muted-foreground))",
-              }}
-            >
-              Monthly
-            </button>
-            <button
-              onClick={() => setIsYearly(true)}
-              className="px-5 py-2 rounded-full text-sm font-medium transition-all"
-              style={{
-                background: isYearly ? "hsl(var(--primary))" : "transparent",
-                color: isYearly ? "white" : "hsl(var(--muted-foreground))",
-              }}
-            >
-              Yearly <span className="text-xs opacity-80">(-20%)</span>
-            </button>
+            <Sparkles size={12} className="text-purple-500" />
+            <span className="text-[11px] font-bold tracking-widest text-zinc-300 uppercase">Operational Roadmap</span>
           </motion.div>
+
+          <h2 className="text-5xl md:text-7xl lg:text-[5.5rem] font-bold tracking-tighter mb-6 leading-[1.1]">
+            <div className="flex flex-wrap justify-center gap-[0.2em] mb-2 text-white overflow-hidden">
+              {title1.map((char, i) => (
+                <motion.span key={i} custom={i} variants={letterVariants} initial="hidden" animate={isInView ? "visible" : "hidden"} className="inline-block">
+                  {char === " " ? "\u00A0" : char}
+                </motion.span>
+              ))}
+            </div>
+            
+            <div className="flex flex-wrap justify-center gap-[0.2em] text-purple-500 drop-shadow-[0_0_30px_rgba(168,85,247,0.4)] overflow-hidden">
+              {title2.map((char, i) => (
+                <motion.span key={i} custom={title1.length + i} variants={letterVariants} initial="hidden" animate={isInView ? "visible" : "hidden"} className="inline-block">
+                  {char === " " ? "\u00A0" : char}
+                </motion.span>
+              ))}
+            </div>
+          </h2>
+          
+          <motion.p 
+            initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
+            whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            viewport={{ once: true }}
+            transition={{ duration: 1, delay: 0.4, ease: customEase }}
+            className="text-zinc-400 max-w-xl mx-auto text-lg font-medium leading-relaxed"
+          >
+            A battle-tested methodology designed to perfectly integrate intelligence into the core of your infrastructure.
+          </motion.p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {plans.map((plan, i) => (
-            <motion.div
-              key={plan.name}
-              initial={{ opacity: 0, y: 50 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.7, delay: 0.4 + i * 0.15, ease: [0.16, 1, 0.3, 1] }}
-              whileHover={{ y: -8, transition: { duration: 0.3 } }}
-              className="relative p-8 rounded-3xl overflow-hidden"
-              style={{
-                background: plan.highlighted
-                  ? "linear-gradient(135deg, hsl(262 40% 18%), hsl(262 50% 14%))"
-                  : "hsl(var(--surface))",
-                border: plan.highlighted
-                  ? "1px solid hsl(262 80% 50% / 0.5)"
-                  : "1px solid hsl(var(--border))",
-                boxShadow: plan.highlighted ? "0 0 60px hsl(262 83% 58% / 0.15)" : "none",
-              }}
-            >
-              {plan.highlighted && (
-                <div className="absolute top-4 right-4 flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold"
-                  style={{ background: "hsl(var(--primary))", color: "white" }}>
-                  <Sparkles size={12} />
-                  Recommended
-                </div>
-              )}
-
-              <h3 className="text-xl font-semibold mb-2" style={{ color: "hsl(var(--foreground))" }}>{plan.name}</h3>
-              <p className="text-sm mb-6" style={{ color: "hsl(var(--muted-foreground))" }}>{plan.description}</p>
-
-              <div className="flex items-baseline gap-1 mb-8">
-                <AnimatePresence mode="wait">
-                  <motion.span
-                    key={isYearly ? "yearly" : "monthly"}
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 10 }}
-                    transition={{ duration: 0.2 }}
-                    className="text-5xl font-light"
-                    style={{ color: "hsl(var(--foreground))" }}
-                  >
-                    ${isYearly ? plan.yearlyPrice : plan.monthlyPrice}
-                  </motion.span>
-                </AnimatePresence>
-                <span className="text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>/mo</span>
-              </div>
-
-              <motion.button
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                className="w-full py-3.5 rounded-xl text-sm font-semibold mb-8 transition-colors"
-                style={{
-                  background: plan.highlighted ? "hsl(var(--primary))" : "transparent",
-                  color: plan.highlighted ? "white" : "hsl(var(--foreground))",
-                  border: plan.highlighted ? "none" : "1px solid hsl(var(--border))",
-                }}
-              >
-                Get Started
-              </motion.button>
-
-              <ul className="space-y-3">
-                {plan.features.map((feature, j) => (
-                  <motion.li
-                    key={j}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={isInView ? { opacity: 1, x: 0 } : {}}
-                    transition={{ duration: 0.3, delay: 0.6 + i * 0.1 + j * 0.05 }}
-                    className="flex items-center gap-2 text-sm"
-                    style={{ color: "hsl(var(--foreground) / 0.8)" }}
-                  >
-                    <Check size={14} style={{ color: "hsl(var(--primary))" }} />
-                    {feature}
-                  </motion.li>
-                ))}
-              </ul>
-            </motion.div>
-          ))}
+        {/* PROCESS GRID */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative">
+            {steps.map((step, i) => (
+                <ProcessCard key={i} step={step} index={i} isInView={isInView} />
+            ))}
         </div>
+
+        {/* BOTTOM CTA */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1, delay: 0.6, ease: customEase }}
+          className="mt-32 text-center"
+        >
+          <motion.button
+            whileHover={{ scale: 1.05, boxShadow: "0 0 40px rgba(168,85,247,0.4)" }}
+            whileTap={{ scale: 0.95 }}
+            className="group px-10 py-5 rounded-full bg-purple-600 text-white font-bold text-sm flex items-center gap-3 mx-auto transition-all shadow-[0_0_20px_rgba(168,85,247,0.2)] hover:bg-purple-500 border border-purple-400/50"
+          >
+            Ignite Your Project
+            <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+          </motion.button>
+        </motion.div>
+
       </div>
     </section>
   );
 };
 
-export default PricingSection;
+export default ProcessSection;
