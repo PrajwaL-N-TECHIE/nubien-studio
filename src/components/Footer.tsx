@@ -80,6 +80,9 @@ const NeuralTorus = ({ visible }: { visible: boolean }) => {
 const LiveStatus = () => {
   const [time, setTime] = useState(new Date());
   const [location, setLocation] = useState("India");
+  const [visitorCount, setVisitorCount] = useState(0);
+  const [activeUsers, setActiveUsers] = useState(0);
+  const [pageViews, setPageViews] = useState(0);
 
   useEffect(() => {
     // 1. Fetch Real Location
