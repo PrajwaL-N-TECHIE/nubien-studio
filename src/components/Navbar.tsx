@@ -105,7 +105,7 @@ const NavLink = ({ link, isActive, onClick }: any) => {
 // --------------------------------------------------------------------------
 // MOBILE MENU COMPONENT
 // --------------------------------------------------------------------------
-const MobileMenu = ({ isOpen, onClose, onContactOpen }: any) => {
+const MobileMenu = ({ isOpen, onClose }: any) => {
   const menuVariants = {
     closed: {
       opacity: 0,
@@ -406,7 +406,6 @@ const DynamicIslandNav = () => {
       <MobileMenu
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
-        onContactOpen={onContactClick}
       />
     </>
   );
