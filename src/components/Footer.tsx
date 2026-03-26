@@ -8,6 +8,81 @@ import {
 } from "lucide-react";
 import Magnetic from "./Magnetic";
 import { usePerformance } from "@/context/PerformanceContext";
+import emailjs from '@emailjs/browser';
+
+// --------------------------------------------------------------------------
+// NEWSLETTER FORM COMPONENT
+// --------------------------------------------------------------------------
+const NewsletterForm = () => {
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !email.includes('@')) return;
+
+    setStatus('loading');
+
+    const templateParams = {
+      from_name: "Newsletter Subscriber",
+      from_email: email,
+      project_type: "Newsletter Subscription",
+      budget: "N/A",
+      timeline: "N/A",
+      message: `A new user has subscribed to the Buildicy Dispatch newsletter: ${email}`,
+      tags: "newsletter, subscription"
+    };
+
+    try {
+      await emailjs.send(
+        import.meta.env.VITE_EMAILJS_SERVICE_ID || "",
+        import.meta.env.VITE_EMAILJS_TEMPLATE_ID || "",
+        templateParams,
+        import.meta.env.VITE_EMAILJS_PUBLIC_KEY || ""
+      );
+      setStatus('success');
+      setEmail("");
+      setTimeout(() => setStatus('idle'), 5000);
+    } catch (err) {
+      console.error("Newsletter error:", err);
+      setStatus('error');
+      setTimeout(() => setStatus('idle'), 5000);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubscribe} className="relative group">
+      <input
+        type="email"
+        required
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder={status === 'success' ? "Welcome to the elite!" : "Enter your email"}
+        disabled={status === 'loading' || status === 'success'}
+        className={`w-full bg-[#1A1A24]/40 border rounded-2xl px-5 py-4 text-sm text-white placeholder-zinc-500 focus:outline-none transition-all ${status === 'success' ? 'border-green-500/50 bg-green-500/10' :
+            status === 'error' ? 'border-red-500/50 bg-red-500/10' :
+              'border-white/10 focus:border-purple-500/50'
+          }`}
+      />
+      <button
+        type="submit"
+        disabled={status === 'loading' || status === 'success'}
+        className={`absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-xl flex items-center justify-center transition-all shadow-lg ${status === 'success' ? 'bg-green-600' : 'bg-purple-600 hover:bg-purple-500'
+          }`}
+      >
+        {status === 'loading' ? (
+          <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }}>
+            <Activity size={16} className="text-white" />
+          </motion.div>
+        ) : status === 'success' ? (
+          <CheckCircle2 size={16} className="text-white" />
+        ) : (
+          <Send size={16} className="text-white" />
+        )}
+      </button>
+    </form>
+  );
+};
 
 // Premium Easing Curve (Apple-style)
 const customEase = [0.22, 1, 0.36, 1];
@@ -334,16 +409,7 @@ const Footer = () => {
               <h4 className="text-xs font-bold text-white mb-4 tracking-widest uppercase flex items-center gap-2">
                 <Mail size={14} className="text-purple-500" /> Dispatch
               </h4>
-              <div className="relative group">
-                <input
-                  type="email"
-                  placeholder="Enter your email"
-                  className="w-full bg-[#1A1A24]/40 border border-white/10 rounded-2xl px-5 py-4 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500/50 transition-colors"
-                />
-                <button className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-xl bg-purple-600 hover:bg-purple-500 flex items-center justify-center transition-colors shadow-lg">
-                  <Send size={16} className="text-white" />
-                </button>
-              </div>
+              <NewsletterForm />
             </div>
 
             <LiveStatus />
