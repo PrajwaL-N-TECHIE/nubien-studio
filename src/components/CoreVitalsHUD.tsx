@@ -12,11 +12,41 @@ const CoreVitalsHUD = () => {
     const [isOpen, setIsOpen] = useState(false);
 
     useEffect(() => {
-        const interval = setInterval(() => {
-            setFps(Math.floor(115 + Math.random() * 10));
-            setLatency(Math.floor(8 + Math.random() * 8));
-        }, 2000);
-        return () => clearInterval(interval);
+        let frameCount = 0;
+        let lastTime = performance.now();
+        let rafId: number;
+
+        const updateFps = (currentTime: number) => {
+            frameCount++;
+            if (currentTime - lastTime >= 1000) {
+                setFps(frameCount);
+                frameCount = 0;
+                lastTime = currentTime;
+            }
+            rafId = requestAnimationFrame(updateFps);
+        };
+
+        rafId = requestAnimationFrame(updateFps);
+
+        // Ping measurement (Real-world estimate)
+        const measureLatency = async () => {
+            const start = performance.now();
+            try {
+                await fetch("/favicon.ico", { method: 'HEAD', cache: 'no-store' });
+                setLatency(Math.round(performance.now() - start));
+            } catch {
+                // Fallback to a small jittery range if fetch fails (offline/dev)
+                setLatency(Math.floor(10 + Math.random() * 5));
+            }
+        };
+
+        const latencyInterval = setInterval(measureLatency, 5000);
+        measureLatency();
+
+        return () => {
+            cancelAnimationFrame(rafId);
+            clearInterval(latencyInterval);
+        };
     }, []);
 
     return (

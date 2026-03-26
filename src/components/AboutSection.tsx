@@ -256,16 +256,8 @@ const AboutSection = () => {
         </div>
 
         {/* CTA with hover and scroll effects */}
-        <motion.button
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 0.9 }}
-          whileHover={{
-            scale: 1.05,
-            boxShadow: "0 0 40px hsl(262 83% 58% / 0.4)",
-            transition: { duration: 0.2 }
-          }}
-          whileTap={{ scale: 0.97 }}
+        <button
+          onClick={() => window.dispatchEvent(new CustomEvent("open-scouter"))}
           className="mt-4 px-8 py-4 rounded-2xl text-sm font-semibold transition-all relative overflow-hidden group"
           style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
         >
@@ -276,7 +268,7 @@ const AboutSection = () => {
             whileHover={{ x: "100%" }}
             transition={{ duration: 0.5 }}
           />
-        </motion.button>
+        </button>
 
         {/* Stats with staggered reveal and scroll parallax */}
         <motion.div

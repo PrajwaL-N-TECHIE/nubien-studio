@@ -75,7 +75,7 @@ const SmoothCounter = ({ value, duration = 2 }: { value: number, duration?: numb
 // --------------------------------------------------------------------------
 // MAIN SECTION
 // --------------------------------------------------------------------------
-const HeroSection = ({ onContactClick }: { onContactClick: () => void }) => {
+const HeroSection = () => {
   const [index, setIndex] = useState(0);
   const [isMounted, setIsMounted] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
@@ -288,7 +288,7 @@ const HeroSection = ({ onContactClick }: { onContactClick: () => void }) => {
               <button
                 onMouseDown={() => {
                   setIsConnecting(true);
-                  onContactClick();
+                  window.dispatchEvent(new CustomEvent("open-scouter"));
                 }}
                 onMouseUp={() => setTimeout(() => setIsConnecting(false), 600)}
                 className="relative px-10 py-5 rounded-full text-base font-bold bg-purple-600 text-white flex items-center gap-3 transition-all border border-purple-500/50 shadow-[0_0_40px_rgba(168,85,247,0.4)] hover:bg-purple-500 active:scale-95"
@@ -300,6 +300,12 @@ const HeroSection = ({ onContactClick }: { onContactClick: () => void }) => {
 
           <Magnetic strength={0.2} scale={1.02}>
             <button
+              onClick={() => {
+                const aboutSection = document.getElementById('about');
+                if (aboutSection) {
+                  aboutSection.scrollIntoView({ behavior: 'smooth' });
+                }
+              }}
               className="px-10 py-5 rounded-full text-base font-bold border border-white/10 text-white bg-white/[0.03] backdrop-blur-[40px] flex items-center gap-4 transition-colors shadow-xl group"
             >
               <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center transition-transform group-hover:scale-110 shadow-lg">

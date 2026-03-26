@@ -71,7 +71,7 @@ const App = () => {
               <div className="bg-[#050507] min-h-screen flex flex-col text-white">
 
                 {/* Navbar with contact trigger */}
-                <Navbar onContactClick={() => setIsScouterOpen(true)} />
+                <Navbar />
 
                 {/* Main content area */}
                 <main className="flex-grow">
@@ -79,7 +79,7 @@ const App = () => {
                 </main>
 
                 {/* Footer with contact trigger */}
-                <Footer onContactClick={() => setIsScouterOpen(true)} />
+                <Footer />
 
                 {/* Advanced Contact Onboarding Modal */}
                 <AnimatePresence>

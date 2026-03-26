@@ -163,7 +163,7 @@ const LiveStatus = () => {
 // --------------------------------------------------------------------------
 // MAIN FOOTER
 // --------------------------------------------------------------------------
-const Footer = ({ onContactClick }: { onContactClick: () => void }) => {
+const Footer = () => {
   const containerRef = useRef(null);
   const { isLowEnd } = usePerformance();
   const isInView = useInView(containerRef, { once: false, margin: "100px" });
@@ -232,7 +232,7 @@ const Footer = ({ onContactClick }: { onContactClick: () => void }) => {
 
           <Magnetic strength={0.4} scale={1.1}>
             <button
-              onClick={onContactClick}
+              onClick={() => window.dispatchEvent(new CustomEvent("open-scouter"))}
               className="w-48 h-48 rounded-full text-xl font-bold bg-purple-600 text-white shadow-[0_0_50px_rgba(168,85,247,0.5)] hover:bg-purple-500 flex items-center justify-center gap-2 group z-10"
             >
               Let's Talk

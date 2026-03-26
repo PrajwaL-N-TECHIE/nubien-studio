@@ -215,13 +215,12 @@ const MobileMenu = ({ isOpen, onClose, onContactOpen }: any) => {
               </motion.div>
             </div>
 
-            {/* CTA Button */}
             <div className="p-4 pt-0">
               <Magnetic strength={0.2} scale={1.02} className="w-full">
                 <button
                   onClick={() => {
                     onClose();
-                    onContactOpen();
+                    window.dispatchEvent(new CustomEvent("open-scouter"));
                   }}
                   className="w-full py-4 rounded-xl text-sm font-bold bg-gradient-to-r from-purple-600 to-purple-500 text-white flex items-center justify-center gap-2 group shadow-[0_0_30px_rgba(168,85,247,0.3)]"
                 >
@@ -245,7 +244,7 @@ const MobileMenu = ({ isOpen, onClose, onContactOpen }: any) => {
 // --------------------------------------------------------------------------
 // MAIN NAVBAR (Enhanced)
 // --------------------------------------------------------------------------
-const DynamicIslandNav = ({ onContactClick }: { onContactClick: () => void }) => {
+const DynamicIslandNav = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -372,7 +371,7 @@ const DynamicIslandNav = ({ onContactClick }: { onContactClick: () => void }) =>
                     >
                       <Magnetic strength={0.2} scale={1.05}>
                         <button
-                          onClick={onContactClick}
+                          onClick={() => window.dispatchEvent(new CustomEvent("open-scouter"))}
                           className="px-6 py-2.5 rounded-full text-sm font-bold bg-purple-600 text-white flex items-center gap-2 group shadow-[0_0_20px_rgba(168,85,247,0.3)]"
                         >
                           Get In Touch
