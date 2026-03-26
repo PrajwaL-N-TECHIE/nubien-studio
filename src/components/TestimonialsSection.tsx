@@ -7,7 +7,7 @@ const testimonials = [
   {
     name: "Sarah Chen",
     role: "CTO, NexaFlow",
-    quote: "Nubien transformed our entire data pipeline with AI. The results exceeded every expectation we had.",
+    quote: "Buildicy transformed our entire data pipeline with AI. The results exceeded every expectation we had.",
     rating: 5,
     avatar: "SC",
   },
@@ -28,7 +28,7 @@ const testimonials = [
   {
     name: "David Kim",
     role: "Product Lead, Vertex",
-    quote: "The speed and precision with which Nubien deployed our LLM models was truly world-class.",
+    quote: "The speed and precision with which Buildicy deployed our LLM models was truly world-class.",
     rating: 5,
     avatar: "DK",
   },
@@ -88,14 +88,14 @@ const TestimonialsSection = () => {
 
   return (
     <section className="relative py-32 overflow-hidden bg-[#050507]">
-      
+
       {/* Absolute Ambient Background */}
       <div className="absolute inset-0 pointer-events-none z-0 flex items-center justify-center">
         <div className="w-[800px] h-[400px] bg-purple-600/10 rounded-full blur-[120px]" />
       </div>
 
       <div ref={ref} className="relative z-10 w-full">
-        
+
         {/* -------------------------------------------------------------------------- */}
         {/* HEADER */}
         {/* -------------------------------------------------------------------------- */}
@@ -123,7 +123,7 @@ const TestimonialsSection = () => {
           >
             Trusted by Industry
           </motion.h2>
-          
+
           <motion.h2
             initial={{ opacity: 0, y: 30 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
@@ -139,25 +139,32 @@ const TestimonialsSection = () => {
         {/* -------------------------------------------------------------------------- */}
         {/* INFINITE SCROLLING MARQUEE */}
         {/* -------------------------------------------------------------------------- */}
-        <div className="relative flex overflow-hidden group">
-          
+        <div className="relative flex overflow-hidden group py-4">
+
+          <style dangerouslySetInnerHTML={{
+            __html: `
+            @keyframes testimonial-scroll {
+              0% { transform: translateX(0); }
+              100% { transform: translateX(-50%); }
+            }
+            .animate-testimonials {
+              animation: testimonial-scroll 60s linear infinite;
+              will-change: transform;
+            }
+            .animate-testimonials:hover {
+              animation-play-state: paused;
+            }
+          `}} />
+
           {/* Edge Gradients for smooth fade in/out */}
           <div className="absolute inset-y-0 left-0 w-32 md:w-64 bg-gradient-to-r from-[#050507] to-transparent z-20 pointer-events-none" />
           <div className="absolute inset-y-0 right-0 w-32 md:w-64 bg-gradient-to-l from-[#050507] to-transparent z-20 pointer-events-none" />
 
-          <motion.div
-            className="flex gap-6 whitespace-nowrap px-6"
-            animate={{ x: ["0%", "-50%"] }}
-            transition={{ 
-              duration: 40, // Adjust speed here
-              repeat: Infinity,
-              ease: "linear",
-            }}
-          >
+          <div className="flex w-max animate-testimonials transform-gpu">
             {duplicatedTestimonials.map((t, i) => (
-              <div key={i} className="w-[400px] md:w-[450px] flex-shrink-0">
-                <SpotlightCard className="p-10 h-full flex flex-col whitespace-normal">
-                  
+              <div key={i} className="w-[400px] md:w-[450px] flex-shrink-0 pr-6">
+                <SpotlightCard className="p-10 h-full flex flex-col whitespace-normal will-change-transform">
+
                   {/* Decorative Quote Icon */}
                   <div className="absolute top-8 right-8 text-white/5">
                     <Quote size={80} strokeWidth={1} />
@@ -185,11 +192,11 @@ const TestimonialsSection = () => {
                       <p className="text-sm text-purple-400/80 font-medium tracking-wide uppercase mt-0.5">{t.role}</p>
                     </div>
                   </div>
-                  
+
                 </SpotlightCard>
               </div>
             ))}
-          </motion.div>
+          </div>
         </div>
 
       </div>

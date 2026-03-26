@@ -2,6 +2,8 @@ import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import { ExternalLink, Sparkles, ArrowRight } from "lucide-react";
 import PageTransition from "@/components/PageTransition";
+import LazyImage from "@/components/LazyImage";
+import Magnetic from "@/components/Magnetic";
 
 // Premium Easing Curve
 const customEase = [0.22, 1, 0.36, 1];
@@ -53,12 +55,12 @@ const Portfolio = () => {
   return (
     <PageTransition>
       <div className="pt-32 pb-40 min-h-screen bg-[#050507] text-white overflow-hidden selection:bg-purple-500/30">
-        
+
         {/* Ambient Glow */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-purple-600/10 rounded-full blur-[200px] pointer-events-none z-0" />
 
         <div className="max-w-7xl mx-auto px-6 relative z-10">
-          
+
           {/* HEADER */}
           <div ref={headerRef} className="mb-24 md:mb-32 mt-10">
             <motion.div
@@ -106,10 +108,11 @@ const Portfolio = () => {
               >
                 {/* Image Background */}
                 <div className="absolute inset-0 w-full h-full overflow-hidden">
-                  <img 
-                    src={project.image} 
-                    alt={project.title} 
-                    className="w-full h-full object-cover opacity-60 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700 ease-[0.22,1,0.36,1]"
+                  <LazyImage
+                    src={project.image}
+                    alt={project.title}
+                    aspectRatio="h-full w-full"
+                    className="opacity-60 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700 ease-[0.22,1,0.36,1]"
                   />
                   {/* Heavy dark gradient overlay so text is always readable */}
                   <div className="absolute inset-0 bg-gradient-to-t from-[#050507] via-[#050507]/60 to-transparent" />
@@ -156,10 +159,12 @@ const Portfolio = () => {
             className="mt-32 text-center"
           >
             <h2 className="text-3xl md:text-5xl font-bold mb-8 tracking-tight">Have a project in mind?</h2>
-            <button className="group px-8 py-4 rounded-full bg-purple-600 text-white font-bold text-sm flex items-center gap-3 mx-auto transition-all shadow-[0_0_30px_rgba(147,51,234,0.3)] hover:bg-purple-500 border border-purple-400/50">
-              Start the Conversation
-              <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-            </button>
+            <Magnetic strength={0.3} scale={1.05}>
+              <button className="group px-10 py-5 rounded-full bg-purple-600 text-white font-bold text-base flex items-center gap-4 transition-all shadow-[0_0_40px_rgba(147,51,234,0.4)] hover:bg-purple-500 border border-purple-400/50">
+                Start the Conversation
+                <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+              </button>
+            </Magnetic>
           </motion.div>
 
         </div>

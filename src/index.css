@@ -1,8 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Syne:wght@600;700;800&family=DM+Mono:wght@400;500&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
 
 @layer base {
   :root {
@@ -53,6 +53,12 @@
     --surface-2: 240 8% 12%;
     --badge-bg: 240 10% 12%;
 
+    /* Glassmorphism 2.0 */
+    --glass-bg: hsl(240 10% 8% / 0.6);
+    --glass-border: hsl(0 0% 100% / 0.1);
+    --glass-highlight: hsl(0 0% 100% / 0.05);
+    --glass-blur: blur(24px) saturate(180%);
+
     /* Gradients */
     --gradient-hero: radial-gradient(ellipse 80% 50% at 50% 110%, hsl(262 83% 40% / 0.6) 0%, transparent 70%);
     --gradient-services: linear-gradient(180deg, hsl(240 60% 15% / 0.8) 0%, hsl(262 60% 20% / 0.9) 50%, hsl(240 60% 15% / 0.8) 100%);
@@ -60,6 +66,7 @@
 
     /* Shadows */
     --shadow-purple: 0 0 40px hsl(262 83% 58% / 0.3);
+    --shadow-premium: 0 30px 60px -12px rgba(0, 0, 0, 0.5), 0 18px 36px -18px rgba(0, 0, 0, 0.5);
     --shadow-card: 0 4px 24px hsl(0 0% 0% / 0.4);
   }
 
@@ -70,6 +77,10 @@
 
     --card: 0 0% 100%;
     --card-foreground: 240 10% 8%;
+
+    --glass-bg: hsl(0 0% 100% / 0.8);
+    --glass-border: hsl(240 10% 8% / 0.1);
+    --glass-highlight: hsl(240 10% 8% / 0.05);
 
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 8%;
@@ -98,6 +109,7 @@
     --badge-bg: 240 5% 94%;
 
     --shadow-purple: 0 0 40px hsl(262 83% 58% / 0.15);
+    --shadow-premium: 0 20px 40px -12px rgba(0, 0, 0, 0.1);
     --shadow-card: 0 4px 24px hsl(0 0% 0% / 0.08);
   }
 }
@@ -109,16 +121,55 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Space Grotesk', 'Inter', sans-serif;
+    font-family: 'Plus Jakarta Sans', sans-serif;
     overflow-x: hidden;
   }
 
   html {
-    scroll-behavior: smooth;
+    /* Lenis handles scrolling, native smooth scroll conflicts */
+    scroll-behavior: auto !important;
   }
 
-  h1, h2, h3, h4, h5, h6 {
-    font-family: 'Space Grotesk', sans-serif;
+  /* Lenis Standard Styles */
+  html.lenis,
+  html.lenis body {
+    height: auto;
+  }
+
+  .lenis.lenis-smooth {
+    scroll-behavior: auto !important;
+  }
+
+  /* GPU-Accelerated Section Layers */
+  section,
+  main,
+  .glass-panel,
+  .laboratory-bg {
+    will-change: transform;
+    backface-visibility: hidden;
+    transform: translateZ(0);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .lenis.lenis-smooth [data-lenis-prevent] {
+    overscroll-behavior: contain;
+  }
+
+  .lenis.lenis-stopped {
+    overflow: hidden;
+  }
+
+  .lenis.lenis-scrolling iframe {
+    pointer-events: none;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: 'Syne', sans-serif;
     letter-spacing: -0.02em;
   }
 }
@@ -135,6 +186,27 @@
     box-shadow: var(--shadow-purple);
   }
 
+  .glass-panel {
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--shadow-premium);
+  }
+
+  .noise-overlay {
+    position: relative;
+  }
+
+  .noise-overlay::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    opacity: 0.03;
+    pointer-events: none;
+  }
+
   .badge-pill {
     @apply inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium;
     background: hsl(var(--badge-bg));
@@ -142,34 +214,18 @@
     color: hsl(var(--foreground));
   }
 
-  .badge-pill .badge-dot {
-    @apply w-6 h-6 rounded-full flex items-center justify-center;
-    background: hsl(var(--primary));
-  }
-
   .hero-bg {
     background: var(--gradient-hero);
   }
 
-  .services-bg {
-    background: hsl(262 60% 15% / 0.7);
-    background-image: var(--gradient-services);
-  }
-
   .card-dark {
-    background: hsl(var(--surface));
-    border: 1px solid hsl(var(--border));
+    @apply glass-panel;
     border-radius: var(--radius);
   }
 
   .card-service {
-    background: hsl(240 50% 15% / 0.6);
-    border: 1px solid hsl(240 50% 25% / 0.3);
+    @apply glass-panel;
     border-radius: calc(var(--radius) * 1.5);
-  }
-
-  .light .card-service {
-    background: hsl(240 20% 96%);
-    border: 1px solid hsl(240 10% 88%);
+    background: hsl(240 50% 12% / 0.5);
   }
 }

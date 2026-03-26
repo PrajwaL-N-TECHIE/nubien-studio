@@ -2,10 +2,10 @@ import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
 
 const stats = [
-  { value: "150+", label: "Projects Delivered" },
-  { value: "98%", label: "Client Satisfaction" },
-  { value: "50+", label: "AI Models Deployed" },
-  { value: "24/7", label: "Support Available" },
+  { value: "500+", label: "Global Projects" },
+  { value: "99.9%", label: "Uptime" },
+  { value: "250+", label: "Happy Partners" },
+  { value: "Zero", label: "Speed Bottlenecks" },
 ];
 
 const AboutSection = () => {
@@ -13,11 +13,11 @@ const AboutSection = () => {
   const containerRef = useRef(null);
   const textRef = useRef(null);
   const statsRef = useRef(null);
-  
+
   const isInView = useInView(ref, { once: true, margin: "-100px" });
   const isTextInView = useInView(textRef, { once: true, margin: "-50px" });
   const isStatsInView = useInView(statsRef, { once: true, margin: "-50px" });
-  
+
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start end", "end start"],
@@ -28,18 +28,18 @@ const AboutSection = () => {
   const textOpacity = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0.3, 1, 1, 0.3]);
   const textScale = useTransform(scrollYProgress, [0, 0.5, 1], [0.95, 1, 0.95]);
   const textRotateX = useTransform(scrollYProgress, [0, 0.5, 1], [5, 0, 5]);
-  
+
   // Floating elements parallax
   const particlesY = useTransform(scrollYProgress, [0, 1], ["0%", "-30%"]);
   const particlesOpacity = useTransform(scrollYProgress, [0, 0.3, 0.8, 1], [0.2, 0.8, 0.8, 0.2]);
-  
+
   // Grid lines parallax
   const gridSpeed = useTransform(scrollYProgress, [0, 1], [0, 100]);
-  
+
   // Character reveal animation variants
   const charRevealVariants = {
     hidden: { opacity: 0, y: 50, rotateX: -15, filter: "blur(10px)" },
-    visible: (i) => ({
+    visible: (i: number) => ({
       opacity: 1,
       y: 0,
       rotateX: 0,
@@ -50,20 +50,20 @@ const AboutSection = () => {
         ease: [0.2, 0.65, 0.3, 0.9],
       },
     }),
-  };
+  } as any;
 
-  const words = "Built on creativity, collaboration, and top excellence, SYNC is a dynamic team".split(" ");
-  const fadedWords = "of industry experts committed to achieving exceptional great results...".split(" ");
+  const words = "Built on trust, simple logic, and dedicated teamwork, Buildicy is a passionate team".split(" ");
+  const fadedWords = "of engineering experts here to help you make a real impact in the world...".split(" ");
 
   // Split words into characters for advanced reveal
   const allWords = [...words, ...fadedWords];
-  const characters = allWords.join(" ").split("");
+  // characters is not used directly in the mapping below, but words/fadedWords are.
 
   return (
     <section
       id="about"
       ref={containerRef}
-      className="relative min-h-screen flex flex-col items-center justify-center text-center overflow-hidden py-32"
+      className="relative min-h-screen flex flex-col items-center justify-center text-center overflow-hidden py-32 will-change-transform"
     >
       {/* Parallax glow with pulse effect */}
       <motion.div
@@ -79,17 +79,15 @@ const AboutSection = () => {
             background: "radial-gradient(ellipse 100% 60% at 50% 0%, hsl(262 83% 40% / 0.5) 0%, transparent 80%)",
           }}
         />
-        
+
         {/* Secondary glow that follows scroll */}
         <motion.div
           style={{
             y: useTransform(scrollYProgress, [0, 1], ["0%", "50%"]),
             opacity: useTransform(scrollYProgress, [0, 0.5, 1], [0, 0.3, 0]),
-          }}
-          className="absolute bottom-0 left-0 right-0 h-60"
-          style={{
             background: "radial-gradient(ellipse 80% 40% at 50% 100%, hsl(262 83% 50% / 0.3) 0%, transparent 70%)",
           }}
+          className="absolute bottom-0 left-0 right-0 h-60"
         />
       </motion.div>
 
@@ -111,7 +109,7 @@ const AboutSection = () => {
             }}
           />
         ))}
-        
+
         {/* Vertical grid lines */}
         {[...Array(6)].map((_, i) => (
           <motion.div
@@ -204,7 +202,7 @@ const AboutSection = () => {
           >
             <div className="w-2 h-2 rounded-full border border-white/60" />
           </motion.span>
-          <span style={{ color: "hsl(var(--muted-foreground))" }}>About Us</span>
+          <span style={{ color: "hsl(var(--muted-foreground))" }}>About Us • Est. 2026</span>
         </motion.div>
 
         {/* Advanced text reveal - Option 1: Character by character */}
@@ -237,7 +235,7 @@ const AboutSection = () => {
               </motion.span>
             ))}
           </h2>
-          
+
           {/* Gradient overlay that follows scroll */}
           <motion.div
             className="absolute inset-0 pointer-events-none"
@@ -252,7 +250,7 @@ const AboutSection = () => {
                   "linear-gradient(90deg, transparent, hsl(262 83% 58% / 0.1), transparent)",
                 ]
               ),
-              filter: "blur(20px)",
+              filter: "blur(10px)",
             }}
           />
         </div>
@@ -262,8 +260,8 @@ const AboutSection = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, delay: 0.9 }}
-          whileHover={{ 
-            scale: 1.05, 
+          whileHover={{
+            scale: 1.05,
             boxShadow: "0 0 40px hsl(262 83% 58% / 0.4)",
             transition: { duration: 0.2 }
           }}
@@ -293,14 +291,14 @@ const AboutSection = () => {
               key={i}
               initial={{ opacity: 0, scale: 0.8, y: 20 }}
               animate={isStatsInView ? { opacity: 1, scale: 1, y: 0 } : {}}
-              transition={{ 
-                duration: 0.5, 
-                delay: 1.2 + i * 0.1, 
+              transition={{
+                duration: 0.5,
+                delay: 1.2 + i * 0.1,
                 type: "spring",
                 stiffness: 100,
                 damping: 10
               }}
-              whileHover={{ 
+              whileHover={{
                 scale: 1.05,
                 y: -5,
                 transition: { duration: 0.2 }
@@ -319,7 +317,7 @@ const AboutSection = () => {
                 whileHover={{ opacity: 1 }}
                 transition={{ duration: 0.2 }}
               />
-              
+
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={isStatsInView ? { opacity: 1, y: 0 } : {}}
@@ -329,13 +327,13 @@ const AboutSection = () => {
               >
                 {stat.value}
               </motion.div>
-              <div 
+              <div
                 className="text-xs font-medium relative z-10"
                 style={{ color: "hsl(var(--muted-foreground))" }}
               >
                 {stat.label}
               </div>
-              
+
               {/* Animated underline on hover */}
               <motion.div
                 className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"

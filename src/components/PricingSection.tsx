@@ -2,13 +2,13 @@ import { useRef, useMemo, useState, Suspense } from "react";
 import { motion, useInView, useScroll, useTransform, useSpring, useMotionTemplate } from "framer-motion";
 import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import { 
+import {
   Search, Lightbulb, Code, TestTube, Rocket, RefreshCw,
   Sparkles, ArrowRight, Cpu, Zap
 } from "lucide-react";
 
 // The "Buttery" Apple-tier easing curve
-const customEase = [0.22, 1, 0.36, 1];
+const customEase = [0.22, 1, 0.36, 1] as any;
 
 // --------------------------------------------------------------------------
 // DATA
@@ -62,9 +62,9 @@ const DataWave = () => {
   const positions = useMemo(() => {
     const pos = new Float32Array(particleCount * 3);
     for (let i = 0; i < particleCount; i++) {
-      pos[i * 3] = (Math.random() - 0.5) * 40; 
-      pos[i * 3 + 1] = (Math.random() - 0.5) * 40; 
-      pos[i * 3 + 2] = (Math.random() - 0.5) * 15 - 5; 
+      pos[i * 3] = (Math.random() - 0.5) * 40;
+      pos[i * 3 + 1] = (Math.random() - 0.5) * 40;
+      pos[i * 3 + 2] = (Math.random() - 0.5) * 15 - 5;
     }
     return pos;
   }, []);
@@ -80,7 +80,7 @@ const DataWave = () => {
       const y = positions[i3 + 1];
       positions[i3 + 2] += Math.sin(t + x * 0.5 + y * 0.5) * 0.01;
     }
-    
+
     pointsRef.current.geometry.attributes.position.needsUpdate = true;
     pointsRef.current.rotation.y = Math.sin(t * 0.1) * 0.2;
     pointsRef.current.rotation.x = Math.cos(t * 0.1) * 0.1;
@@ -91,12 +91,12 @@ const DataWave = () => {
       <bufferGeometry>
         <bufferAttribute attach="attributes-position" count={particleCount} array={positions} itemSize={3} />
       </bufferGeometry>
-      <pointsMaterial 
-        size={0.06} 
-        color="#a855f7" 
-        transparent 
-        opacity={0.4} 
-        sizeAttenuation 
+      <pointsMaterial
+        size={0.06}
+        color="#a855f7"
+        transparent
+        opacity={0.4}
+        sizeAttenuation
         blending={THREE.AdditiveBlending}
         depthWrite={false}
       />
@@ -109,7 +109,7 @@ const DataWave = () => {
 // --------------------------------------------------------------------------
 const ProcessCard = ({ step, index, isInView }: { step: any, index: number, isInView: boolean }) => {
   const cardRef = useRef<HTMLDivElement>(null);
-  
+
   // 1. Spring-loaded Spotlight Coordinates (No more harsh snapping)
   const spotX = useSpring(0, { stiffness: 150, damping: 25, mass: 0.5 });
   const spotY = useSpring(0, { stiffness: 150, damping: 25, mass: 0.5 });
@@ -174,10 +174,10 @@ const ProcessCard = ({ step, index, isInView }: { step: any, index: number, isIn
 
         {/* Icon Container */}
         <div className="relative z-10 w-16 h-16 rounded-2xl mb-8 flex items-center justify-center bg-[#13131A] border border-white/10 group-hover:border-purple-500/40 transition-colors duration-500 shadow-[0_0_20px_rgba(0,0,0,0.5)]">
-          <motion.div 
-             animate={{ scale: [1, 1.2, 1], opacity: [0.2, 0.5, 0.2] }}
-             transition={{ duration: 4, repeat: Infinity, delay: index * 0.2, ease: "easeInOut" }}
-             className="absolute inset-2 blur-xl rounded-full bg-purple-600" 
+          <motion.div
+            animate={{ scale: [1, 1.2, 1], opacity: [0.2, 0.5, 0.2] }}
+            transition={{ duration: 4, repeat: Infinity, delay: index * 0.2, ease: "easeInOut" }}
+            className="absolute inset-2 blur-xl rounded-full bg-purple-600"
           />
           <Icon size={24} className="text-zinc-400 relative z-10 group-hover:scale-110 group-hover:text-white transition-all duration-500" />
         </div>
@@ -211,7 +211,7 @@ const ProcessCard = ({ step, index, isInView }: { step: any, index: number, isIn
 const ProcessSection = () => {
   const containerRef = useRef(null);
   const isInView = useInView(containerRef, { once: true, margin: "-100px" });
-  
+
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start end", "end start"],
@@ -222,7 +222,8 @@ const ProcessSection = () => {
   const titleY = useTransform(smoothProgress, [0, 1], [80, -80]);
 
   const title1 = "From Concept".split("");
-  const title2 = "to Deployment.".split("");
+  const title2 = "to Continuous".split("");
+  const title3 = "Deployment.".split("");
 
   // Buttery Letter Reveal Variant
   const letterVariants = {
@@ -238,7 +239,7 @@ const ProcessSection = () => {
 
   return (
     <section ref={containerRef} id="process" className="relative py-40 px-6 bg-[#050507] overflow-hidden">
-      
+
       {/* 3D BACKGROUND (Optimized dpr for sharp/smooth rendering) */}
       <div className="absolute inset-0 pointer-events-none z-0">
         <Suspense fallback={null}>
@@ -250,7 +251,7 @@ const ProcessSection = () => {
       </div>
 
       <div className="max-w-7xl mx-auto relative z-10">
-        
+
         {/* HEADER */}
         <motion.div style={{ y: titleY }} className="text-center mb-24 flex flex-col items-center">
           <motion.div
@@ -261,62 +262,39 @@ const ProcessSection = () => {
             className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#12121A]/80 border border-white/10 backdrop-blur-xl mb-8 shadow-xl"
           >
             <Sparkles size={12} className="text-purple-500" />
-            <span className="text-[11px] font-bold tracking-widest text-zinc-300 uppercase">Operational Roadmap</span>
+            <span className="text-[11px] font-bold tracking-widest text-zinc-300 uppercase font-['DM_Mono']">Our Path Forward</span>
           </motion.div>
 
-          <h2 className="text-5xl md:text-7xl lg:text-[5.5rem] font-bold tracking-tighter mb-6 leading-[1.1]">
-            <div className="flex flex-wrap justify-center gap-[0.2em] mb-2 text-white overflow-hidden">
-              {title1.map((char, i) => (
-                <motion.span key={i} custom={i} variants={letterVariants} initial="hidden" animate={isInView ? "visible" : "hidden"} className="inline-block">
-                  {char === " " ? "\u00A0" : char}
-                </motion.span>
-              ))}
-            </div>
-            
-            <div className="flex flex-wrap justify-center gap-[0.2em] text-purple-500 drop-shadow-[0_0_30px_rgba(168,85,247,0.4)] overflow-hidden">
-              {title2.map((char, i) => (
-                <motion.span key={i} custom={title1.length + i} variants={letterVariants} initial="hidden" animate={isInView ? "visible" : "hidden"} className="inline-block">
-                  {char === " " ? "\u00A0" : char}
-                </motion.span>
-              ))}
-            </div>
-          </h2>
-          
-          <motion.p 
+          <motion.h2
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="text-5xl md:text-7xl lg:text-[7.5rem] font-bold tracking-tighter mb-8 leading-[1.05] font-['Syne'] text-white"
+          >
+            From Idea <br />
+            <span className="bg-gradient-to-r from-white via-zinc-300 to-zinc-500 bg-clip-text text-transparent italic opacity-90 pb-2 inline-block">
+              to Continuous Launch.
+            </span>
+          </motion.h2>
+
+          <motion.p
             initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
             whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             viewport={{ once: true }}
             transition={{ duration: 1, delay: 0.4, ease: customEase }}
             className="text-zinc-400 max-w-xl mx-auto text-lg font-medium leading-relaxed"
           >
-            A battle-tested methodology designed to perfectly integrate intelligence into the core of your infrastructure.
+            A simple and proven approach designed to help you build and scale your products with confidence.
           </motion.p>
         </motion.div>
 
         {/* PROCESS GRID */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative">
-            {steps.map((step, i) => (
-                <ProcessCard key={i} step={step} index={i} isInView={isInView} />
-            ))}
+          {steps.map((step, i) => (
+            <ProcessCard key={i} step={step} index={i} isInView={isInView} />
+          ))}
         </div>
-
-        {/* BOTTOM CTA */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 1, delay: 0.6, ease: customEase }}
-          className="mt-32 text-center"
-        >
-          <motion.button
-            whileHover={{ scale: 1.05, boxShadow: "0 0 40px rgba(168,85,247,0.4)" }}
-            whileTap={{ scale: 0.95 }}
-            className="group px-10 py-5 rounded-full bg-purple-600 text-white font-bold text-sm flex items-center gap-3 mx-auto transition-all shadow-[0_0_20px_rgba(168,85,247,0.2)] hover:bg-purple-500 border border-purple-400/50"
-          >
-            Ignite Your Project
-            <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-          </motion.button>
-        </motion.div>
 
       </div>
     </section>

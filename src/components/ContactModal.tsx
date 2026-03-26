@@ -1,135 +1,52 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Send, Sparkles, Mail, User, MessageSquare, Phone, MapPin } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
-import * as THREE from "three";
+import { X, Send, Sparkles, Mail, User, MessageSquare, Phone, MapPin, Cpu } from "lucide-react";
+import { useState, useRef } from "react";
+import Magnetic from "./Magnetic";
 
 // --------------------------------------------------------------------------
-// THREE.JS PURPLE PARTICLE BACKGROUND
+// ANIMATED BUILDICY LOGO
 // --------------------------------------------------------------------------
-const PurpleParticles = () => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const sceneRef = useRef<THREE.Scene | null>(null);
-  const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
-  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
-  const particlesRef = useRef<THREE.Points | null>(null);
-  const animationFrameRef = useRef<number>();
+const BuildicyLogo = () => {
+  return (
+    <motion.div
+      initial={{ scale: 0.8, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      className="relative"
+    >
+      <div className="absolute inset-0 bg-purple-500 blur-2xl opacity-20 animate-pulse" />
+      <motion.div
+        className="relative w-16 h-16 rounded-[22px] bg-[#0A0A0F] flex items-center justify-center shadow-2xl border border-white/10"
+        whileHover={{ rotate: [0, -5, 5, 0], scale: 1.05 }}
+      >
+        <svg width="40" height="42" viewBox="0 0 68 72" fill="none">
+          <path d="M8 54 L34 68 L60 54 L34 40 Z" fill="#5b21b6" />
+          <path d="M14 36 L34 46 L54 36 L34 26 Z" fill="#7c3aed" />
+          <path d="M20 15.5 L34 22.5 L48 15.5 L34 8.5 Z" fill="#c084fc" />
+          <circle cx="34" cy="8.5" r="3.5" fill="white" />
+        </svg>
 
-  useEffect(() => {
-    if (!containerRef.current) return;
-
-    // Scene setup
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x050507);
-    sceneRef.current = scene;
-
-    // Camera setup
-    const camera = new THREE.PerspectiveCamera(75, containerRef.current.clientWidth / containerRef.current.clientHeight, 0.1, 1000);
-    camera.position.z = 15;
-    cameraRef.current = camera;
-
-    // Renderer setup
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
-    renderer.setSize(containerRef.current.clientWidth, containerRef.current.clientHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    containerRef.current.appendChild(renderer.domElement);
-    rendererRef.current = renderer;
-
-    // Create particles
-    const particlesGeometry = new THREE.BufferGeometry();
-    const particlesCount = 2000;
-    
-    const posArray = new Float32Array(particlesCount * 3);
-    const colorArray = new Float32Array(particlesCount * 3);
-    
-    for (let i = 0; i < particlesCount * 3; i += 3) {
-      // Position
-      posArray[i] = (Math.random() - 0.5) * 30;
-      posArray[i + 1] = (Math.random() - 0.5) * 30;
-      posArray[i + 2] = (Math.random() - 0.5) * 30;
-      
-      // Color - Purple shades
-      const purpleIntensity = 0.5 + Math.random() * 0.5;
-      colorArray[i] = 0.6; // R
-      colorArray[i + 1] = 0.3; // G
-      colorArray[i + 2] = 1.0; // B
-    }
-    
-    particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-    particlesGeometry.setAttribute('color', new THREE.BufferAttribute(colorArray, 3));
-    
-    // Material
-    const particlesMaterial = new THREE.PointsMaterial({
-      size: 0.1,
-      vertexColors: true,
-      transparent: true,
-      opacity: 0.8,
-      blending: THREE.AdditiveBlending,
-      sizeAttenuation: true,
-    });
-    
-    const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
-    scene.add(particlesMesh);
-    particlesRef.current = particlesMesh;
-
-    // Add a few larger purple spheres for depth
-    const sphereGeometry = new THREE.SphereGeometry(0.3, 16, 16);
-    const sphereMaterial = new THREE.MeshBasicMaterial({ color: 0x8B5CF6, transparent: true, opacity: 0.15 });
-    
-    for (let i = 0; i < 5; i++) {
-      const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-      sphere.position.set(
-        (Math.random() - 0.5) * 20,
-        (Math.random() - 0.5) * 20,
-        (Math.random() - 0.5) * 20
-      );
-      scene.add(sphere);
-    }
-
-    // Animation
-    const animate = () => {
-      if (particlesRef.current) {
-        particlesRef.current.rotation.y += 0.0005;
-        particlesRef.current.rotation.x += 0.0002;
-      }
-      
-      if (rendererRef.current && sceneRef.current && cameraRef.current) {
-        rendererRef.current.render(sceneRef.current, cameraRef.current);
-      }
-      
-      animationFrameRef.current = requestAnimationFrame(animate);
-    };
-    
-    animate();
-
-    // Handle resize
-    const handleResize = () => {
-      if (!containerRef.current || !cameraRef.current || !rendererRef.current) return;
-      
-      cameraRef.current.aspect = containerRef.current.clientWidth / containerRef.current.clientHeight;
-      cameraRef.current.updateProjectionMatrix();
-      rendererRef.current.setSize(containerRef.current.clientWidth, containerRef.current.clientHeight);
-    };
-    
-    window.addEventListener('resize', handleResize);
-
-    // Cleanup
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-      if (rendererRef.current && containerRef.current) {
-        containerRef.current.removeChild(rendererRef.current.domElement);
-      }
-      rendererRef.current?.dispose();
-    };
-  }, []);
-
-  return <div ref={containerRef} className="absolute inset-0" />;
+        {/* Orbital Rings */}
+        {[...Array(2)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute inset-[-8px] rounded-[30px] border border-purple-500/30"
+            animate={{
+              rotate: i === 0 ? 360 : -360,
+              scale: [1, 1.05, 1]
+            }}
+            transition={{
+              rotate: { duration: 8 + i * 2, repeat: Infinity, ease: "linear" },
+              scale: { duration: 3, repeat: Infinity, ease: "easeInOut" }
+            }}
+          />
+        ))}
+      </motion.div>
+    </motion.div>
+  );
 };
 
 // --------------------------------------------------------------------------
-// CONTACT MODAL
+// PREMIUM CONTACT MODAL
 // --------------------------------------------------------------------------
 interface ContactModalProps {
   isOpen: boolean;
@@ -137,48 +54,48 @@ interface ContactModalProps {
 }
 
 const ContactModal = ({ isOpen, onClose }: ContactModalProps) => {
-  const [hoveredField, setHoveredField] = useState<string | null>(null);
   const [focusedField, setFocusedField] = useState<string | null>(null);
 
   // Modal animation variants
   const overlayVariants = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { duration: 0.3 } },
-    exit: { opacity: 0, transition: { duration: 0.2 } },
+    hidden: { opacity: 0, backdropFilter: "blur(0px)" },
+    visible: { opacity: 1, backdropFilter: "blur(12px)", transition: { duration: 0.4 } },
+    exit: { opacity: 0, backdropFilter: "blur(0px)", transition: { duration: 0.3 } },
   };
 
   const modalVariants = {
-    hidden: { opacity: 0, scale: 0.9, y: 20 },
-    visible: { 
-      opacity: 1, 
-      scale: 1, 
+    hidden: { opacity: 0, scale: 0.95, y: 30, rotateX: -10 },
+    visible: {
+      opacity: 1,
+      scale: 1,
       y: 0,
-      transition: { 
-        type: "spring",
-        stiffness: 400,
-        damping: 35,
-        mass: 0.8,
+      rotateX: 0,
+      transition: {
+        type: "spring" as const,
+        stiffness: 300,
+        damping: 30,
+        mass: 1,
       }
     },
-    exit: { 
-      opacity: 0, 
-      scale: 0.9, 
+    exit: {
+      opacity: 0,
+      scale: 0.95,
       y: 20,
-      transition: { duration: 0.2 }
+      transition: { duration: 0.2, ease: "easeIn" }
     },
   };
 
   const contentVariants = {
     hidden: { opacity: 0 },
-    visible: { 
+    visible: {
       opacity: 1,
-      transition: { staggerChildren: 0.1, delayChildren: 0.2 }
+      transition: { staggerChildren: 0.08, delayChildren: 0.3 }
     },
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, x: -10 },
-    visible: { opacity: 1, x: 0 },
+    hidden: { opacity: 0, y: 15, filter: "blur(4px)" },
+    visible: { opacity: 1, y: 0, filter: "blur(0px)" },
   };
 
   return (
@@ -189,198 +106,194 @@ const ContactModal = ({ isOpen, onClose }: ContactModalProps) => {
           initial="hidden"
           animate="visible"
           exit="exit"
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-y-auto"
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8"
         >
-          {/* Backdrop with subtle gradient */}
-          <div className="absolute inset-0 bg-black/90" />
-          
-          {/* Three.js Background */}
-          <PurpleParticles />
+          {/* Deep Dynamic Background */}
+          <div className="absolute inset-0 bg-[#050507]/80" />
 
-          {/* Modal */}
+          {/* Animated Ambient Gradients */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <motion.div
+              animate={{
+                scale: [1, 1.2, 1],
+                x: [0, 50, 0],
+                y: [0, -30, 0]
+              }}
+              transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+              className="absolute -top-[20%] -left-[10%] w-[60%] h-[60%] bg-purple-600/10 blur-[120px] rounded-full"
+            />
+            <motion.div
+              animate={{
+                scale: [1.2, 1, 1.2],
+                x: [0, -40, 0],
+                y: [0, 40, 0]
+              }}
+              transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
+              className="absolute -bottom-[10%] -right-[5%] w-[50%] h-[50%] bg-blue-600/10 blur-[110px] rounded-full"
+            />
+          </div>
+
+          {/* Modal Container */}
           <motion.div
             variants={modalVariants}
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="relative z-10 w-full max-w-4xl"
+            className="relative z-10 w-full max-w-5xl h-full max-h-[800px] flex shadow-[0_0_100px_rgba(0,0,0,0.5)]"
           >
-            <div className="relative overflow-hidden rounded-3xl bg-[#0A0A0F]/95 backdrop-blur-sm border border-purple-500/20 shadow-2xl shadow-purple-500/10">
-              {/* Purple accent line */}
-              <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent" />
-              
-              {/* Content Grid */}
-              <div className="relative grid md:grid-cols-2 gap-0">
-                {/* Left Side - Info */}
-                <motion.div
-                  variants={contentVariants}
-                  initial="hidden"
-                  animate="visible"
-                  className="p-8 border-r border-purple-500/10 bg-gradient-to-br from-purple-500/5 via-transparent to-transparent"
-                >
-                  <motion.div variants={itemVariants} className="flex items-center gap-3 mb-8">
-                    <div className="w-12 h-12 rounded-2xl bg-purple-600 flex items-center justify-center shadow-lg shadow-purple-600/20">
-                      <Sparkles className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <h2 className="text-3xl font-bold text-white">Contact</h2>
-                      <p className="text-purple-400 text-sm">Get in touch</p>
-                    </div>
+            <div className="relative w-full h-full overflow-hidden rounded-[40px] bg-[#0A0A0F]/90 backdrop-blur-3xl border border-white/10 flex flex-col md:flex-row shadow-2xl">
+
+              {/* Close Button (Magnetic) */}
+              <div className="absolute top-8 right-8 z-50">
+                <Magnetic strength={0.3} scale={1.2}>
+                  <button
+                    onClick={onClose}
+                    className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors"
+                  >
+                    <X size={20} className="text-white/60" />
+                  </button>
+                </Magnetic>
+              </div>
+
+              {/* Left Column - Branding & Info */}
+              <div className="md:w-5/12 p-8 md:p-12 border-r border-white/5 bg-gradient-to-b from-white/[0.02] to-transparent flex flex-col justify-between">
+                <motion.div variants={contentVariants} initial="hidden" animate="visible">
+                  <motion.div variants={itemVariants} className="mb-12">
+                    <BuildicyLogo />
                   </motion.div>
 
-                  <motion.p variants={itemVariants} className="text-gray-400 mb-8 leading-relaxed">
-                    Have a project in mind? We're ready to bring your ideas to life with cutting-edge technology and creative solutions.
-                  </motion.p>
+                  <motion.div variants={itemVariants} className="space-y-4">
+                    <h2 className="text-5xl font-bold text-white tracking-tight leading-none">
+                      Architecting <br />
+                      <span className="bg-gradient-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent">The Future.</span>
+                    </h2>
+                    <p className="text-zinc-400 text-lg font-medium leading-relaxed max-w-sm">
+                      Ready to transform your vision into an intelligent digital reality? Let's build something extraordinary.
+                    </p>
+                  </motion.div>
+                </motion.div>
 
-                  {/* Contact Info */}
-                  <div className="space-y-4 mb-8">
+                <motion.div variants={contentVariants} initial="hidden" animate="visible" className="space-y-8">
+                  {/* Contact Details */}
+                  <div className="space-y-6">
                     {[
-                      { icon: Mail, label: "Email", value: "hello@nubien.com", delay: 0 },
-                      { icon: Phone, label: "Phone", value: "+1 (555) 123-4567", delay: 1 },
-                      { icon: MapPin, label: "Studio", value: "San Francisco, CA", delay: 2 },
+                      { icon: Mail, label: "Direct Email", value: "hello@buildicy.com" },
+                      { icon: Phone, label: "Hotline", value: "+1 (555) 982-3041" },
+                      { icon: MapPin, label: "Global Studio", value: "San Francisco / Virtual" }
                     ].map((item, i) => (
                       <motion.div
-                        key={item.label}
+                        key={i}
                         variants={itemVariants}
-                        custom={i}
-                        className="group flex items-center gap-4 p-4 rounded-xl bg-black/40 border border-purple-500/10 hover:border-purple-500/30 transition-all cursor-default"
+                        className="flex items-center gap-5 group cursor-pointer"
                       >
-                        <div className="w-10 h-10 rounded-lg bg-purple-600/20 group-hover:bg-purple-600/30 flex items-center justify-center transition-colors">
-                          <item.icon className="w-4 h-4 text-purple-400" />
+                        <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center transition-all group-hover:bg-purple-600 group-hover:border-purple-500 shadow-xl">
+                          <item.icon size={18} className="text-purple-400 group-hover:text-white transition-colors" />
                         </div>
                         <div>
-                          <p className="text-xs text-gray-500">{item.label}</p>
-                          <p className="text-sm text-white">{item.value}</p>
+                          <p className="text-[10px] font-bold tracking-widest text-zinc-500 uppercase">{item.label}</p>
+                          <p className="text-base font-semibold text-white/90 group-hover:text-white">{item.value}</p>
                         </div>
                       </motion.div>
                     ))}
                   </div>
 
-                  {/* Availability Badge */}
-                  <motion.div 
-                    variants={itemVariants}
-                    className="flex items-center gap-2 text-sm"
-                  >
-                    <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse" />
-                    <span className="text-gray-400">Available for new projects</span>
+                  <motion.div variants={itemVariants} className="flex items-center gap-3 px-5 py-3 rounded-2xl bg-purple-500/10 border border-purple-500/20 w-fit">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-500"></span>
+                    </span>
+                    <span className="text-xs font-bold tracking-widest text-purple-400 uppercase">Available for S1 2026</span>
                   </motion.div>
                 </motion.div>
+              </div>
 
-                {/* Right Side - Form */}
-                <motion.div
-                  variants={contentVariants}
-                  initial="hidden"
-                  animate="visible"
-                  className="p-8"
-                >
-                  {/* Close Button */}
-                  <motion.button
-                    variants={itemVariants}
-                    onClick={onClose}
-                    whileHover={{ scale: 1.1, backgroundColor: "rgba(139, 92, 246, 0.2)" }}
-                    whileTap={{ scale: 0.9 }}
-                    className="absolute top-6 right-6 w-10 h-10 rounded-xl bg-black/50 border border-purple-500/20 flex items-center justify-center transition-colors z-10"
-                  >
-                    <X className="w-4 h-4 text-purple-400" />
-                  </motion.button>
-
-                  <motion.h3 variants={itemVariants} className="text-xl font-semibold text-white mb-6">
-                    Send a Message
+              {/* Right Column - Premium Form */}
+              <div className="md:w-7/12 p-8 md:p-12 overflow-y-auto bg-[#0A0A0F]/50 flex flex-col justify-center">
+                <motion.div variants={contentVariants} initial="hidden" animate="visible" className="max-w-md mx-auto w-full">
+                  <motion.h3 variants={itemVariants} className="text-2xl font-bold text-white mb-2">
+                    Start a Conversation
                   </motion.h3>
+                  <motion.p variants={itemVariants} className="text-zinc-500 font-medium mb-10">
+                    Fill out the details below and our lead architect will reach out within 24 hours.
+                  </motion.p>
 
-                  <form className="space-y-5">
+                  <form className="space-y-8">
                     {/* Name Field */}
-                    <motion.div variants={itemVariants}>
-                      <label className="block text-xs text-purple-400 mb-2 ml-1">
-                        YOUR NAME
+                    <motion.div variants={itemVariants} className="relative">
+                      <label className={`absolute left-0 -top-3 text-[10px] font-bold tracking-[0.2em] uppercase transition-all ${focusedField === 'name' ? 'text-purple-500' : 'text-zinc-600'}`}>
+                        Full Name
                       </label>
-                      <div className="relative">
-                        <User className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${
-                          focusedField === "name" ? "text-purple-400" : "text-purple-600/40"
-                        }`} />
+                      <div className="relative border-b-2 border-white/10 focus-within:border-purple-500 transition-colors">
+                        <User className={`absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${focusedField === 'name' ? 'text-purple-500' : 'text-white/20'}`} />
                         <input
                           type="text"
-                          placeholder="John Doe"
                           onFocus={() => setFocusedField("name")}
                           onBlur={() => setFocusedField(null)}
-                          onMouseEnter={() => setHoveredField("name")}
-                          onMouseLeave={() => setHoveredField(null)}
-                          className="w-full rounded-xl bg-black/50 border border-purple-500/20 pl-11 pr-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                          placeholder="e.g. Alexander Pierce"
+                          className="w-full bg-transparent py-4 text-white font-medium focus:outline-none placeholder:text-white/5"
                         />
                       </div>
                     </motion.div>
 
                     {/* Email Field */}
-                    <motion.div variants={itemVariants}>
-                      <label className="block text-xs text-purple-400 mb-2 ml-1">
-                        EMAIL ADDRESS
+                    <motion.div variants={itemVariants} className="relative">
+                      <label className={`absolute left-0 -top-3 text-[10px] font-bold tracking-[0.2em] uppercase transition-all ${focusedField === 'email' ? 'text-purple-500' : 'text-zinc-600'}`}>
+                        Business Email
                       </label>
-                      <div className="relative">
-                        <Mail className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${
-                          focusedField === "email" ? "text-purple-400" : "text-purple-600/40"
-                        }`} />
+                      <div className="relative border-b-2 border-white/10 focus-within:border-purple-500 transition-colors">
+                        <Mail className={`absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${focusedField === 'email' ? 'text-purple-500' : 'text-white/20'}`} />
                         <input
                           type="email"
-                          placeholder="hello@example.com"
                           onFocus={() => setFocusedField("email")}
                           onBlur={() => setFocusedField(null)}
-                          onMouseEnter={() => setHoveredField("email")}
-                          onMouseLeave={() => setHoveredField(null)}
-                          className="w-full rounded-xl bg-black/50 border border-purple-500/20 pl-11 pr-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                          placeholder="name@company.com"
+                          className="w-full bg-transparent py-4 text-white font-medium focus:outline-none placeholder:text-white/5"
                         />
                       </div>
                     </motion.div>
 
                     {/* Message Field */}
-                    <motion.div variants={itemVariants}>
-                      <label className="block text-xs text-purple-400 mb-2 ml-1">
-                        MESSAGE
+                    <motion.div variants={itemVariants} className="relative">
+                      <label className={`absolute left-0 -top-3 text-[10px] font-bold tracking-[0.2em] uppercase transition-all ${focusedField === 'message' ? 'text-purple-500' : 'text-zinc-600'}`}>
+                        Project Details
                       </label>
-                      <div className="relative">
-                        <MessageSquare className={`absolute left-4 top-5 w-4 h-4 transition-colors ${
-                          focusedField === "message" ? "text-purple-400" : "text-purple-600/40"
-                        }`} />
+                      <div className="relative border-b-2 border-white/10 focus-within:border-purple-500 transition-colors">
+                        <MessageSquare className={`absolute right-0 top-6 w-4 h-4 transition-colors ${focusedField === 'message' ? 'text-purple-500' : 'text-white/20'}`} />
                         <textarea
-                          placeholder="Tell us about your project..."
                           rows={4}
                           onFocus={() => setFocusedField("message")}
                           onBlur={() => setFocusedField(null)}
-                          onMouseEnter={() => setHoveredField("message")}
-                          onMouseLeave={() => setHoveredField(null)}
-                          className="w-full rounded-xl bg-black/50 border border-purple-500/20 pl-11 pr-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all resize-none"
+                          placeholder="Tell us about the challenge..."
+                          className="w-full bg-transparent py-4 text-white font-medium focus:outline-none placeholder:text-white/5 resize-none"
                         />
                       </div>
                     </motion.div>
 
-                    {/* Submit Button */}
-                    <motion.div variants={itemVariants}>
-                      <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        type="submit"
-                        className="w-full relative group overflow-hidden rounded-xl bg-purple-600 hover:bg-purple-700 transition-all px-6 py-4"
-                      >
-                        {/* Ripple effect on hover */}
-                        <motion.div
-                          initial={{ scale: 0, opacity: 0 }}
-                          whileHover={{ scale: 4, opacity: 0.2 }}
-                          transition={{ duration: 0.5 }}
-                          className="absolute inset-0 bg-white rounded-full"
-                        />
-                        
-                        <div className="relative flex items-center justify-center gap-3 font-medium text-white">
-                          <Send className="w-4 h-4 group-hover:rotate-12 transition-transform" />
-                          Send Message
-                        </div>
-                      </motion.button>
+                    {/* Submit Button (Magnetic) */}
+                    <motion.div variants={itemVariants} className="pt-4">
+                      <Magnetic strength={0.1} scale={1.02}>
+                        <button
+                          type="submit"
+                          className="w-full relative group overflow-hidden rounded-[20px] bg-purple-600 px-8 py-5 transition-all shadow-[0_20px_40px_rgba(168,85,247,0.3)]"
+                        >
+                          <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-purple-800 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                          <div className="relative flex items-center justify-center gap-3 font-bold text-lg text-white">
+                            Submit Brief
+                            <Send size={18} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                          </div>
+
+                          {/* Inner Shine */}
+                          <motion.div
+                            className="absolute inset-0 w-full h-full bg-white/20 -skew-x-12 translate-x-[-200%]"
+                            animate={{ x: "200%" }}
+                            transition={{ duration: 2, repeat: Infinity, ease: "linear", delay: 1 }}
+                          />
+                        </button>
+                      </Magnetic>
                     </motion.div>
 
-                    {/* Security Note */}
-                    <motion.p 
-                      variants={itemVariants}
-                      className="text-center text-xs text-gray-600 mt-4"
-                    >
-                      Your information is encrypted and secure
+                    <motion.p variants={itemVariants} className="text-center text-[10px] font-bold tracking-widest text-zinc-600 uppercase">
+                      Security Verified • SOC-2 Type II Compliant
                     </motion.p>
                   </form>
                 </motion.div>

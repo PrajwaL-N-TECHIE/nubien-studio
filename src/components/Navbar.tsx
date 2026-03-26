@@ -22,7 +22,7 @@ import {
   Mail,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
-import ContactModal from "./ContactModal";
+import Magnetic from "./Magnetic";
 
 // --------------------------------------------------------------------------
 // CONFIGURATION
@@ -36,91 +36,25 @@ const navLinks = [
 
 // Premium easing curves
 const springConfig = {
-  type: "spring",
-  stiffness: 300,
-  damping: 30,
-  mass: 0.5,
+  type: "spring" as const,
+  stiffness: 200,
+  damping: 40,
+  mass: 1.2,
 };
 
-const smoothEase = [0.4, 0, 0.2, 1]; // Custom cubic-bezier for smooth transitions
-const elasticEase = [0.34, 1.56, 0.64, 1]; // Elastic for premium bounce
+const liquidSpring = {
+  type: "spring" as const,
+  stiffness: 400,
+  damping: 40,
+  mass: 0.8,
+};
+
+const smoothEase = [0.16, 1, 0.3, 1] as const;
+const elasticEase = [0.34, 1.56, 0.64, 1] as const;
 
 // --------------------------------------------------------------------------
 // PREMIUM MAGNETIC BUTTON (Enhanced)
 // --------------------------------------------------------------------------
-const MagneticButton = ({ children, className, onClick, glow = false }: any) => {
-  const ref = useRef<HTMLButtonElement>(null);
-  const [hovered, setHovered] = useState(false);
-  
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-  
-  const rotateX = useTransform(y, [-30, 30], [5, -5]);
-  const rotateY = useTransform(x, [-30, 30], [-5, 5]);
-
-  const mouseX = useSpring(x, { stiffness: 400, damping: 30, mass: 0.5 });
-  const mouseY = useSpring(y, { stiffness: 400, damping: 30, mass: 0.5 });
-  const springRotateX = useSpring(rotateX, springConfig);
-  const springRotateY = useSpring(rotateY, springConfig);
-
-  const handleMouseMove = (e: any) => {
-    if (!ref.current) return;
-    const { clientX, clientY } = e;
-    const { width, height, left, top } = ref.current.getBoundingClientRect();
-    const middleX = clientX - (left + width / 2);
-    const middleY = clientY - (top + height / 2);
-    x.set(middleX * 0.2);
-    y.set(middleY * 0.2);
-  };
-
-  const handleMouseLeave = () => {
-    x.set(0);
-    y.set(0);
-    setHovered(false);
-  };
-
-  return (
-    <motion.button
-      ref={ref}
-      onMouseMove={handleMouseMove}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={handleMouseLeave}
-      onClick={onClick}
-      style={{
-        x: mouseX,
-        y: mouseY,
-        rotateX: springRotateX,
-        rotateY: springRotateY,
-        transformPerspective: 500,
-      }}
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.98 }}
-      className={`relative overflow-hidden ${className}`}
-    >
-      {/* Glow effect on hover */}
-      <AnimatePresence>
-        {hovered && glow && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.5 }}
-            animate={{ opacity: 1, scale: 1.5 }}
-            exit={{ opacity: 0, scale: 2 }}
-            transition={{ duration: 0.5 }}
-            className="absolute inset-0 bg-purple-500/20 blur-xl"
-          />
-        )}
-      </AnimatePresence>
-      
-      {/* Content with smooth scale on hover */}
-      <motion.div
-        animate={{ scale: hovered ? 1.02 : 1 }}
-        transition={{ duration: 0.2 }}
-        className="relative z-10 flex items-center gap-2"
-      >
-        {children}
-      </motion.div>
-    </motion.button>
-  );
-};
 
 // --------------------------------------------------------------------------
 // PREMIUM LINK COMPONENT
@@ -130,55 +64,41 @@ const NavLink = ({ link, isActive, onClick }: any) => {
   const Icon = link.icon;
 
   return (
-    <Link
-      to={link.path}
-      onClick={onClick}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      className="relative px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2 overflow-hidden"
-    >
-      {/* Background hover effect */}
-      <motion.div
-        initial={false}
-        animate={{
-          opacity: hovered ? 1 : 0,
-          scale: hovered ? 1 : 0.8,
-        }}
-        transition={{ duration: 0.2 }}
-        className="absolute inset-0 bg-white/5 rounded-full"
-      />
-      
-      {/* Active indicator */}
-      {isActive && (
+    <Magnetic strength={0.1} scale={1}>
+      <Link
+        to={link.path}
+        onClick={onClick}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        className="relative px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-2 overflow-hidden transition-colors"
+      >
+        {/* Background hover effect */}
         <motion.div
-          layoutId="activeNav"
-          className="absolute inset-0 bg-purple-600/20 rounded-full"
-          transition={{ type: "spring", stiffness: 400, damping: 30 }}
+          initial={false}
+          animate={{
+            opacity: hovered ? 1 : 0,
+            y: hovered ? 0 : 20,
+          }}
+          transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+          className="absolute inset-0 bg-white/5 rounded-full"
         />
-      )}
-      
-      {/* Icon with smooth animation */}
-      <motion.div
-        animate={{
-          rotate: hovered ? 5 : 0,
-          scale: hovered ? 1.1 : 1,
-        }}
-        transition={{ duration: 0.2 }}
-      >
-        <Icon size={14} className="relative z-10" />
-      </motion.div>
-      
-      {/* Text with subtle animation */}
-      <motion.span
-        animate={{
-          x: hovered ? 2 : 0,
-        }}
-        transition={{ duration: 0.2 }}
-        className="relative z-10"
-      >
-        {link.name}
-      </motion.span>
-    </Link>
+
+        {/* Active indicator */}
+        {isActive && (
+          <motion.div
+            layoutId="activeNav"
+            className="absolute inset-0 bg-purple-600/20 rounded-full"
+            transition={liquidSpring}
+          />
+        )}
+
+        <Icon size={14} className={`relative z-10 ${isActive ? 'text-purple-400' : 'text-white/60'}`} />
+
+        <span className={`relative z-10 transition-colors duration-300 ${isActive ? 'text-white' : 'text-white/60'}`}>
+          {link.name}
+        </span>
+      </Link>
+    </Magnetic>
   );
 };
 
@@ -190,6 +110,7 @@ const MobileMenu = ({ isOpen, onClose, onContactOpen }: any) => {
     closed: {
       opacity: 0,
       scale: 0.95,
+      y: -20,
       transition: {
         duration: 0.3,
         ease: smoothEase,
@@ -198,11 +119,13 @@ const MobileMenu = ({ isOpen, onClose, onContactOpen }: any) => {
     open: {
       opacity: 1,
       scale: 1,
+      y: 0,
       transition: {
-        duration: 0.5,
-        ease: smoothEase,
-        staggerChildren: 0.1,
-        delayChildren: 0.2,
+        type: "spring" as const,
+        stiffness: 300,
+        damping: 30,
+        staggerChildren: 0.08,
+        delayChildren: 0.1,
       },
     },
   };
@@ -232,7 +155,7 @@ const MobileMenu = ({ isOpen, onClose, onContactOpen }: any) => {
             initial="closed"
             animate="open"
             exit="closed"
-            className="fixed right-4 top-24 z-[50] w-[320px] rounded-3xl bg-[#050507]/95 backdrop-blur-2xl border border-white/10 shadow-2xl overflow-hidden"
+            className="fixed right-4 top-24 z-[50] w-[calc(100%-2rem)] md:w-[320px] rounded-3xl bg-[#050507]/95 backdrop-blur-2xl border border-white/10 shadow-2xl overflow-hidden will-change-transform"
           >
             {/* Header */}
             <div className="p-6 border-b border-white/5">
@@ -287,29 +210,30 @@ const MobileMenu = ({ isOpen, onClose, onContactOpen }: any) => {
                 </div>
                 <div className="flex items-center gap-3 px-4 py-2 text-sm text-white/60">
                   <Mail size={14} />
-                  <span>hello@nubien.com</span>
+                  <span>hello@buildicy.com</span>
                 </div>
               </motion.div>
             </div>
 
             {/* CTA Button */}
             <div className="p-4 pt-0">
-              <MagneticButton
-                onClick={() => {
-                  onClose();
-                  onContactOpen();
-                }}
-                className="w-full py-4 rounded-xl text-sm font-bold bg-gradient-to-r from-purple-600 to-purple-500 text-white flex items-center justify-center gap-2 group"
-                glow={true}
-              >
-                Start a New Project
-                <motion.div
-                  animate={{ x: [0, 5, 0] }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
+              <Magnetic strength={0.2} scale={1.02} className="w-full">
+                <button
+                  onClick={() => {
+                    onClose();
+                    onContactOpen();
+                  }}
+                  className="w-full py-4 rounded-xl text-sm font-bold bg-gradient-to-r from-purple-600 to-purple-500 text-white flex items-center justify-center gap-2 group shadow-[0_0_30px_rgba(168,85,247,0.3)]"
                 >
-                  <ArrowRight size={16} />
-                </motion.div>
-              </MagneticButton>
+                  Start a New Project
+                  <motion.div
+                    animate={{ x: [0, 5, 0] }}
+                    transition={{ duration: 1.5, repeat: Infinity } as any}
+                  >
+                    <ArrowRight size={16} />
+                  </motion.div>
+                </button>
+              </Magnetic>
             </div>
           </motion.div>
         </>
@@ -321,23 +245,22 @@ const MobileMenu = ({ isOpen, onClose, onContactOpen }: any) => {
 // --------------------------------------------------------------------------
 // MAIN NAVBAR (Enhanced)
 // --------------------------------------------------------------------------
-const DynamicIslandNav = () => {
+const DynamicIslandNav = ({ onContactClick }: { onContactClick: () => void }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  const [isContactOpen, setIsContactOpen] = useState(false);
   const [prevScrollY, setPrevScrollY] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
 
   const { scrollY } = useScroll();
   const location = useLocation();
 
-  // Smooth scroll hide/show with spring
-  const navY = useSpring(0, { stiffness: 300, damping: 30 });
-  
+  // Smooth scroll hide/show with spring (Liquid Easing)
+  const navY = useSpring(0, { stiffness: 150, damping: 35, mass: 1 });
+
   useMotionValueEvent(scrollY, "change", (latest) => {
     setIsScrolled(latest > 60);
-    
+
     // Hide on scroll down, show on scroll up
     if (latest > prevScrollY && latest > 200) {
       setIsVisible(false);
@@ -360,7 +283,7 @@ const DynamicIslandNav = () => {
   }, [isOpen]);
 
   const isExpanded = !isScrolled || isHovered;
-  
+
   // Dynamic width based on state
   const navWidth = isExpanded ? "auto" : "160px";
 
@@ -374,11 +297,12 @@ const DynamicIslandNav = () => {
       >
         <motion.nav
           layout
+          layoutRoot
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
-          transition={springConfig}
+          transition={liquidSpring}
           style={{ width: navWidth }}
-          className="relative flex items-center p-2 rounded-full pointer-events-auto overflow-hidden"
+          className="relative flex items-center p-2 rounded-full pointer-events-auto overflow-hidden will-change-[width,transform]"
         >
           {/* Gradient Border */}
           <motion.div
@@ -393,38 +317,32 @@ const DynamicIslandNav = () => {
 
           {/* Inner Content */}
           <div className="relative z-10 flex items-center w-full">
-            <Link to="/">
-              <motion.div
-                layout
-                className="flex items-center gap-2.5 px-2"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <motion.div
-                  animate={{
-                    rotate: isHovered ? [0, 10, -10, 0] : 0,
-                  }}
-                  transition={{ duration: 0.5 }}
-                  className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-purple-800 flex items-center justify-center shadow-lg"
-                >
-                  <Sparkles size={16} className="text-white" />
-                </motion.div>
+            <Magnetic strength={0.2} scale={1.05}>
+              <Link to="/" className="flex items-center gap-3 px-3 py-1.5 rounded-full hover:bg-white/5 transition-colors">
+                <div className="relative w-8 h-8 flex items-center justify-center">
+                  <svg width="28" height="30" viewBox="0 0 68 72" fill="none">
+                    <path d="M8 54 L34 68 L60 54 L34 40 Z" fill="#5b21b6" />
+                    <path d="M14 36 L34 46 L54 36 L34 26 Z" fill="#7c3aed" />
+                    <path d="M20 15.5 L34 22.5 L48 15.5 L34 8.5 Z" fill="#c084fc" />
+                    <circle cx="34" cy="8.5" r="3.5" fill="white" />
+                  </svg>
+                </div>
 
                 <AnimatePresence mode="wait">
                   {isExpanded && (
                     <motion.span
-                      initial={{ opacity: 0, width: 0, x: -10 }}
-                      animate={{ opacity: 1, width: "auto", x: 0 }}
-                      exit={{ opacity: 0, width: 0, x: -10 }}
-                      transition={springConfig}
-                      className="text-base font-bold text-white whitespace-nowrap pr-2"
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -10 }}
+                      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                      className="text-lg font-extrabold text-white tracking-tighter font-['Syne'] italic"
                     >
-                      Nubien
+                      Buildicy
                     </motion.span>
                   )}
                 </AnimatePresence>
-              </motion.div>
-            </Link>
+              </Link>
+            </Magnetic>
 
             <div className="hidden md:flex items-center">
               <AnimatePresence mode="wait">
@@ -452,19 +370,20 @@ const DynamicIslandNav = () => {
                       transition={{ delay: 0.2 }}
                       className="ml-2 pl-4 border-l border-white/10"
                     >
-                      <MagneticButton
-                        onClick={() => setIsContactOpen(true)}
-                        className="px-6 py-2.5 rounded-full text-sm font-bold bg-purple-600 text-white flex items-center gap-2 group"
-                        glow={true}
-                      >
-                        Get In Touch
-                        <motion.div
-                          animate={{ x: [0, 5, 0] }}
-                          transition={{ duration: 1.5, repeat: Infinity }}
+                      <Magnetic strength={0.2} scale={1.05}>
+                        <button
+                          onClick={onContactClick}
+                          className="px-6 py-2.5 rounded-full text-sm font-bold bg-purple-600 text-white flex items-center gap-2 group shadow-[0_0_20px_rgba(168,85,247,0.3)]"
                         >
-                          <ArrowRight size={14} />
-                        </motion.div>
-                      </MagneticButton>
+                          Get In Touch
+                          <motion.div
+                            animate={{ x: [0, 5, 0] }}
+                            transition={{ duration: 1.5, repeat: Infinity } as any}
+                          >
+                            <ArrowRight size={14} />
+                          </motion.div>
+                        </button>
+                      </Magnetic>
                     </motion.div>
                   </motion.div>
                 )}
@@ -488,13 +407,7 @@ const DynamicIslandNav = () => {
       <MobileMenu
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
-        onContactOpen={() => setIsContactOpen(true)}
-      />
-
-      {/* Contact Modal */}
-      <ContactModal
-        isOpen={isContactOpen}
-        onClose={() => setIsContactOpen(false)}
+        onContactOpen={onContactClick}
       />
     </>
   );

@@ -1,6 +1,9 @@
 import { useRef } from "react";
 import { motion, useInView, useMotionValue, useSpring } from "framer-motion";
-import { MessageSquare, CheckCircle2, Sparkles, ArrowRight, LifeBuoy } from "lucide-react";
+import { MessageSquare, CheckCircle2, Sparkles, ArrowRight, LifeBuoy, ShieldAlert } from "lucide-react";
+import { Canvas } from "@react-three/fiber";
+import { MeshDistortMaterial, Sphere } from "@react-three/drei";
+import { audio } from "@/utils/audio";
 
 // Premium Easing Curve
 const customEase = [0.22, 1, 0.36, 1];
@@ -18,12 +21,32 @@ const teamImages = [
 // Calculated positions for a perfect spreading fan
 const fanCards = [
   { rotate: -25, x: -160, y: 40 },
-  { rotate: -15, x: -90,  y: 15 },
-  { rotate: -5,  x: -20,  y: 0 },
-  { rotate: 5,   x: 50,   y: 0 },
-  { rotate: 15,  x: 120,  y: 15 },
-  { rotate: 25,  x: 190,  y: 40 },
+  { rotate: -15, x: -90, y: 15 },
+  { rotate: -5, x: -20, y: 0 },
+  { rotate: 5, x: 50, y: 0 },
+  { rotate: 15, x: 120, y: 15 },
+  { rotate: 25, x: 190, y: 40 },
 ];
+
+// --------------------------------------------------------------------------
+// 3D GLITCH SPHERE
+// --------------------------------------------------------------------------
+const GlitchSphere = () => {
+  return (
+    <Sphere args={[1, 100, 200]} scale={2.5}>
+      <MeshDistortMaterial
+        color="#A855F7"
+        attach="material"
+        distort={0.5}
+        speed={2}
+        roughness={0}
+        metalness={1}
+        opacity={0.15}
+        transparent
+      />
+    </Sphere>
+  );
+};
 
 // --------------------------------------------------------------------------
 // MAGNETIC BUTTON (Solid Purple)
@@ -76,15 +99,56 @@ const SupportSection = () => {
   const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
   const fanInView = useInView(fanRef, { once: true, margin: "-50px" });
 
+  // Parallax Motion Values
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  const xSpring = useSpring(mouseX, { stiffness: 50, damping: 20 });
+  const ySpring = useSpring(mouseY, { stiffness: 50, damping: 20 });
+
+  const handleParallax = (e: React.MouseEvent) => {
+    const { clientX, clientY } = e;
+    const { innerWidth, innerHeight } = window;
+    mouseX.set((clientX - innerWidth / 2) * 0.05);
+    mouseY.set((clientY - innerHeight / 2) * 0.05);
+  };
+
   return (
     <section
       id="support"
       ref={sectionRef}
+      onMouseMove={handleParallax}
       className="relative py-32 px-6 bg-[#050507] text-white overflow-hidden flex flex-col items-center min-h-screen justify-center"
     >
+      {/* Cinematic Atmospheric Overlay */}
+      <div className="absolute inset-0 pointer-events-none z-50 opacity-[0.03] mix-blend-overlay" style={{
+        backgroundImage: `url("https://grainy-gradients.vercel.app/noise.svg")`,
+      }} />
+
+      {/* CRT Scanline Overlay */}
+      <div className="absolute inset-0 pointer-events-none z-50 opacity-[0.02]" style={{
+        background: 'linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 118, 0.06))',
+        backgroundSize: '100% 2px, 3px 100%'
+      }} />
+
+      {/* 3D Glitch Sphere Background */}
+      <div className="absolute inset-0 z-0 opacity-40">
+        <Canvas camera={{ position: [0, 0, 5], fov: 75 }}>
+          <ambientLight intensity={0.5} />
+          <pointLight position={[10, 10, 10]} />
+          <GlitchSphere />
+        </Canvas>
+      </div>
+
+      {/* Parallax 404 Watermark */}
+      <motion.div
+        className="absolute inset-0 flex items-center justify-center font-black text-[25vw] text-white/[0.02] pointer-events-none select-none z-0 tracking-tighter"
+        style={{ x: xSpring, y: ySpring }}
+      >
+        CORE
+      </motion.div>
       {/* Deep Ambient Glow */}
       <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-purple-600/10 rounded-full blur-[150px] pointer-events-none z-0" />
-      
+
       {/* High-End Technical Dot Grid */}
       <div className="absolute inset-0 opacity-[0.1] pointer-events-none z-0" style={{
         backgroundImage: 'radial-gradient(circle at 1px 1px, #ffffff 1px, transparent 0)',
@@ -93,63 +157,53 @@ const SupportSection = () => {
       }} />
 
       <div className="max-w-4xl mx-auto text-center relative z-10 w-full">
-        
+
         {/* Animated Badge */}
         <motion.div
           initial={{ opacity: 0, y: 20, scale: 0.9 }}
           animate={isInView ? { opacity: 1, y: 0, scale: 1 } : {}}
-          transition={{ duration: 0.8, ease: customEase }}
+          transition={{ duration: 0.8, ease: customEase as any }}
           className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#12121A]/80 border border-white/10 backdrop-blur-xl mb-8 shadow-xl"
         >
           <div className="relative flex h-2 w-2 ml-1">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
           </div>
-          <span className="text-[11px] font-bold tracking-widest text-white uppercase">24/7 Premium Support</span>
+          <span className="text-[11px] font-bold tracking-widest text-white uppercase">24/7 Apex Support</span>
         </motion.div>
 
         {/* Cinematic Typography */}
         <motion.h2
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 1, delay: 0.2, ease: customEase }}
+          transition={{ duration: 1, delay: 0.2, ease: customEase as any }}
           className="text-5xl md:text-6xl lg:text-[5.5rem] font-bold tracking-tighter mb-2 text-white leading-tight"
         >
-          Here When You
+          We’ve Got Your Back
         </motion.h2>
         <motion.h2
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 1, delay: 0.3, ease: customEase }}
+          transition={{ duration: 1, delay: 0.3, ease: customEase as any }}
           className="text-5xl md:text-6xl lg:text-[5.5rem] font-bold tracking-tighter mb-8 text-zinc-600 leading-tight"
         >
-          Need Us Most.
+          Anytime, Anywhere.
         </motion.h2>
 
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 1, delay: 0.4, ease: customEase }}
+          transition={{ duration: 1, delay: 0.4, ease: customEase as any }}
           className="text-lg md:text-xl text-zinc-400 max-w-xl mx-auto mb-10 font-medium leading-relaxed"
         >
-          Nubien comes with a dedicated, world-class support team to help you launch, scale, and maintain your digital experiences without friction.
+          Our team is powered by human-centric intelligence to help you launch, grow, and manage your business.
         </motion.p>
 
-        {/* Premium Magnetic Button */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 1, delay: 0.5, ease: customEase }}
-        >
-          <MagneticButton>
-            Meet the Team 
-            <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-          </MagneticButton>
-        </motion.div>
+        {/* Premium Magnetic Button removed upon user request to declutter Company flow */}
 
         {/* Interactive "Hand of Cards" Team Fan */}
         <div ref={fanRef} className="relative h-[250px] md:h-[350px] w-full flex items-end justify-center perspective-1200 mt-10">
-          
+
           {/* Glassmorphic Speech Bubble 1 */}
           <motion.div
             initial={{ opacity: 0, scale: 0.8, x: -50, y: 20 }}
@@ -162,7 +216,7 @@ const SupportSection = () => {
               <LifeBuoy size={12} className="text-purple-400" />
             </div>
             <span className="text-white">How can we help?</span>
-            
+
             <motion.div
               animate={{ y: [0, -5, 0] }}
               transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
@@ -180,7 +234,7 @@ const SupportSection = () => {
           >
             <CheckCircle2 size={16} className="text-white" />
             Problem Solved ⚡
-            
+
             <motion.div
               animate={{ y: [0, 5, 0] }}
               transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
@@ -199,16 +253,17 @@ const SupportSection = () => {
                 animate={fanInView ? { opacity: 1, y: pos.y, rotate: pos.rotate, x: pos.x } : {}}
                 transition={{
                   duration: 1,
-                  delay: 0.2 + i * 0.1, 
-                  ease: customEase
+                  delay: 0.2 + i * 0.1,
+                  ease: customEase as any
                 }}
-                whileHover={{ 
+                whileHover={{
                   y: pos.y - 40,
-                  rotate: pos.rotate, 
+                  rotate: pos.rotate,
                   scale: 1.15,
                   zIndex: 50,
                   transition: { duration: 0.4, type: "spring", bounce: 0.5 }
                 }}
+                onMouseEnter={() => audio.playHover()}
                 whileTap={{
                   y: pos.y - 40,
                   scale: 1.15,
@@ -219,23 +274,23 @@ const SupportSection = () => {
                   width: "140px",
                   height: "190px",
                   transformOrigin: "bottom center",
-                  left: "calc(50% - 70px)", 
+                  left: "calc(50% - 70px)",
                   zIndex: i + 10,
                 }}
               >
                 {/* Team Image */}
-                <img 
-                  src={teamImages[i]} 
+                <img
+                  src={teamImages[i]}
                   alt={`Support Team Member ${i + 1}`}
                   className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-500"
                 />
-                
+
                 {/* Deep Inner Glass Vignette */}
                 <div className="absolute inset-0 bg-gradient-to-t from-[#050507] via-black/20 to-transparent pointer-events-none opacity-80" />
-                
+
                 {/* Sparkle Icon on Hover */}
                 <div className="absolute bottom-4 right-4 opacity-0 hover:opacity-100 transition-opacity duration-300">
-                   <Sparkles size={16} className="text-purple-400 drop-shadow-[0_0_10px_rgba(168,85,247,0.8)]" />
+                  <Sparkles size={16} className="text-purple-400 drop-shadow-[0_0_10px_rgba(168,85,247,0.8)]" />
                 </div>
               </motion.div>
             ))}
