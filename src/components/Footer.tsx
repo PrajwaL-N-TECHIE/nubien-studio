@@ -99,52 +99,56 @@ const LiveStatus = () => {
     };
     fetchLocation();
 
-    // 2. Real Global Counters via CounterAPI
+    // 2. Real Global Counters via CounterAPI (using unique namespace)
     const updateCounters = async () => {
+      const namespace = "buildicy_studio_official_v1";
+      const today = new Date().toISOString().split('T')[0].replace(/-/g, '_');
+
       try {
         // Increment global views
-        const viewRes = await fetch('https://api.counterapi.dev/v1/buildicy/views/up');
+        const viewRes = await fetch(`https://api.counterapi.dev/v1/${namespace}/total_views/up`);
         const viewData = await viewRes.json();
         setPageViews(viewData.count);
+
+        // Increment "Active Today" (Daily Hit Tracker)
+        const activeRes = await fetch(`https://api.counterapi.dev/v1/${namespace}/active_${today}/up`);
+        const activeData = await activeRes.json();
+        setActiveUsers(activeData.count);
 
         // Increment global visitors (once per session)
         const hasVisited = sessionStorage.getItem('buildicy_session_visited');
         if (!hasVisited) {
-          const visitorRes = await fetch('https://api.counterapi.dev/v1/buildicy/visitors/up');
+          const visitorRes = await fetch(`https://api.counterapi.dev/v1/${namespace}/total_visitors/up`);
           const visitorData = await visitorRes.json();
           setVisitorCount(visitorData.count);
           sessionStorage.setItem('buildicy_session_visited', 'true');
         } else {
           // Just fetch current count if already visited
-          const visitorRes = await fetch('https://api.counterapi.dev/v1/buildicy/visitors');
+          const visitorRes = await fetch(`https://api.counterapi.dev/v1/${namespace}/total_visitors`);
           const visitorData = await visitorRes.json();
           setVisitorCount(visitorData.count);
         }
       } catch (e) {
-        // Fallback to local storage if API is down
+        console.error("CounterAPI failed", e);
+        // Fallback simulation
         const storedViews = parseInt(localStorage.getItem('buildicy_total_views') || '14205');
         setPageViews(storedViews + 1);
         localStorage.setItem('buildicy_total_views', (storedViews + 1).toString());
+        setActiveUsers(Math.floor(20 + Math.random() * 10));
+        setVisitorCount(3043);
       }
     };
     updateCounters();
 
     const timer = setInterval(() => setTime(new Date()), 1000);
 
-    // 3. Dynamic Active Users (Based on Time of Day & Global Volume)
-    const updateActiveUsers = () => {
-      const hour = new Date().getHours();
-      // Peak traffic between 10 AM and 10 PM
-      const timeMulti = (hour >= 10 && hour <= 22) ? 1.5 : 0.6;
-      const baseActive = 32;
-      const variance = Math.floor(Math.random() * 8) - 4;
-      setActiveUsers(Math.floor(baseActive * timeMulti + variance));
+    // Refresh counters every 30 seconds for "Live" feel
+    const refreshInterval = setInterval(updateCounters, 30000);
+
+    return () => {
+      clearInterval(timer);
+      clearInterval(refreshInterval);
     };
-
-    updateActiveUsers();
-    const activeInterval = setInterval(updateActiveUsers, 15000);
-
-    return () => { clearInterval(timer); clearInterval(activeInterval); };
   }, []);
 
   return (
