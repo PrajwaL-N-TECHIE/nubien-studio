@@ -30,24 +30,80 @@
     content="Experience the intersection of AI and high-performance engineering. We build the future of software with cinematic precision." />
   <meta name="twitter:image" content="https://www.buildicy.com/og-image.jpg" />
 
-  <!-- Structured Data -->
+  <!-- Advanced Structured Data (JSON-LD) -->
   <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "Organization",
-      "name": "Buildicy",
-      "url": "https://www.buildicy.com",
-      "logo": "https://www.buildicy.com/logo.png",
-      "contactPoint": {
-        "@type": "ContactPoint",
-        "telephone": "+91-9843315832",
-        "contactType": "customer service"
+    [
+      {
+        "@context": "https://schema.org",
+        "@id": "https://www.buildicy.com/#organization",
+        "@type": "Organization",
+        "name": "Buildicy",
+        "url": "https://www.buildicy.com",
+        "logo": "https://www.buildicy.com/logo.png",
+        "contactPoint": {
+          "@type": "ContactPoint",
+          "telephone": "+91-9843315832",
+          "contactType": "customer service",
+          "areaServed": "Global",
+          "availableLanguage": ["English", "Hindi"]
+        },
+        "sameAs": [
+          "https://twitter.com/BuildicyStudio",
+          "https://www.linkedin.com/company/buildicy"
+        ]
       },
-      "sameAs": [
-        "https://twitter.com/BuildicyStudio",
-        "https://www.linkedin.com/company/buildicy"
-      ]
-    }
+      {
+        "@context": "https://schema.org",
+        "@type": "LocalBusiness",
+        "name": "Buildicy",
+        "image": "https://www.buildicy.com/og-image.jpg",
+        "address": {
+          "@type": "PostalAddress",
+          "addressCountry": "IN"
+        },
+        "description": "Elite AI studio and high-performance engineering firm specializing in intelligent digital products.",
+        "telephone": "+91-9843315832",
+        "priceRange": "$$$"
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "Service",
+        "serviceType": "AI Software Engineering",
+        "provider": { "@id": "https://www.buildicy.com/#organization" },
+        "description": "High-performance AI integration, custom LLM development, and intelligent digital architectures."
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "Service",
+        "serviceType": "Next-Gen UI/UX Design",
+        "provider": { "@id": "https://www.buildicy.com/#organization" },
+        "description": "Cinematic and high-performance user experiences designed for deep engagement and conversion."
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://www.buildicy.com"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Services",
+            "item": "https://www.buildicy.com/services"
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": "Portfolio",
+            "item": "https://www.buildicy.com/portfolio"
+          }
+        ]
+      }
+    ]
   </script>
 
   <link rel="icon" type="image/svg+xml"
