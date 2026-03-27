@@ -186,14 +186,14 @@ const LiveStatus = () => {
         return Math.floor(base + (elapsedHours * growthPerHour));
       };
 
-      const fallbackViews = getSmartGlobalCount(14205, 12);
-      const fallbackVisitors = getSmartGlobalCount(3043, 3.5);
+      const fallbackViews = getSmartGlobalCount(224730, 45);
+      const fallbackVisitors = getSmartGlobalCount(64446, 12);
 
       // Set initial "Smart" values immediately 
       setPageViews(fallbackViews);
       setVisitorCount(fallbackVisitors);
       const hour = new Date().getHours();
-      setActiveUsers(Math.floor(32 * (hour >= 10 && hour <= 22 ? 1.5 : 0.6) + (Math.random() * 5)));
+      setActiveUsers(Math.floor(646 * (hour >= 10 && hour <= 22 ? 1.0 : 0.6) + (Math.random() * 20)));
 
       const silentFetch = async (url: string) => {
         try {
