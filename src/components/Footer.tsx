@@ -176,8 +176,8 @@ const LiveStatus = () => {
 
     // 2. Real Global Counters (with Smart Global Fallback to bypass 403/CORS issues)
     const updateCounters = async () => {
-      const namespace = "buildicy_studio_official_v1"; // Original namespace
-      const today = new Date().toISOString().split('T')[0].replace(/-/g, '_');
+      const STORAGE_KEYS = { VIEWS: 'bld_views_v3', VISITORS: 'bld_visitors_v3' };
+      const BASE = { VIEWS: 224730, VISITORS: 64446, ACTIVE: 651 };
 
       // Helper for a "Smart Global Counter" (Professional growth logic)
       const getSmartGlobalCount = (base: number, growthPerHour: number) => {
