@@ -206,7 +206,7 @@ const MobileMenu = ({ isOpen, onClose }: any) => {
               <motion.div variants={itemVariants} className="space-y-2">
                 <div className="flex items-center gap-3 px-4 py-2 text-sm text-white/60">
                   <Phone size={14} />
-                  <span>+1 (555) 123-4567</span>
+                  <span>+91 98433 15832</span>
                 </div>
                 <div className="flex items-center gap-3 px-4 py-2 text-sm text-white/60">
                   <Mail size={14} />
