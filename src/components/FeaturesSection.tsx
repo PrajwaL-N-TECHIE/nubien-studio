@@ -322,7 +322,7 @@ const FeaturesSection = () => {
                         transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
                         className="w-12 h-12 sm:w-16 sm:h-16 md:w-24 md:h-24 rounded-2xl md:rounded-[32px] overflow-hidden border border-white/10 shadow-2xl bg-[#050507]"
                       >
-                        <img src={src} alt="Architecture" className="w-full h-full object-cover opacity-50" />
+                        <img src={src} alt={`Buildicy Architecture Visualization ${i + 1}`} className="w-full h-full object-cover opacity-50" />
                       </motion.div>
                     </div>
                   </div>
