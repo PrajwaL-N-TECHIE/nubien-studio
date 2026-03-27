@@ -283,39 +283,27 @@ const DynamicIslandNav = () => {
 
   const isExpanded = !isScrolled || isHovered;
 
-  // Dynamic width based on state
-  const navWidth = isExpanded ? "auto" : "160px";
-
   return (
     <>
       {/* Desktop Nav */}
       <motion.div
         style={{ y: navY }}
-        transition={{ type: "spring", stiffness: 300, damping: 30 }}
         className="fixed top-6 left-0 right-0 z-[60] flex justify-center pointer-events-none px-4"
       >
         <motion.nav
           layout
-          layoutRoot
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
-          transition={liquidSpring}
-          style={{ width: navWidth }}
-          className="relative flex items-center p-2 rounded-full pointer-events-auto overflow-hidden will-change-[width,transform]"
+          transition={{
+            type: "spring",
+            stiffness: 400,
+            damping: 30,
+            mass: 0.8
+          }}
+          className="relative flex items-center p-2 rounded-full pointer-events-auto bg-[#050507]/90 backdrop-blur-2xl border border-white/10 shadow-2xl overflow-hidden will-change-transform"
         >
-          {/* Gradient Border */}
-          <motion.div
-            className="absolute inset-0 rounded-full"
-            style={{
-              background: "linear-gradient(135deg, rgba(139,92,246,0.3), rgba(255,255,255,0.1))",
-              padding: "1px",
-            }}
-          >
-            <div className="w-full h-full rounded-full bg-[#050507]/90 backdrop-blur-2xl" />
-          </motion.div>
-
-          {/* Inner Content */}
-          <div className="relative z-10 flex items-center w-full">
+          {/* Inner Content - Layout-aware for smooth shifting */}
+          <motion.div layout className="flex items-center w-full">
             <Magnetic strength={0.2} scale={1.05}>
               <Link to="/" className="flex items-center gap-3 px-3 py-1.5 rounded-full hover:bg-white/5 transition-colors">
                 <div className="relative w-8 h-8 flex items-center justify-center">
@@ -343,14 +331,15 @@ const DynamicIslandNav = () => {
               </Link>
             </Magnetic>
 
-            <div className="hidden md:flex items-center">
-              <AnimatePresence mode="wait">
+            <motion.div layout className="hidden md:flex items-center">
+              <AnimatePresence mode="popLayout">
                 {isExpanded && (
                   <motion.div
-                    initial={{ opacity: 0, width: 0 }}
-                    animate={{ opacity: 1, width: "auto" }}
-                    exit={{ opacity: 0, width: 0 }}
-                    transition={{ ...springConfig, delay: 0.1 }}
+                    layout
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
                     className="flex items-center gap-1 px-4"
                   >
                     {navLinks.map((link) => (
@@ -362,13 +351,7 @@ const DynamicIslandNav = () => {
                     ))}
 
                     {/* Desktop CTA */}
-                    <motion.div
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -10 }}
-                      transition={{ delay: 0.2 }}
-                      className="ml-2 pl-4 border-l border-white/10"
-                    >
+                    <div className="ml-2 pl-4 border-l border-white/10">
                       <Magnetic strength={0.2} scale={1.05}>
                         <button
                           onClick={() => window.dispatchEvent(new CustomEvent("open-scouter"))}
@@ -383,11 +366,11 @@ const DynamicIslandNav = () => {
                           </motion.div>
                         </button>
                       </Magnetic>
-                    </motion.div>
+                    </div>
                   </motion.div>
                 )}
               </AnimatePresence>
-            </div>
+            </motion.div>
 
             {/* Mobile Menu Button */}
             <motion.button
