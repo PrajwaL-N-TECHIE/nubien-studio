@@ -179,11 +179,9 @@ const LiveStatus = () => {
       const STORAGE_KEYS = { VIEWS: 'bld_views_v3', VISITORS: 'bld_visitors_v3' };
       const BASE = { VIEWS: 224730, VISITORS: 64446, ACTIVE: 651 };
 
-      // Helper for a "Smart Global Counter" (Professional growth logic)
-      const getSmartGlobalCount = (base: number, growthPerHour: number) => {
-        const startMs = 1711468800000; // Fixed studio start date
-        const elapsedHours = (Date.now() - startMs) / 3600000;
-        return Math.floor(base + (elapsedHours * growthPerHour));
+      const getV = (k: string, b: number) => {
+        const s = localStorage.getItem(k);
+        return s ? parseInt(s, 10) || b : b;
       };
 
       const fallbackViews = getSmartGlobalCount(224730, 45);
