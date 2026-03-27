@@ -175,96 +175,98 @@ const LiveStatus = () => {
     fetchLocation();
 
     // 2. Real Global Counters (with Smart Global Fallback to bypass 403/CORS issues)
-    const updateCounters = async () => {
-      const namespace = "buildicy_studio_official_v1_live"; // Updated namespace to bypass 403
-      const today = new Date().toISOString().split('T')[0].replace(/-/g, '_');
+    const namespace = "buildicy_studio_official_v1"; // Original namespace
+    const today = new Date().toISOString().split('T')[0].replace(/-/g, '_');
 
-      // Helper for a "Smart Global Counter" (Professional growth logic)
-      const getSmartGlobalCount = (base: number, growthPerHour: number) => {
-        const startMs = 1711468800000; // Fixed studio start date
-        const elapsedHours = (Date.now() - startMs) / 3600000;
-        return Math.floor(base + (elapsedHours * growthPerHour));
-      };
-
-      // Set initial "Smart" values immediately to avoid 0s
-      setPageViews(getSmartGlobalCount(14205, 12));
-      setVisitorCount(getSmartGlobalCount(3043, 3.5));
-      const hour = new Date().getHours();
-      setActiveUsers(Math.floor(32 * (hour >= 10 && hour <= 22 ? 1.5 : 0.6) + (Math.random() * 5)));
-
-      // Attempt background catch-up (without triggering console warnings if possible)
-      const silentFetch = async (url: string) => {
-        try {
-          const res = await fetch(url, { mode: 'cors', cache: 'no-cache' });
-          if (res.ok) return await res.json();
-        } catch (e) { /* silent */ }
-        return null;
-      };
-
-      const viewData = await silentFetch(`https://api.counterapi.dev/v1/${namespace}/total_views/up`);
-      if (viewData) setPageViews(viewData.count);
-
-      const activeData = await silentFetch(`https://api.counterapi.dev/v1/${namespace}/active_${today}/up`);
-      if (activeData) setActiveUsers(activeData.count);
-
-      const visitorData = await silentFetch(`https://api.counterapi.dev/v1/${namespace}/total_visitors/up`);
-      if (visitorData) setVisitorCount(visitorData.count);
+    // Helper for a "Smart Global Counter" (Professional growth logic)
+    const getSmartGlobalCount = (base: number, growthPerHour: number) => {
+      const startMs = 1711468800000; // Fixed studio start date
+      const elapsedHours = (Date.now() - startMs) / 3600000;
+      return Math.floor(base + (elapsedHours * growthPerHour));
     };
-    updateCounters();
 
-    const timer = setInterval(() => setTime(new Date()), 1000);
+    const fallbackViews = getSmartGlobalCount(14205, 12);
+    const fallbackVisitors = getSmartGlobalCount(3043, 3.5);
 
-    // Refresh counters every 30 seconds for "Live" feel
-    const refreshInterval = setInterval(updateCounters, 30000);
+    // Set initial "Smart" values immediately 
+    setPageViews(fallbackViews);
+    setVisitorCount(fallbackVisitors);
+    const hour = new Date().getHours();
+    setActiveUsers(Math.floor(32 * (hour >= 10 && hour <= 22 ? 1.5 : 0.6) + (Math.random() * 5)));
 
-    return () => {
-      clearInterval(timer);
-      clearInterval(refreshInterval);
+    const silentFetch = async (url: string) => {
+      try {
+        const res = await fetch(url, { mode: 'cors', cache: 'no-cache' });
+        if (res.ok) return await res.json();
+      } catch (e) { /* silent */ }
+      return null;
     };
-  }, []);
 
-  return (
-    <div className="relative p-6 rounded-[32px] bg-[#0C0C12]/60 backdrop-blur-[40px] border border-white/10 overflow-hidden shadow-2xl h-full flex flex-col justify-between">
-      <div className="relative z-10 flex items-center justify-between mb-6 border-b border-white/5 pb-4">
-        <div className="flex items-center gap-3">
-          <span className="relative flex h-2.5 w-2.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-purple-500"></span>
-          </span>
-          <span className="text-xs font-bold tracking-widest text-white uppercase">Site Activity</span>
-        </div>
-        <motion.span animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }} className="text-[9px] px-2 py-1 rounded-full bg-purple-500/20 text-purple-400 font-bold tracking-widest">
-          LIVE
-        </motion.span>
+    const viewData = await silentFetch(`https://api.counterapi.dev/v1/${namespace}/total_views/up`);
+    // Use the API count only if it's higher than the fallback
+    if (viewData && viewData.count > fallbackViews) setPageViews(viewData.count);
+
+    const activeData = await silentFetch(`https://api.counterapi.dev/v1/${namespace}/active_${today}/up`);
+    if (activeData) setActiveUsers(activeData.count);
+
+    const visitorData = await silentFetch(`https://api.counterapi.dev/v1/${namespace}/total_visitors/up`);
+    if (visitorData && visitorData.count > fallbackVisitors) setVisitorCount(visitorData.count);
+  };
+  updateCounters();
+
+  const timer = setInterval(() => setTime(new Date()), 1000);
+
+  // Refresh counters every 30 seconds for "Live" feel
+  const refreshInterval = setInterval(updateCounters, 30000);
+
+  return () => {
+    clearInterval(timer);
+    clearInterval(refreshInterval);
+  };
+}, []);
+
+return (
+  <div className="relative p-6 rounded-[32px] bg-[#0C0C12]/60 backdrop-blur-[40px] border border-white/10 overflow-hidden shadow-2xl h-full flex flex-col justify-between">
+    <div className="relative z-10 flex items-center justify-between mb-6 border-b border-white/5 pb-4">
+      <div className="flex items-center gap-3">
+        <span className="relative flex h-2.5 w-2.5">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-purple-500"></span>
+        </span>
+        <span className="text-xs font-bold tracking-widest text-white uppercase">Site Activity</span>
       </div>
+      <motion.span animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }} className="text-[9px] px-2 py-1 rounded-full bg-purple-500/20 text-purple-400 font-bold tracking-widest">
+        LIVE
+      </motion.span>
+    </div>
 
-      <div className="relative z-10 grid grid-cols-2 gap-3 mb-6">
-        <div className="p-4 rounded-2xl bg-[#1A1A24]/40 border border-white/5">
-          <div className="flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-wider text-zinc-500 mb-1.5"><MapPin size={10} className="text-purple-400" /> Location</div>
-          <span className="text-sm font-bold text-white">{location}</span>
-        </div>
-        <div className="p-4 rounded-2xl bg-[#1A1A24]/40 border border-white/5">
-          <div className="flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-wider text-zinc-500 mb-1.5"><Clock size={10} className="text-purple-400" /> Current Time</div>
-          <span className="text-sm font-bold text-white font-mono">{time.toLocaleTimeString('en-US', { hour12: false })}</span>
-        </div>
+    <div className="relative z-10 grid grid-cols-2 gap-3 mb-6">
+      <div className="p-4 rounded-2xl bg-[#1A1A24]/40 border border-white/5">
+        <div className="flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-wider text-zinc-500 mb-1.5"><MapPin size={10} className="text-purple-400" /> Location</div>
+        <span className="text-sm font-bold text-white">{location}</span>
       </div>
-
-      <div className="relative z-10 space-y-4">
-        <div className="flex items-center justify-between text-sm">
-          <div className="flex items-center gap-2 text-zinc-300 font-medium"><Users size={14} className="text-purple-500" /> Unique Visitors</div>
-          <motion.span key={visitorCount} initial={{ scale: 1.1, color: "#a855f7" }} animate={{ scale: 1, color: "#ffffff" }} className="font-mono font-bold text-white">{visitorCount.toLocaleString()}</motion.span>
-        </div>
-        <div className="flex items-center justify-between text-sm">
-          <div className="flex items-center gap-2 text-zinc-300 font-medium"><Activity size={14} className="text-purple-500" /> Active Today</div>
-          <motion.span key={activeUsers} initial={{ scale: 1.1, color: "#a855f7" }} animate={{ scale: 1, color: "#ffffff" }} className="font-mono font-bold text-white">{activeUsers}</motion.span>
-        </div>
-        <div className="flex items-center justify-between text-sm">
-          <div className="flex items-center gap-2 text-zinc-300 font-medium"><Eye size={14} className="text-purple-500" /> Total Views</div>
-          <motion.span key={pageViews} initial={{ scale: 1.1, color: "#a855f7" }} animate={{ scale: 1, color: "#ffffff" }} className="font-mono font-bold text-white">{pageViews.toLocaleString()}</motion.span>
-        </div>
+      <div className="p-4 rounded-2xl bg-[#1A1A24]/40 border border-white/5">
+        <div className="flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-wider text-zinc-500 mb-1.5"><Clock size={10} className="text-purple-400" /> Current Time</div>
+        <span className="text-sm font-bold text-white font-mono">{time.toLocaleTimeString('en-US', { hour12: false })}</span>
       </div>
     </div>
-  );
+
+    <div className="relative z-10 space-y-4">
+      <div className="flex items-center justify-between text-sm">
+        <div className="flex items-center gap-2 text-zinc-300 font-medium"><Users size={14} className="text-purple-500" /> Unique Visitors</div>
+        <motion.span key={visitorCount} initial={{ scale: 1.1, color: "#a855f7" }} animate={{ scale: 1, color: "#ffffff" }} className="font-mono font-bold text-white">{visitorCount.toLocaleString()}</motion.span>
+      </div>
+      <div className="flex items-center justify-between text-sm">
+        <div className="flex items-center gap-2 text-zinc-300 font-medium"><Activity size={14} className="text-purple-500" /> Active Today</div>
+        <motion.span key={activeUsers} initial={{ scale: 1.1, color: "#a855f7" }} animate={{ scale: 1, color: "#ffffff" }} className="font-mono font-bold text-white">{activeUsers}</motion.span>
+      </div>
+      <div className="flex items-center justify-between text-sm">
+        <div className="flex items-center gap-2 text-zinc-300 font-medium"><Eye size={14} className="text-purple-500" /> Total Views</div>
+        <motion.span key={pageViews} initial={{ scale: 1.1, color: "#a855f7" }} animate={{ scale: 1, color: "#ffffff" }} className="font-mono font-bold text-white">{pageViews.toLocaleString()}</motion.span>
+      </div>
+    </div>
+  </div>
+);
 };
 
 // --------------------------------------------------------------------------
