@@ -270,11 +270,23 @@ const ContactModal = ({ isOpen, onClose }: ContactModalProps) => {
                     </motion.div>
 
                     {/* Submit Button (Magnetic) */}
-                    <motion.div variants={itemVariants} className="pt-4">
+                    <motion.div variants={itemVariants} className="pt-4 flex flex-col sm:flex-row gap-4">
+                      <Magnetic strength={0.1} scale={1.02}>
+                        <button
+                          type="button"
+                          onClick={onClose}
+                          className="flex-1 relative group overflow-hidden rounded-[20px] bg-white/5 border border-white/10 px-8 py-5 transition-all"
+                        >
+                          <div className="relative flex items-center justify-center gap-3 font-bold text-lg text-white/60 group-hover:text-white transition-colors">
+                            Back
+                          </div>
+                        </button>
+                      </Magnetic>
+
                       <Magnetic strength={0.1} scale={1.02}>
                         <button
                           type="submit"
-                          className="w-full relative group overflow-hidden rounded-[20px] bg-purple-600 px-8 py-5 transition-all shadow-[0_20px_40px_rgba(168,85,247,0.3)]"
+                          className="flex-[2] relative group overflow-hidden rounded-[20px] bg-purple-600 px-8 py-5 transition-all shadow-[0_20px_40px_rgba(168,85,247,0.3)]"
                         >
                           <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-purple-800 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                           <div className="relative flex items-center justify-center gap-3 font-bold text-lg text-white">
