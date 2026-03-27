@@ -381,7 +381,7 @@ const DynamicIslandNav = () => {
             >
               <Menu size={18} className="text-white/60" />
             </motion.button>
-          </div>
+          </motion.div>
         </motion.nav>
       </motion.div>
 
