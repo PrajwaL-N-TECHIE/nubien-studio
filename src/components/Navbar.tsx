@@ -258,7 +258,7 @@ const DynamicIslandNav = () => {
   const navY = useSpring(0, { stiffness: 150, damping: 35, mass: 1 });
 
   useMotionValueEvent(scrollY, "change", (latest) => {
-    setIsScrolled(latest > 60);
+    setIsScrolled(latest > 20);
 
     // Hide on scroll down, show on scroll up
     if (latest > prevScrollY && latest > 200) {
