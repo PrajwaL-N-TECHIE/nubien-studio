@@ -176,7 +176,7 @@ const milestones = [
 ];
 
 const LeadershipCard = ({ name, role, isCEO, imageSrc }: { name: string, role: string, isCEO?: boolean, imageSrc?: string }) => (
-    <TiltCard>
+    <TiltCard className="h-full">
         <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
@@ -184,7 +184,7 @@ const LeadershipCard = ({ name, role, isCEO, imageSrc }: { name: string, role: s
             className="p-12 md:p-16 rounded-[60px] bg-[#0C0C12]/60 border border-white/10 backdrop-blur-3xl relative group overflow-hidden h-full text-center"
         >
             <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-            <div className="relative z-10 flex flex-col items-center">
+            <div className="relative z-10 flex flex-col items-center h-full">
                 <div className="w-48 h-48 md:w-64 md:h-64 rounded-3xl bg-[#12121A] border border-white/5 flex items-center justify-center mb-10 shadow-2xl group-hover:border-purple-500/50 transition-all duration-500 overflow-hidden ring-1 ring-white/10 group-hover:ring-purple-500/30">
                     {imageSrc ? (
                         <img src={imageSrc} alt={`${name} - ${role} of Buildicy`} className="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-700" />
@@ -192,15 +192,15 @@ const LeadershipCard = ({ name, role, isCEO, imageSrc }: { name: string, role: s
                         <Users className="text-purple-400 group-hover:text-white transition-colors" size={64} />
                     )}
                 </div>
-                <h4 className="text-4xl md:text-6xl font-bold text-white mb-4 font-['Syne'] tracking-tighter">{name}</h4>
+                <h4 className="text-3xl md:text-5xl font-bold text-white mb-4 font-['Syne'] tracking-tighter whitespace-normal md:whitespace-nowrap">{name}</h4>
                 <div className="text-sm md:text-base font-bold text-purple-400 tracking-[0.3em] uppercase font-['DM_Mono'] mb-8">{role}</div>
                 {isCEO ? (
-                    <div className="p-6 md:p-8 rounded-[32px] bg-white/[0.03] border border-white/5 text-sm md:text-lg text-zinc-400 font-medium leading-relaxed max-w-2xl">
+                    <div className="p-6 md:p-8 rounded-[32px] bg-white/[0.03] border border-white/5 text-sm md:text-lg text-zinc-400 font-medium leading-relaxed max-w-2xl flex-grow flex items-center">
                         Leading the vision & growth of Buildicy with architectural precision, creative excellence, and a commitment to building human-centered technology.
                     </div>
                 ) : (
-                    <div className="p-6 md:p-8 rounded-[32px] bg-white/[0.03] border border-white/5 text-sm md:text-lg text-zinc-400 font-medium leading-relaxed max-w-2xl">
-                        Architecting the future of our core systems and logical infrastructure.
+                    <div className="p-6 md:p-8 rounded-[32px] bg-white/[0.03] border border-white/5 text-sm md:text-lg text-zinc-400 font-medium leading-relaxed max-w-2xl flex-grow flex items-center">
+                        Architecting the future of Buildicy's core systems and logical infrastructure, with a focus on engineering excellence and scalable solutions.
                     </div>
                 )}
             </div>
@@ -255,7 +255,7 @@ const LaboratorySection = () => {
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-7xl mx-auto">
                         <LeadershipCard name="Prajwal.N" role="Founder & CEO" isCEO={true} imageSrc={PrajwalImage} />
-                        <LeadershipCard name="Mukeshkumar ms" role="Cofounder & CTO" isCEO={false} imageSrc={MukeshImage} />
+                        <LeadershipCard name="Mukeshkumar MS" role="Cofounder & CTO" isCEO={false} imageSrc={MukeshImage} />
 
                     </div>
                 </div>
