@@ -1,11 +1,12 @@
 import { useRef, useState, useEffect } from "react";
 import { motion, useInView, useScroll, useTransform, useMotionValue, useSpring, useMotionTemplate } from "framer-motion";
-import { 
-  ArrowUpRight, Cloud, MessageCircle, TrendingUp, 
-  Eye, Mic, Zap, PenLine, Lock, Layers, 
+import {
+  ArrowUpRight, Cloud, MessageCircle, TrendingUp,
+  Eye, Mic, Zap, PenLine, Lock, Layers,
   Database, BarChart2, User, Target, LineChart, Sparkles,
-  ChevronRight, Cpu, Globe, Shield, Brain, CheckCircle2, ArrowRight 
-} from "lucide-react"; // <-- Added ArrowRight here
+  ChevronRight, Cpu, Globe, Shield, Brain, CheckCircle2, ArrowRight
+} from "lucide-react";
+import { Link } from "react-router-dom";
 
 // --------------------------------------------------------------------------
 // DATA
@@ -81,7 +82,7 @@ const SpotlightCard = ({ children, className = "" }: { children: React.ReactNode
 // --------------------------------------------------------------------------
 const ServicesSection = () => {
   const containerRef = useRef(null);
-  
+
   // Advanced Scroll Physics mapping
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -102,11 +103,11 @@ const ServicesSection = () => {
 
   return (
     <section ref={containerRef} id="services" className="relative py-32 overflow-hidden bg-[#050507]">
-      
+
       {/* Absolute Ambient Background */}
       <div className="absolute inset-0 pointer-events-none z-0">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-purple-600/10 rounded-full blur-[120px]" />
-        <div 
+        <div
           className="absolute inset-0 opacity-[0.03]"
           style={{ backgroundImage: "radial-gradient(circle at 2px 2px, white 1px, transparent 0)", backgroundSize: "40px 40px" }}
         />
@@ -141,7 +142,7 @@ const ServicesSection = () => {
           >
             AI-Powered Services
           </motion.h2>
-          
+
           <motion.h2
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -167,7 +168,7 @@ const ServicesSection = () => {
       </motion.div>
 
       <div className="max-w-7xl mx-auto px-6 relative z-20">
-        
+
         {/* -------------------------------------------------------------------------- */}
         {/* TOP TIER CARDS (With Scroll Parallax) */}
         {/* -------------------------------------------------------------------------- */}
@@ -175,7 +176,7 @@ const ServicesSection = () => {
           {mainServices.map((service, i) => {
             // Apply different scroll speeds to outer vs inner columns
             const yTransform = i === 1 ? gridYInner : gridYOuter;
-            
+
             return (
               <motion.div key={i} style={{ y: yTransform }} className="h-full">
                 <SpotlightCard className="p-8 h-full flex flex-col hover:-translate-y-2 transition-transform duration-500">
@@ -230,14 +231,14 @@ const ServicesSection = () => {
                   {/* Cinematic Image Container */}
                   <div className="relative rounded-[20px] overflow-hidden h-48 w-full mt-auto border border-white/10 group-hover:border-purple-500/30 transition-colors duration-500">
                     <div className="absolute inset-0 bg-gradient-to-t from-[#050507] via-transparent to-transparent z-10 opacity-80" />
-                    
+
                     {/* Grayscale to color transition on hover */}
-                    <img 
-                      src={service.image} 
-                      alt={service.title} 
-                      className="w-full h-full object-cover transform scale-110 filter grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-100 transition-all duration-700 ease-out" 
+                    <img
+                      src={service.image}
+                      alt={service.title}
+                      className="w-full h-full object-cover transform scale-110 filter grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-100 transition-all duration-700 ease-out"
                     />
-                    
+
                     {/* Hover Stats Overlay */}
                     <div className="absolute bottom-4 left-4 right-4 z-20 flex justify-between items-end opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 delay-100">
                       <div className="flex flex-col gap-2">
@@ -260,14 +261,14 @@ const ServicesSection = () => {
         {/* PREMIUM FLOATING CAPABILITY TAGS */}
         {/* -------------------------------------------------------------------------- */}
         <div ref={tagsRef} className="flex flex-col items-center relative z-20">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={tagsInView ? { opacity: 1, scale: 1 } : {}}
             transition={{ duration: 0.8 }}
             className="w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mb-16"
           />
-          
-          <motion.p 
+
+          <motion.p
             initial={{ opacity: 0 }}
             animate={tagsInView ? { opacity: 1 } : {}}
             transition={{ duration: 0.5 }}
@@ -275,7 +276,7 @@ const ServicesSection = () => {
           >
             Full Stack Capabilities
           </motion.p>
-          
+
           <div className="flex flex-wrap justify-center gap-3 max-w-5xl">
             {capabilityTags.map((tag, i) => (
               <motion.div
@@ -286,7 +287,7 @@ const ServicesSection = () => {
                 whileHover={{ scale: 1.05, y: -5, backgroundColor: "rgba(255,255,255,0.05)" }}
                 className="group flex items-center gap-3 px-5 py-3 rounded-full text-sm font-medium cursor-pointer bg-white/5 border border-white/5 text-zinc-300 hover:text-white transition-all shadow-lg backdrop-blur-sm"
               >
-                <div 
+                <div
                   className="w-6 h-6 rounded-full flex items-center justify-center transition-colors duration-300 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.2)]"
                   style={{ backgroundColor: `${tag.color}20` }}
                 >
@@ -303,13 +304,13 @@ const ServicesSection = () => {
             transition={{ duration: 0.8, delay: 0.5 }}
             className="mt-20"
           >
-            <button className="relative px-8 py-4 rounded-full bg-white text-[#050507] font-bold text-sm flex items-center gap-2 hover:scale-105 transition-transform duration-300 shadow-[0_0_40px_rgba(255,255,255,0.2)]">
-              View Full Architecture 
+            <Link to="/portfolio" className="relative px-8 py-4 rounded-full bg-white text-[#050507] font-bold text-sm flex items-center gap-2 hover:scale-105 transition-transform duration-300 shadow-[0_0_40px_rgba(255,255,255,0.2)]">
+              View Full Architecture
               <ArrowRight size={16} />
-            </button>
+            </Link>
           </motion.div>
         </div>
-        
+
       </div>
     </section>
   );

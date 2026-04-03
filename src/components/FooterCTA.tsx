@@ -50,7 +50,10 @@ const FooterCTA = () => {
                     className="flex justify-center"
                 >
                     <Magnetic>
-                        <button className="group relative px-10 py-5 rounded-full bg-white text-[#050507] font-bold text-lg flex items-center gap-3 transition-transform duration-300 hover:scale-110 shadow-[0_0_50px_rgba(255,255,255,0.2)]">
+                        <button
+                            onClick={() => window.dispatchEvent(new CustomEvent("open-scouter"))}
+                            className="group relative px-10 py-5 rounded-full bg-white text-[#050507] font-bold text-lg flex items-center gap-3 transition-transform duration-300 hover:scale-110 shadow-[0_0_50px_rgba(255,255,255,0.2)]"
+                        >
                             Ignite Your Build
                             <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
                         </button>

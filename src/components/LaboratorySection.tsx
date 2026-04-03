@@ -1,7 +1,9 @@
 import { motion, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
-import { Beaker, Binary, Cpu, History, Rocket, Heart, Users, Star } from "lucide-react";
+import { Beaker, Binary, Cpu, History, Rocket, Heart, Users, Star, ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
 import TiltCard from "./TiltCard";
+import Magnetic from "./Magnetic";
 import { usePerformance } from "@/context/PerformanceContext";
 import PrajwalImage from "@/assets/prajwal.jpg";
 import MukeshImage from "@/assets/mukesh.jpg";
@@ -255,8 +257,7 @@ const LaboratorySection = () => {
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-7xl mx-auto">
                         <LeadershipCard name="Prajwal.N" role="Founder & CEO" isCEO={true} imageSrc={PrajwalImage} />
-                        <LeadershipCard name="Mukeshkumar MS" role="Cofounder & CTO" isCEO={false} imageSrc={MukeshImage} />
-
+                        <LeadershipCard name="MukeshKumar.Ms" role="Cofounder & CTO" isCEO={false} imageSrc={MukeshImage} />
                     </div>
                 </div>
 
@@ -354,6 +355,7 @@ const LaboratorySection = () => {
                             ))}
                         </div>
                     </div>
+
 
                 </div>
             </div>
