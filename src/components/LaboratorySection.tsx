@@ -4,6 +4,8 @@ import { Beaker, Binary, Cpu, History, Rocket, Heart, Users, Star } from "lucide
 import TiltCard from "./TiltCard";
 import { usePerformance } from "@/context/PerformanceContext";
 import PrajwalImage from "@/assets/prajwal.jpg";
+import MukeshImage from "@/assets/mukesh.jpg";
+
 
 // --------------------------------------------------------------------------
 // PHYSICS-BASED GLASS DISTORTION
@@ -185,7 +187,7 @@ const LeadershipCard = ({ name, role, isCEO, imageSrc }: { name: string, role: s
             <div className="relative z-10 flex flex-col items-center">
                 <div className="w-48 h-48 md:w-64 md:h-64 rounded-3xl bg-[#12121A] border border-white/5 flex items-center justify-center mb-10 shadow-2xl group-hover:border-purple-500/50 transition-all duration-500 overflow-hidden ring-1 ring-white/10 group-hover:ring-purple-500/30">
                     {imageSrc ? (
-                        <img src={imageSrc} alt={`${name} - Founder & CEO of Buildicy`} className="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-700" />
+                        <img src={imageSrc} alt={`${name} - ${role} of Buildicy`} className="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-700" />
                     ) : (
                         <Users className="text-purple-400 group-hover:text-white transition-colors" size={64} />
                     )}
@@ -251,8 +253,10 @@ const LaboratorySection = () => {
                     <h2 className="text-5xl md:text-7xl font-bold tracking-tighter text-white font-['Syne'] leading-[1.1] mb-12">
                         Driven by <span className="italic bg-gradient-to-r from-white via-zinc-400 to-zinc-600 bg-clip-text text-transparent">Vision & Purpose.</span>
                     </h2>
-                    <div className="flex justify-center max-w-5xl mx-auto">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-7xl mx-auto">
                         <LeadershipCard name="Prajwal.N" role="Founder & CEO" isCEO={true} imageSrc={PrajwalImage} />
+                        <LeadershipCard name="Mukeshkumar ms" role="Cofounder & CTO" isCEO={false} imageSrc={MukeshImage} />
+
                     </div>
                 </div>
 
