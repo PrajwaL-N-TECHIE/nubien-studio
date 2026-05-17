@@ -178,7 +178,7 @@ const milestones = [
     }
 ];
 
-const LeadershipCard = ({ name, role, isCEO, imageSrc, imageWrapperClassName = "" }: { name: string, role: string, isCEO?: boolean, imageSrc?: string, imageWrapperClassName?: string }) => (
+const LeadershipCard = ({ name, role, isCEO, imageSrc, imageWrapperClassName = "", imgClassName = "object-top" }: { name: string, role: string, isCEO?: boolean, imageSrc?: string, imageWrapperClassName?: string, imgClassName?: string }) => (
     <TiltCard className="h-full">
         <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
@@ -191,7 +191,7 @@ const LeadershipCard = ({ name, role, isCEO, imageSrc, imageWrapperClassName = "
                 <div className="w-48 h-48 md:w-64 md:h-64 rounded-3xl bg-[#12121A] border border-white/5 flex items-center justify-center mb-10 shadow-2xl group-hover:border-purple-500/50 transition-all duration-500 overflow-hidden ring-1 ring-white/10 group-hover:ring-purple-500/30">
                     {imageSrc ? (
                         <div className={`w-full h-full ${imageWrapperClassName}`}>
-                            <img src={imageSrc} alt={`${name} - ${role} of Buildicy`} className="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-700" />
+                            <img src={imageSrc} alt={`${name} - ${role} of Buildicy`} className={`w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ${imgClassName}`} />
                         </div>
                     ) : (
                         <Users className="text-purple-400 group-hover:text-white transition-colors" size={64} />
@@ -275,7 +275,7 @@ const LaboratorySection = () => {
                         {/* Row 3: Engineering & Creative */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 w-full px-0 md:px-8">
                             <LeadershipCard name="Mizbha Fathima" role="Frontend Engineer & Creative Lead" isCEO={false} imageSrc={MizbhaImage} />
-                            <LeadershipCard name="Lathika J" role="Full Stack Developer & Client Success Lead" isCEO={false} imageSrc={LathikaImage} />
+                            <LeadershipCard name="Lathika J" role="Full Stack Developer & Client Success Lead" isCEO={false} imageSrc={LathikaImage} imageWrapperClassName="scale-[1.8]" imgClassName="object-center" />
                         </div>
                     </div>
                 </div>
