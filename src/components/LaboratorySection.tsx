@@ -176,7 +176,7 @@ const milestones = [
     }
 ];
 
-const LeadershipCard = ({ name, role, isCEO, imageSrc }: { name: string, role: string, isCEO?: boolean, imageSrc?: string }) => (
+const LeadershipCard = ({ name, role, isCEO, imageSrc, imageWrapperClassName = "" }: { name: string, role: string, isCEO?: boolean, imageSrc?: string, imageWrapperClassName?: string }) => (
     <TiltCard className="h-full">
         <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
@@ -188,7 +188,9 @@ const LeadershipCard = ({ name, role, isCEO, imageSrc }: { name: string, role: s
             <div className="relative z-10 flex flex-col items-center h-full">
                 <div className="w-48 h-48 md:w-64 md:h-64 rounded-3xl bg-[#12121A] border border-white/5 flex items-center justify-center mb-10 shadow-2xl group-hover:border-purple-500/50 transition-all duration-500 overflow-hidden ring-1 ring-white/10 group-hover:ring-purple-500/30">
                     {imageSrc ? (
-                        <img src={imageSrc} alt={`${name} - ${role} of Buildicy`} className="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-700" />
+                        <div className={`w-full h-full ${imageWrapperClassName}`}>
+                            <img src={imageSrc} alt={`${name} - ${role} of Buildicy`} className="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-700" />
+                        </div>
                     ) : (
                         <Users className="text-purple-400 group-hover:text-white transition-colors" size={64} />
                     )}
@@ -256,7 +258,7 @@ const LaboratorySection = () => {
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto">
                         <LeadershipCard name="Prajwal.N" role="Founder & AI Engineer" isCEO={true} imageSrc={PrajwalImage} />
-                        <LeadershipCard name="Nuvaaf AN" role="Co-founder & AI Automation Engineer" isCEO={false} imageSrc={NuvaafImage} />
+                        <LeadershipCard name="Nuvaaf AN" role="Co-founder & AI Automation Engineer" isCEO={false} imageSrc={NuvaafImage} imageWrapperClassName="scale-[1.35] translate-y-[8%]" />
                         <LeadershipCard name="Mayur P" role="Co-founder & Web3 Developer" isCEO={false} imageSrc={MayurImage} />
                     </div>
                 </div>
