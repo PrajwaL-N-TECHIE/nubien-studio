@@ -257,11 +257,26 @@ const LaboratorySection = () => {
                     <h2 className="text-5xl md:text-7xl font-bold tracking-tighter text-white font-['Syne'] leading-[1.1] mb-12">
                         Driven by <span className="italic bg-gradient-to-r from-white via-zinc-400 to-zinc-600 bg-clip-text text-transparent">Vision & Purpose.</span>
                     </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-[90rem] mx-auto">
-                        <LeadershipCard name="Prajwal.N" role="Founder & AI Engineer" isCEO={true} imageSrc={PrajwalImage} />
-                        <LeadershipCard name="Nuvaaf AN" role="Co-founder & AI Automation Engineer" isCEO={false} imageSrc={NuvaafImage} imageWrapperClassName="scale-[1.35] translate-y-[8%]" />
-                        <LeadershipCard name="Mayur P" role="Co-founder & Web3 Developer" isCEO={false} imageSrc={MayurImage} />
-                        <LeadershipCard name="Mizbha Fathima" role="Frontend Engineer & Creative Lead" isCEO={false} imageSrc={MizbhaImage} />
+                    <div className="flex flex-col gap-12 max-w-6xl mx-auto">
+                        {/* Row 1: Founder */}
+                        <div className="flex justify-center">
+                            <div className="w-full md:w-[60%] lg:w-[45%]">
+                                <LeadershipCard name="Prajwal.N" role="Founder & AI Engineer" isCEO={true} imageSrc={PrajwalImage} />
+                            </div>
+                        </div>
+
+                        {/* Row 2: Co-founders */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 w-full px-0 md:px-8">
+                            <LeadershipCard name="Nuvaaf AN" role="Co-founder & AI Automation Engineer" isCEO={false} imageSrc={NuvaafImage} imageWrapperClassName="scale-[1.35] translate-y-[8%]" />
+                            <LeadershipCard name="Mayur P" role="Co-founder & Web3 Developer" isCEO={false} imageSrc={MayurImage} />
+                        </div>
+
+                        {/* Row 3: Creative Lead */}
+                        <div className="flex justify-center">
+                            <div className="w-full md:w-[60%] lg:w-[45%]">
+                                <LeadershipCard name="Mizbha Fathima" role="Frontend Engineer & Creative Lead" isCEO={false} imageSrc={MizbhaImage} />
+                            </div>
+                        </div>
                     </div>
                 </div>
 
