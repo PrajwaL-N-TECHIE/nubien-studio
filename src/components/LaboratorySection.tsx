@@ -275,7 +275,7 @@ const LaboratorySection = () => {
                         {/* Row 3: Engineering & Creative */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 w-full px-0 md:px-8">
                             <LeadershipCard name="Mizbha Fathima" role="Frontend Engineer & Creative Lead" isCEO={false} imageSrc={MizbhaImage} />
-                            <LeadershipCard name="Lathika J" role="Full Stack Developer & Client Success Lead" isCEO={false} imageSrc={LathikaImage} imageWrapperClassName="scale-[1.8]" imgClassName="object-center" />
+                            <LeadershipCard name="Lathika J" role="Full Stack Developer & Client Success Lead" isCEO={false} imageSrc={LathikaImage} imageWrapperClassName="scale-[1.35]" imgClassName="object-center" />
                         </div>
                     </div>
                 </div>
