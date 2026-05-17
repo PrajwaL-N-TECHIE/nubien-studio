@@ -8,6 +8,7 @@ import { usePerformance } from "@/context/PerformanceContext";
 import PrajwalImage from "@/assets/prajwal.jpg";
 import NuvaafImage from "@/assets/nuvaaf.jpg";
 import MayurImage from "@/assets/mayur.jpg";
+import MizbhaImage from "@/assets/mizbha.jpg";
 // --------------------------------------------------------------------------
 // PHYSICS-BASED GLASS DISTORTION
 // --------------------------------------------------------------------------
@@ -256,10 +257,11 @@ const LaboratorySection = () => {
                     <h2 className="text-5xl md:text-7xl font-bold tracking-tighter text-white font-['Syne'] leading-[1.1] mb-12">
                         Driven by <span className="italic bg-gradient-to-r from-white via-zinc-400 to-zinc-600 bg-clip-text text-transparent">Vision & Purpose.</span>
                     </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-[90rem] mx-auto">
                         <LeadershipCard name="Prajwal.N" role="Founder & AI Engineer" isCEO={true} imageSrc={PrajwalImage} />
                         <LeadershipCard name="Nuvaaf AN" role="Co-founder & AI Automation Engineer" isCEO={false} imageSrc={NuvaafImage} imageWrapperClassName="scale-[1.35] translate-y-[8%]" />
                         <LeadershipCard name="Mayur P" role="Co-founder & Web3 Developer" isCEO={false} imageSrc={MayurImage} />
+                        <LeadershipCard name="Mizbha Fathima" role="Frontend Engineer & Creative Lead" isCEO={false} imageSrc={MizbhaImage} />
                     </div>
                 </div>
 
