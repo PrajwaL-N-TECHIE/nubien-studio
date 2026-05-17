@@ -255,7 +255,7 @@ const LaboratorySection = () => {
                         Driven by <span className="italic bg-gradient-to-r from-white via-zinc-400 to-zinc-600 bg-clip-text text-transparent">Vision & Purpose.</span>
                     </h2>
                     <div className="flex justify-center max-w-2xl mx-auto">
-                        <LeadershipCard name="Prajwal.N" role="Founder & CEO" isCEO={true} imageSrc={PrajwalImage} />
+                        <LeadershipCard name="Prajwal.N" role="Founder & AI Engineer" isCEO={true} imageSrc={PrajwalImage} />
                     </div>
                 </div>
 
