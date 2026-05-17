@@ -6,7 +6,7 @@ import TiltCard from "./TiltCard";
 import Magnetic from "./Magnetic";
 import { usePerformance } from "@/context/PerformanceContext";
 import PrajwalImage from "@/assets/prajwal.jpg";
-// import NuvaafImage from "@/assets/nuvaaf.jpg"; // Temporarily disabled to fix build
+import NuvaafImage from "@/assets/nuvaaf.jpg";
 
 // --------------------------------------------------------------------------
 // PHYSICS-BASED GLASS DISTORTION
@@ -256,7 +256,7 @@ const LaboratorySection = () => {
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-7xl mx-auto">
                         <LeadershipCard name="Prajwal.N" role="Founder & AI Engineer" isCEO={true} imageSrc={PrajwalImage} />
-                        <LeadershipCard name="Nuvaaf AN" role="Co-founder & AI Automation Engineer" isCEO={false} imageSrc={undefined} />
+                        <LeadershipCard name="Nuvaaf AN" role="Co-founder & AI Automation Engineer" isCEO={false} imageSrc={NuvaafImage} />
                     </div>
                 </div>
 
