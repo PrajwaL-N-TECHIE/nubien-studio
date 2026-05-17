@@ -9,6 +9,7 @@ import PrajwalImage from "@/assets/prajwal.jpg";
 import NuvaafImage from "@/assets/nuvaaf.jpg";
 import MayurImage from "@/assets/mayur.jpg";
 import MizbhaImage from "@/assets/mizbha.jpg";
+import LathikaImage from "@/assets/lathika.jpg";
 // --------------------------------------------------------------------------
 // PHYSICS-BASED GLASS DISTORTION
 // --------------------------------------------------------------------------
@@ -271,11 +272,10 @@ const LaboratorySection = () => {
                             <LeadershipCard name="Mayur P" role="Co-founder & Web3 Developer" isCEO={false} imageSrc={MayurImage} />
                         </div>
 
-                        {/* Row 3: Creative Lead */}
-                        <div className="flex justify-center">
-                            <div className="w-full md:w-[60%] lg:w-[45%]">
-                                <LeadershipCard name="Mizbha Fathima" role="Frontend Engineer & Creative Lead" isCEO={false} imageSrc={MizbhaImage} />
-                            </div>
+                        {/* Row 3: Engineering & Creative */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 w-full px-0 md:px-8">
+                            <LeadershipCard name="Mizbha Fathima" role="Frontend Engineer & Creative Lead" isCEO={false} imageSrc={MizbhaImage} />
+                            <LeadershipCard name="Lathika J" role="Full Stack Developer & Client Success Lead" isCEO={false} imageSrc={LathikaImage} />
                         </div>
                     </div>
                 </div>
