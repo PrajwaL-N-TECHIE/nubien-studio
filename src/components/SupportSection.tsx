@@ -5,27 +5,31 @@ import { Canvas } from "@react-three/fiber";
 import { MeshDistortMaterial, Sphere } from "@react-three/drei";
 import { audio } from "@/utils/audio";
 
+import PrajwalImage from "@/assets/prajwal.jpg";
+import NuvaafImage from "@/assets/nuvaaf.jpg";
+import MayurImage from "@/assets/mayur.jpg";
+import MizbhaImage from "@/assets/mizbha.jpg";
+import LathikaImage from "@/assets/lathika.jpg";
+
 // Premium Easing Curve
 const customEase = [0.22, 1, 0.36, 1];
 
-// High-quality placeholder portraits for the support team
+// Team images for the support section
 const teamImages = [
-  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=200&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=200&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?q=80&w=200&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=200&auto=format&fit=crop",
+  PrajwalImage,
+  NuvaafImage,
+  MayurImage,
+  MizbhaImage,
+  LathikaImage,
 ];
 
-// Calculated positions for a perfect spreading fan
+// Calculated positions for a perfect spreading fan (5 cards)
 const fanCards = [
-  { rotate: -25, x: -160, y: 40 },
-  { rotate: -15, x: -90, y: 15 },
-  { rotate: -5, x: -20, y: 0 },
-  { rotate: 5, x: 50, y: 0 },
-  { rotate: 15, x: 120, y: 15 },
-  { rotate: 25, x: 190, y: 40 },
+  { rotate: -20, x: -140, y: 30 },
+  { rotate: -10, x: -70, y: 10 },
+  { rotate: 0, x: 0, y: 0 },
+  { rotate: 10, x: 70, y: 10 },
+  { rotate: 20, x: 140, y: 30 },
 ];
 
 // --------------------------------------------------------------------------
