@@ -31,16 +31,17 @@ const createGlowTexture = (size = 256, color = "#a855f7", intensity = 3.0) => {
 const MorphingCore = ({ isVisible }: { isVisible: boolean }) => {
   const pointsRef = useRef<THREE.Points>(null);
   const materialRef = useRef<THREE.ShaderMaterial>(null);
-  const { level } = usePerformance();
+  const { level, batterySaver } = usePerformance();
 
   // Granular particle counts based on device tier
   const particleCount = useMemo(() => {
+    if (batterySaver) return 1500;
     switch (level) {
-      case "potato": return 8000;
+      case "potato": return 3000;
       case "ultra": return 45000;
       default: return 20000;
     }
-  }, [level]);
+  }, [level, batterySaver]);
 
   const { chaosPos, spherePos, wavePos, colors, baseSizes } = useMemo(() => {
     const cPos = new Float32Array(particleCount * 3);
@@ -208,7 +209,7 @@ const MorphingCore = ({ isVisible }: { isVisible: boolean }) => {
 
 const ThreeScene = () => {
   const [mounted, setMounted] = useState(false);
-  const { isLowEnd } = usePerformance();
+  const { isLowEnd, dpr } = usePerformance();
 
   useEffect(() => setMounted(true), []);
   if (!mounted) return null;
@@ -216,6 +217,7 @@ const ThreeScene = () => {
   return (
     <div className="absolute inset-0 z-0" style={{ pointerEvents: "none", background: "#050507" }}>
       <Canvas
+        dpr={dpr}
         camera={{ position: [0, 0, 15], fov: 60 }}
         gl={{
           antialias: !isLowEnd,

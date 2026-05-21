@@ -6,6 +6,7 @@ import { ArrowLeft, Cpu, TerminalSquare, AlertTriangle, Ghost } from "lucide-rea
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Float, MeshDistortMaterial, Sphere, PerspectiveCamera, Text } from "@react-three/drei";
 import * as THREE from "three";
+import { usePerformance } from "@/context/PerformanceContext";
 
 // Premium Easing Curve
 const customEase = [0.22, 1, 0.36, 1];
@@ -134,6 +135,7 @@ const NotFound = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const containerRef = useRef<HTMLDivElement>(null);
+  const { dpr } = usePerformance();
 
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
@@ -159,7 +161,7 @@ const NotFound = () => {
 
       {/* 3D Scene */}
       <div className="absolute inset-0 z-0">
-        <Canvas dpr={[1, 2]}>
+        <Canvas dpr={dpr}>
           <PerspectiveCamera makeDefault position={[0, 0, 5]} fov={75} />
           <ambientLight intensity={0.5} />
           <pointLight position={[10, 10, 10]} intensity={1} color="#a855f7" />

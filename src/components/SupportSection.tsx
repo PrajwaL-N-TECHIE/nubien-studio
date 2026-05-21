@@ -4,6 +4,7 @@ import { MessageSquare, CheckCircle2, Sparkles, ArrowRight, LifeBuoy, ShieldAler
 import { Canvas } from "@react-three/fiber";
 import { MeshDistortMaterial, Sphere } from "@react-three/drei";
 import { audio } from "@/utils/audio";
+import { usePerformance } from "@/context/PerformanceContext";
 
 import PrajwalImage from "@/assets/prajwal.jpg";
 import NuvaafImage from "@/assets/nuvaaf.jpg";
@@ -100,6 +101,7 @@ const MagneticButton = ({ children, onClick }: { children: React.ReactNode, onCl
 const SupportSection = () => {
   const sectionRef = useRef(null);
   const fanRef = useRef(null);
+  const { dpr } = usePerformance();
   const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
   const fanInView = useInView(fanRef, { once: true, margin: "-50px" });
 
@@ -136,7 +138,7 @@ const SupportSection = () => {
 
       {/* 3D Glitch Sphere Background */}
       <div className="absolute inset-0 z-0 opacity-40">
-        <Canvas camera={{ position: [0, 0, 5], fov: 75 }}>
+        <Canvas camera={{ position: [0, 0, 5], fov: 75 }} dpr={dpr}>
           <ambientLight intensity={0.5} />
           <pointLight position={[10, 10, 10]} />
           <GlitchSphere />

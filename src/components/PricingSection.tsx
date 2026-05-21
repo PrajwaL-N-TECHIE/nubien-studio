@@ -6,6 +6,7 @@ import {
   Search, Lightbulb, Code, TestTube, Rocket, RefreshCw,
   Sparkles, ArrowRight, Cpu, Zap
 } from "lucide-react";
+import { usePerformance } from "@/context/PerformanceContext";
 
 // The "Buttery" Apple-tier easing curve
 const customEase = [0.22, 1, 0.36, 1] as any;
@@ -210,6 +211,7 @@ const ProcessCard = ({ step, index, isInView }: { step: any, index: number, isIn
 // --------------------------------------------------------------------------
 const ProcessSection = () => {
   const containerRef = useRef(null);
+  const { dpr } = usePerformance();
   const isInView = useInView(containerRef, { once: true, margin: "-100px" });
 
   const { scrollYProgress } = useScroll({
@@ -243,7 +245,7 @@ const ProcessSection = () => {
       {/* 3D BACKGROUND (Optimized dpr for sharp/smooth rendering) */}
       <div className="absolute inset-0 pointer-events-none z-0">
         <Suspense fallback={null}>
-          <Canvas camera={{ position: [0, 0, 15], fov: 60 }} dpr={[1, 2]}>
+          <Canvas camera={{ position: [0, 0, 15], fov: 60 }} dpr={dpr}>
             <DataWave />
           </Canvas>
         </Suspense>

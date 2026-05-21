@@ -274,7 +274,7 @@ const LiveStatus = () => {
 // --------------------------------------------------------------------------
 const Footer = () => {
   const containerRef = useRef(null);
-  const { isLowEnd } = usePerformance();
+  const { isLowEnd, dpr } = usePerformance();
   const isInView = useInView(containerRef, { once: false, margin: "100px" });
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -304,6 +304,7 @@ const Footer = () => {
         {isInView && (
           <Suspense fallback={null}>
             <Canvas
+              dpr={dpr}
               camera={{ position: [0, 0, 25], fov: 45 }}
               gl={{
                 antialias: !isLowEnd,
