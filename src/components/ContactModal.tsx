@@ -177,7 +177,7 @@ const ContactModal = ({ isOpen, onClose }: ContactModalProps) => {
                   {/* Contact Details */}
                   <div className="space-y-6">
                     {[
-                      { icon: Mail, label: "Direct Email", value: "hello@buildicy.com" },
+                      { icon: Mail, label: "Direct Email", value: "buildicy@gmail.com" },
                       { icon: Phone, label: "Hotline", value: "+1 (555) 982-3041" },
                       { icon: MapPin, label: "Global Studio", value: "San Francisco / Virtual" }
                     ].map((item, i) => (

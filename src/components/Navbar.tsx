@@ -210,7 +210,7 @@ const MobileMenu = ({ isOpen, onClose }: any) => {
                 </div>
                 <div className="flex items-center gap-3 px-4 py-2 text-sm text-white/60">
                   <Mail size={14} />
-                  <span>hello@buildicy.com</span>
+                  <span>buildicy@gmail.com</span>
                 </div>
               </motion.div>
             </div>

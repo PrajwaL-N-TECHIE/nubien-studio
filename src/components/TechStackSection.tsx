@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import {
     Cpu, Database, Globe, Layers, Layout,
-    Shield, Zap, Code2, Terminal, Brain
+    Shield, Zap, Code2, Terminal, Brain, Cloud
 } from "lucide-react";
 
 const techItems = [
@@ -15,6 +15,11 @@ const techItems = [
     { name: "Redis", icon: Zap, color: "#DC382D" },
     { name: "OpenAI API", icon: Cpu, color: "#10A37F" },
     { name: "Supabase", icon: Shield, color: "#3ECF8E" },
+    { name: "React", icon: Code2, color: "#61DAFB" },
+    { name: "Node.js", icon: Cpu, color: "#339933" },
+    { name: "MongoDB", icon: Database, color: "#47A248" },
+    { name: "Vercel", icon: Globe, color: "#FFFFFF" },
+    { name: "AWS", icon: Cloud, color: "#FF9900" },
 ];
 
 const TechStackSection = () => {
