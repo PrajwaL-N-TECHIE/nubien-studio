@@ -8,6 +8,8 @@ import { usePerformance } from "@/context/PerformanceContext";
 import PrajwalImage from "@/assets/prajwal.jpg";
 import NuvaafImage from "@/assets/nuvaaf.jpg";
 import MayurImage from "@/assets/mayur.jpg";
+import MizbhaImage from "@/assets/mizbha.jpg";
+import LathikaImage from "@/assets/lathika.jpg";
 // --------------------------------------------------------------------------
 // PHYSICS-BASED GLASS DISTORTION
 // --------------------------------------------------------------------------
@@ -272,8 +274,8 @@ const LaboratorySection = () => {
 
                         {/* Row 3: Engineering & Creative */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 w-full px-0 md:px-8">
-                            <LeadershipCard name="Mizbha Fathima" role="Frontend Engineer & Creative Lead" isCEO={false} />
-                            <LeadershipCard name="Lathika J" role="Full Stack Developer & Client Success Lead" isCEO={false} />
+                            <LeadershipCard name="Mizbha Fathima" role="Frontend Engineer & Creative Lead" isCEO={false} imageSrc={MizbhaImage} />
+                            <LeadershipCard name="Lathika J" role="Full Stack Developer & Client Success Lead" isCEO={false} imageSrc={LathikaImage} imageWrapperClassName="scale-[1.35] translate-y-[12%]" imgClassName="object-center" />
                         </div>
                     </div>
                 </div>
