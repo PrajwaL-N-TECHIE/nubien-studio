@@ -1,7 +1,8 @@
 import { motion } from "framer-motion";
 import {
     Cpu, Database, Globe, Layers, Layout,
-    Shield, Zap, Code2, Terminal, Brain, Cloud
+    Shield, Zap, Code2, Terminal, Brain, Cloud,
+    Hexagon, Link2, PenTool, Network
 } from "lucide-react";
 
 const techItems = [
@@ -20,6 +21,11 @@ const techItems = [
     { name: "MongoDB", icon: Database, color: "#47A248" },
     { name: "Vercel", icon: Globe, color: "#FFFFFF" },
     { name: "AWS", icon: Cloud, color: "#FF9900" },
+    { name: "Solidity", icon: Hexagon, color: "#363636" },
+    { name: "Ethereum", icon: Network, color: "#627EEA" },
+    { name: "TensorFlow", icon: Brain, color: "#FF6F00" },
+    { name: "LangChain", icon: Link2, color: "#121212" },
+    { name: "Figma", icon: PenTool, color: "#F24E1E" },
 ];
 
 const TechStackSection = () => {
