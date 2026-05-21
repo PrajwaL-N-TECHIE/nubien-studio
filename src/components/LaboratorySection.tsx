@@ -178,7 +178,7 @@ const milestones = [
     }
 ];
 
-const LeadershipCard = ({ name, role, isCEO, imageSrc, imageWrapperClassName = "", imgClassName = "object-top" }: { name: string, role: string, isCEO?: boolean, imageSrc?: string, imageWrapperClassName?: string, imgClassName?: string }) => (
+const LeadershipCard = ({ name, role, description, isCEO, imageSrc, imageWrapperClassName = "", imgClassName = "object-top" }: { name: string, role: string, description?: string, isCEO?: boolean, imageSrc?: string, imageWrapperClassName?: string, imgClassName?: string }) => (
     <TiltCard className="h-full">
         <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
@@ -199,15 +199,12 @@ const LeadershipCard = ({ name, role, isCEO, imageSrc, imageWrapperClassName = "
                 </div>
                 <h4 className="text-3xl md:text-5xl font-bold text-white mb-4 font-['Syne'] tracking-tighter whitespace-normal md:whitespace-nowrap">{name}</h4>
                 <div className="text-sm md:text-base font-bold text-purple-400 tracking-[0.3em] uppercase font-['DM_Mono'] mb-8">{role}</div>
-                {isCEO ? (
-                    <div className="p-6 md:p-8 rounded-[32px] bg-white/[0.03] border border-white/5 text-sm md:text-lg text-zinc-400 font-medium leading-relaxed max-w-2xl flex-grow flex items-center">
-                        Leading the vision & growth of Buildicy with architectural precision, creative excellence, and a commitment to building human-centered technology.
-                    </div>
-                ) : (
-                    <div className="p-6 md:p-8 rounded-[32px] bg-white/[0.03] border border-white/5 text-sm md:text-lg text-zinc-400 font-medium leading-relaxed max-w-2xl flex-grow flex items-center">
-                        Architecting the future of Buildicy's core systems and logical infrastructure, with a focus on engineering excellence and scalable solutions.
-                    </div>
-                )}
+                <div className="p-6 md:p-8 rounded-[32px] bg-white/[0.03] border border-white/5 text-sm md:text-lg text-zinc-400 font-medium leading-relaxed max-w-2xl flex-grow flex items-center">
+                    {description || (isCEO ? 
+                        "Leading the vision & growth of Buildicy with architectural precision, creative excellence, and a commitment to building human-centered technology." 
+                        : "Architecting the future of Buildicy's core systems and logical infrastructure, with a focus on engineering excellence and scalable solutions."
+                    )}
+                </div>
             </div>
             {/* Corner Decorative Accents */}
             <div className="absolute top-0 right-0 w-48 h-48 bg-purple-500/15 blur-[100px] opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
@@ -268,14 +265,14 @@ const LaboratorySection = () => {
 
                         {/* Row 2: Co-founders */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 w-full px-0 md:px-8">
-                            <LeadershipCard name="Nuvaaf AN" role="Co-founder & AI Automation Engineer" isCEO={false} imageSrc={NuvaafImage} imageWrapperClassName="scale-[1.35] translate-y-[8%]" />
-                            <LeadershipCard name="Mayur P" role="Co-founder & Web3 Developer" isCEO={false} imageSrc={MayurImage} />
+                            <LeadershipCard name="Nuvaaf AN" role="Co-founder & AI Automation Engineer" description="Driving the integration of advanced AI workflows and automation systems to streamline processes and elevate intelligent digital solutions." imageSrc={NuvaafImage} imageWrapperClassName="scale-[1.35] translate-y-[8%]" />
+                            <LeadershipCard name="Mayur P" role="Co-founder & Web3 Developer" description="Pioneering decentralized applications and Web3 infrastructure, focusing on secure, scalable blockchain solutions for the modern web." imageSrc={MayurImage} />
                         </div>
 
                         {/* Row 3: Engineering & Creative */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 w-full px-0 md:px-8">
-                            <LeadershipCard name="Mizbha Fathima" role="Frontend Engineer & Creative Lead" isCEO={false} imageSrc={MizbhaImage} />
-                            <LeadershipCard name="Lathika J" role="Full Stack Developer & Client Success Lead" isCEO={false} imageSrc={LathikaImage} imageWrapperClassName="scale-[1.35] translate-y-[12%]" imgClassName="object-center" />
+                            <LeadershipCard name="Mizbha Fathima" role="Frontend Engineer & Creative Lead" description="Crafting immersive user experiences and leading creative direction with an emphasis on seamless, pixel-perfect frontend design." imageSrc={MizbhaImage} />
+                            <LeadershipCard name="Lathika J" role="Full Stack Developer & Client Success Lead" description="Bridging robust backend architecture with intuitive frontend interfaces, ensuring exceptional client satisfaction through dedicated support and delivery." imageSrc={LathikaImage} imageWrapperClassName="scale-[1.35] translate-y-[12%]" imgClassName="object-center" />
                         </div>
                     </div>
                 </div>
