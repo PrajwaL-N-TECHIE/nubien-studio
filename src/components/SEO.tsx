@@ -13,7 +13,7 @@ const SEO = ({
   description, 
   canonicalUrl, 
   ogImage = "https://www.buildicy.com/og-image.jpg",
-  keywords = "AI Studio, Digital Engineering, UX Design, Web Development, Buildicy, High-Performance Software, Intelligent Design, Cinematic Brand Experiences"
+  keywords = "AI Studio Coimbatore, Web Development Coimbatore, UX Design Coimbatore, Digital Engineering India, High-Performance Software, Buildicy, Cinematic Brand Experiences"
 }: SEOProps) => {
   const fullUrl = canonicalUrl ? `https://www.buildicy.com${canonicalUrl}` : "https://www.buildicy.com";
 
