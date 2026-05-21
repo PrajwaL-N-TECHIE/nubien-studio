@@ -3,12 +3,13 @@ import { motion, useMotionValue, useSpring, useTransform, useScroll, AnimatePres
 import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import {
-  ArrowUpRight, Sparkles, MapPin, Clock, Github, Twitter, Linkedin, Mail, Send,
+  ArrowUpRight, Sparkles, MapPin, Clock, Linkedin, Mail, Send,
   Heart, ChevronRight, Briefcase, Activity, Eye, Users, Cpu, CheckCircle2, Instagram
 } from "lucide-react";
 import Magnetic from "./Magnetic";
 import { usePerformance } from "@/context/PerformanceContext";
 import emailjs from '@emailjs/browser';
+import { toast } from "sonner";
 
 // --------------------------------------------------------------------------
 // NEWSLETTER FORM COMPONENT
@@ -374,12 +375,24 @@ const Footer = () => {
               {[
                 { Icon: Linkedin, url: "https://www.linkedin.com/company/buildicy/" },
                 { Icon: Instagram, url: "https://www.instagram.com/_buildicy?igsh=eXB3ZTZrazF6ajcw" },
-                { Icon: Twitter, url: "#" },
-                { Icon: Github, url: "#" },
-                { Icon: Mail, url: "mailto:buildicy@gmail.com" }
-              ].map(({ Icon, url }, i) => (
+                { Icon: Mail, url: "#", action: "copy-email" }
+              ].map(({ Icon, url, action }, i) => (
                 <Magnetic key={i} strength={0.2} scale={1.1}>
-                  <a href={url} target={url !== "#" ? "_blank" : undefined} rel={url !== "#" ? "noopener noreferrer" : undefined} className="w-12 h-12 rounded-full bg-[#12121A]/80 border border-white/10 flex items-center justify-center hover:border-purple-500/50 hover:bg-purple-500/20 transition-all backdrop-blur-md shadow-xl group">
+                  <a 
+                    href={url} 
+                    target={url !== "#" ? "_blank" : undefined} 
+                    rel={url !== "#" ? "noopener noreferrer" : undefined} 
+                    onClick={(e) => {
+                      if (action === "copy-email") {
+                        e.preventDefault();
+                        navigator.clipboard.writeText("buildicy@gmail.com");
+                        toast.success("buildicy@gmail.com", {
+                          description: "Email address copied to clipboard!",
+                        });
+                      }
+                    }}
+                    className="w-12 h-12 rounded-full bg-[#12121A]/80 border border-white/10 flex items-center justify-center hover:border-purple-500/50 hover:bg-purple-500/20 transition-all backdrop-blur-md shadow-xl group"
+                  >
                     <Icon size={18} className="text-zinc-400 group-hover:text-white transition-colors" />
                   </a>
                 </Magnetic>

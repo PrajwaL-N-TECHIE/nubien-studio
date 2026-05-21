@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Send, Sparkles, Mail, User, MessageSquare, Phone, MapPin, Cpu } from "lucide-react";
 import { useState, useRef } from "react";
 import Magnetic from "./Magnetic";
+import { toast } from "sonner";
 
 // --------------------------------------------------------------------------
 // ANIMATED BUILDICY LOGO
@@ -185,6 +186,14 @@ const ContactModal = ({ isOpen, onClose }: ContactModalProps) => {
                         key={i}
                         variants={itemVariants}
                         className="flex items-center gap-5 group cursor-pointer"
+                        onClick={() => {
+                          if (item.label === "Direct Email") {
+                            navigator.clipboard.writeText(item.value);
+                            toast.success(item.value, {
+                              description: "Email address copied to clipboard!",
+                            });
+                          }
+                        }}
                       >
                         <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center transition-all group-hover:bg-purple-600 group-hover:border-purple-500 shadow-xl">
                           <item.icon size={18} className="text-purple-400 group-hover:text-white transition-colors" />
