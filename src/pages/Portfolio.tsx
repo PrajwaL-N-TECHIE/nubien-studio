@@ -1,3 +1,4 @@
+import SEO from "@/components/SEO";
 import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import { ExternalLink, Sparkles, ArrowRight } from "lucide-react";
@@ -54,6 +55,11 @@ const Portfolio = () => {
 
   return (
     <PageTransition>
+      <SEO 
+        title="Our Work | High-Performance Digital Products & AI | Buildicy"
+        description="View our portfolio of cinematic digital experiences, AI-driven applications, and scalable architectures. See how we build the future of software."
+        canonicalUrl="/portfolio"
+      />
       <div className="pt-32 pb-40 min-h-screen bg-[#050507] text-white overflow-hidden selection:bg-purple-500/30">
 
         {/* Ambient Glow */}

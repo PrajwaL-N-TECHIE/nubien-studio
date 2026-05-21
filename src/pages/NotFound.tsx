@@ -1,3 +1,4 @@
+import SEO from "@/components/SEO";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useRef, Suspense, useState, useMemo } from "react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
@@ -151,6 +152,10 @@ const NotFound = () => {
       onMouseMove={handleMouseMove}
       className="relative min-h-screen flex items-center justify-center bg-[#050507] overflow-hidden px-6"
     >
+      <SEO 
+        title="Page Not Found | Buildicy"
+        description="The page you are looking for does not exist. Return to the Buildicy home page."
+      />
 
       {/* 3D Scene */}
       <div className="absolute inset-0 z-0">
