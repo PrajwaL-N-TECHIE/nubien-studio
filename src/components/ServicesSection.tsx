@@ -4,7 +4,8 @@ import {
   ArrowUpRight, Cloud, MessageCircle, TrendingUp,
   Eye, Mic, Zap, PenLine, Lock, Layers,
   Database, BarChart2, User, Target, LineChart, Sparkles,
-  ChevronRight, Cpu, Globe, Shield, Brain, CheckCircle2, ArrowRight
+  ChevronRight, Cpu, Globe, Shield, Brain, CheckCircle2, ArrowRight,
+  Box, Layout, Cog
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -17,8 +18,11 @@ const serviceAutomation = "https://images.unsplash.com/photo-1518770660439-46361
 
 const mainServices = [
   { icon: Cloud, title: "AI-Powered Development", subtitle: "Smart Websites", description: "Build intelligent web applications and digital experiences powered by cutting-edge AI.", stats: ["98% efficiency", "50+ projects"] },
-  { icon: MessageCircle, title: "AI Chatbots", subtitle: "24/7 Support", description: "Deploy smart conversational AI agents to handle customer queries around the clock.", stats: ["24/7 availability", "10k+ conversations"] },
-  { icon: TrendingUp, title: "Predictive Analytics", subtitle: "Driven Decisions", description: "Harness machine learning to forecast trends and make data-driven business decisions.", stats: ["95% accuracy", "real-time insights"] },
+  { icon: Box, title: "Web3 & Blockchain", subtitle: "Decentralized Future", description: "Design and deploy secure, scalable smart contracts and dApps on robust blockchain networks.", stats: ["Zero breaches", "High throughput"] },
+  { icon: Layout, title: "Cinematic UI/UX", subtitle: "Next-Gen Design", description: "Craft breathtaking, high-performance interfaces that engage users and drive conversions.", stats: ["Award-winning", "60fps animations"] },
+  { icon: Cog, title: "AI Automation", subtitle: "Workflow Optimization", description: "Automate complex business workflows with intelligent, self-learning AI systems.", stats: ["24/7 operation", "80% cost reduction"] },
+  { icon: MessageCircle, title: "AI Chatbots", subtitle: "24/7 Support", description: "Deploy smart conversational AI agents to handle customer queries around the clock.", stats: ["Instant replies", "10k+ chats"] },
+  { icon: TrendingUp, title: "Predictive Analytics", subtitle: "Driven Decisions", description: "Harness machine learning to forecast trends and make data-driven business decisions.", stats: ["95% accuracy", "Real-time insights"] },
 ];
 
 const detailServices = [
@@ -174,8 +178,8 @@ const ServicesSection = () => {
         {/* -------------------------------------------------------------------------- */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
           {mainServices.map((service, i) => {
-            // Apply different scroll speeds to outer vs inner columns
-            const yTransform = i === 1 ? gridYInner : gridYOuter;
+            // Apply different scroll speeds to outer vs inner columns (Middle column is index 1 and 4)
+            const yTransform = (i % 3 === 1) ? gridYInner : gridYOuter;
 
             return (
               <motion.div key={i} style={{ y: yTransform }} className="h-full">
