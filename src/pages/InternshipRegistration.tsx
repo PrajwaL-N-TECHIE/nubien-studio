@@ -317,8 +317,8 @@ const InternshipRegistration = () => {
             {/* Receipt Zigzag Bottom */}
             <div className="absolute bottom-0 left-0 right-0 h-4 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMCIgaGVpZ2h0PSIxMCI+PHBvbHlnb24gcG9pbnRzPSIwLDEwIDUsMCAxMCwxMCIgZmlsbD0iIzBBMEEwRiIvPjwvc3ZnPg==')] bg-repeat-x" />
             
-            <div className="p-8 pb-12">
-              <div className="flex justify-between items-start mb-8 border-b border-dashed border-gray-300 pb-6">
+            <div className="p-6 md:p-8 pb-12">
+              <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-8 border-b border-dashed border-gray-300 pb-6">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 flex items-center justify-center">
                     <svg width="100%" height="100%" viewBox="0 0 68 72" fill="none">

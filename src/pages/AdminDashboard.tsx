@@ -372,7 +372,7 @@ const AdminDashboard = () => {
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-[#0a0a0f] border border-white/10 rounded-3xl w-full max-w-2xl p-6 md:p-8 relative overflow-hidden" 
+            className="bg-[#0a0a0f] border border-white/10 rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 md:p-8 relative" 
             onClick={e => e.stopPropagation()}
           >
             <div className="absolute top-0 right-0 w-64 h-64 bg-purple-600/10 rounded-full blur-[100px] pointer-events-none" />
