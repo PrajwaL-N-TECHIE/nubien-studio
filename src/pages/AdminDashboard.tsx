@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Lock, ShieldAlert, ArrowRight, Eye, Search, LogOut, Trash2 } from "lucide-react";
+import { Lock, ShieldAlert, ArrowRight, Eye, Search, LogOut, Trash2, Info, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import { db } from "@/lib/firebase";
@@ -37,6 +37,7 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [viewReceiptUrl, setViewReceiptUrl] = useState<string | null>(null);
+  const [selectedStudent, setSelectedStudent] = useState<InternshipRecord | null>(null);
   const navigate = useNavigate();
 
   // Load auth state from session storage to prevent re-login on refresh
@@ -316,6 +317,14 @@ const AdminDashboard = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-right">
                         <div className="flex items-center justify-end gap-2">
                           <button
+                            onClick={() => setSelectedStudent(record)}
+                            className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center hover:bg-blue-500/20 transition-colors group/btn"
+                            title="View Full Details"
+                          >
+                            <Info size={16} className="text-blue-400 group-hover/btn:scale-110 transition-transform" />
+                          </button>
+                          
+                          <button
                             onClick={() => {
                               const isBase64 = record.receipt.startsWith('data:');
                               setViewReceiptUrl(isBase64 ? record.receipt : `${API_URL}/uploads/${record.receipt}`);
@@ -342,23 +351,77 @@ const AdminDashboard = () => {
         </motion.div>
       </div>
 
-      {/* Receipt Modal */}
+      {/* Receipt Image Modal */}
       {viewReceiptUrl && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={() => setViewReceiptUrl(null)}>
-          <div className="relative max-w-4xl w-full max-h-[90vh] flex flex-col items-center justify-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm" onClick={() => setViewReceiptUrl(null)}>
+          <div className="relative max-w-4xl max-h-[90vh] w-full" onClick={e => e.stopPropagation()}>
             <button 
-              className="absolute -top-12 right-0 text-white hover:text-red-400 bg-white/10 rounded-full p-2 transition-colors"
               onClick={() => setViewReceiptUrl(null)}
+              className="absolute -top-12 right-0 text-white/50 hover:text-white"
             >
               Close
             </button>
-            <img 
-              src={viewReceiptUrl} 
-              alt="Payment Receipt" 
-              className="max-w-full max-h-[85vh] object-contain rounded-lg border border-white/20 shadow-2xl"
-              onClick={(e) => e.stopPropagation()}
-            />
+            <img src={viewReceiptUrl} alt="Payment Receipt" className="w-full h-full object-contain rounded-lg" />
           </div>
+        </div>
+      )}
+
+      {/* Full Details Modal */}
+      {selectedStudent && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm" onClick={() => setSelectedStudent(null)}>
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-[#0a0a0f] border border-white/10 rounded-3xl w-full max-w-2xl p-6 md:p-8 relative overflow-hidden" 
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="absolute top-0 right-0 w-64 h-64 bg-purple-600/10 rounded-full blur-[100px] pointer-events-none" />
+            
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h3 className="text-2xl font-bold text-white tracking-tight">{selectedStudent.name}</h3>
+                <p className="text-sm font-['DM_Mono'] text-purple-400 mt-1">{selectedStudent.registration_id}</p>
+              </div>
+              <button 
+                onClick={() => setSelectedStudent(null)}
+                className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors"
+              >
+                <X size={20} className="text-white/60" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
+              <div className="bg-white/5 border border-white/5 rounded-2xl p-4">
+                <p className="text-[10px] text-white/40 uppercase tracking-widest font-bold mb-1">Email Address</p>
+                <p className="text-white text-sm">{selectedStudent.email}</p>
+              </div>
+              
+              <div className="bg-white/5 border border-white/5 rounded-2xl p-4">
+                <p className="text-[10px] text-white/40 uppercase tracking-widest font-bold mb-1">Phone Number</p>
+                <p className="text-white text-sm">{selectedStudent.phone}</p>
+              </div>
+
+              <div className="bg-white/5 border border-white/5 rounded-2xl p-4 md:col-span-2">
+                <p className="text-[10px] text-white/40 uppercase tracking-widest font-bold mb-1">College / University</p>
+                <p className="text-white text-sm">{selectedStudent.college}</p>
+              </div>
+
+              <div className="bg-white/5 border border-white/5 rounded-2xl p-4">
+                <p className="text-[10px] text-white/40 uppercase tracking-widest font-bold mb-1">Degree / Major</p>
+                <p className="text-white text-sm">{selectedStudent.degree}</p>
+              </div>
+
+              <div className="bg-white/5 border border-white/5 rounded-2xl p-4">
+                <p className="text-[10px] text-white/40 uppercase tracking-widest font-bold mb-1">Program Track</p>
+                <p className="text-white text-sm font-bold text-purple-400">{trackNames[selectedStudent.track] || selectedStudent.track}</p>
+              </div>
+
+              <div className="bg-white/5 border border-white/5 rounded-2xl p-4 md:col-span-2">
+                <p className="text-[10px] text-white/40 uppercase tracking-widest font-bold mb-1">Why They Want to Join</p>
+                <p className="text-white/80 text-sm italic leading-relaxed">"{selectedStudent.reason}"</p>
+              </div>
+            </div>
+          </motion.div>
         </div>
       )}
     </div>
