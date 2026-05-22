@@ -152,3 +152,10 @@ app.delete('/api/admin/internships', async (req, res) => {
 
 // Wrap the Express app with serverless-http
 export default serverless(app);
+
+// Disable Vercel's default body parser so Multer can process multipart/form-data
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
