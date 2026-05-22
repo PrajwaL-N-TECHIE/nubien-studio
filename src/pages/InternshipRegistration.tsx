@@ -320,7 +320,14 @@ const InternshipRegistration = () => {
             <div className="p-8 pb-12">
               <div className="flex justify-between items-start mb-8 border-b border-dashed border-gray-300 pb-6">
                 <div className="flex items-center gap-3">
-                  <img src="/favicon.ico" alt="Buildicy Logo" className="w-10 h-10 object-contain drop-shadow-md" />
+                  <div className="w-10 h-10 flex items-center justify-center">
+                    <svg width="100%" height="100%" viewBox="0 0 68 72" fill="none">
+                      <path d="M8 54 L34 68 L60 54 L34 40 Z" fill="#5b21b6" />
+                      <path d="M14 36 L34 46 L54 36 L34 26 Z" fill="#7c3aed" />
+                      <path d="M20 15.5 L34 22.5 L48 15.5 L34 8.5 Z" fill="#c084fc" />
+                      <circle cx="34" cy="8.5" r="3.5" fill="white" />
+                    </svg>
+                  </div>
                   <div>
                     <h3 className="text-2xl font-black text-purple-900 font-['Syne'] tracking-tighter">BUILDICY</h3>
                     <p className="text-xs text-gray-500 font-bold tracking-widest uppercase mt-0.5">Official Receipt</p>
