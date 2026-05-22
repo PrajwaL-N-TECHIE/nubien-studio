@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 
 import { db } from "@/lib/firebase";
 import { collection, query, where, getDocs, addDoc, serverTimestamp } from "firebase/firestore";
+import { audio } from "@/utils/audio";
 
 const FAQs = [
   {
@@ -224,8 +225,12 @@ const InternshipRegistration = () => {
       form.reset();
       setFileName("");
       setIsSuccess(true);
-      // Trigger printing animation
-      setTimeout(() => setIsPrinting(true), 100);
+      
+      // Trigger realistic printing animation and sound
+      setTimeout(() => {
+        audio.playPrint();
+        setIsPrinting(true);
+      }, 300);
     } catch (error) {
       console.error('Error submitting form:', error);
       alert('An error occurred while submitting your application. Please try again.');
@@ -281,9 +286,9 @@ const InternshipRegistration = () => {
           
           {/* Animated Receipt */}
           <motion.div
-            initial={{ y: -50, opacity: 0 }}
-            animate={{ y: isPrinting ? 0 : -50, opacity: isPrinting ? 1 : 0 }}
-            transition={{ type: "spring", damping: 20, stiffness: 100, delay: 0.2 }}
+            initial={{ y: "-80%", opacity: 0 }}
+            animate={{ y: isPrinting ? "0%" : "-80%", opacity: isPrinting ? 1 : 0 }}
+            transition={{ type: "tween", ease: "linear", duration: 2.5, delay: 0.2 }}
             className="w-[90%] mx-auto bg-white rounded-b-xl shadow-2xl relative -mt-2 overflow-hidden"
             id="virtual-receipt"
           >

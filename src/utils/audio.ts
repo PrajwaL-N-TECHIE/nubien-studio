@@ -58,6 +58,18 @@ class BuildicyAudio {
         setTimeout(() => this.playTone(659.25, 'sine', 0.2, 0.1), 100); // E5
         setTimeout(() => this.playTone(783.99, 'sine', 0.3, 0.1), 200); // G5
     }
+
+    playPrint() {
+        // Fast repeating scratchy sounds like a dot-matrix or thermal printer
+        let time = 0;
+        for (let i = 0; i < 25; i++) {
+            // Random jitter for mechanical sound
+            const jitter = Math.random() * 10;
+            setTimeout(() => this.playTone(150 + Math.random() * 50, 'square', 0.04, 0.05), time + jitter);
+            setTimeout(() => this.playTone(800 + Math.random() * 200, 'sawtooth', 0.02, 0.02), time + 20 + jitter);
+            time += 100;
+        }
+    }
 }
 
 export const audio = new BuildicyAudio();
