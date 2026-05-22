@@ -122,6 +122,23 @@ app.get('/api/internship/:registrationId', async (req, res) => {
   }
 });
 
+// Admin Route to Get All Applications
+app.get('/api/admin/internships', async (req, res) => {
+  try {
+    const { password } = req.query;
+    
+    if (password !== 'admin@123') {
+      return res.status(401).json({ error: 'Unauthorized: Invalid password' });
+    }
+
+    const rows = await db.all('SELECT * FROM internships ORDER BY created_at DESC');
+    res.json(rows);
+  } catch (error) {
+    console.error('Error fetching admin data:', error);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
 // Upload Profile Image
 app.post('/api/internship/:registrationId/profile-image', upload.single('image'), async (req, res) => {
   try {
