@@ -3,6 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, BookOpen, Briefcase, Calendar, GraduationCap, Mail, Phone, UploadCloud, User } from "lucide-react";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
+
 const InternshipDashboard = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -13,7 +15,7 @@ const InternshipDashboard = () => {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const response = await fetch(`http://localhost:3001/api/internship/${id}`);
+        const response = await fetch(`${API_URL}/api/internship/${id}`);
         if (!response.ok) throw new Error("Not found");
         const result = await response.json();
         setData(result);
@@ -36,7 +38,7 @@ const InternshipDashboard = () => {
     formData.append("image", file);
 
     try {
-      const response = await fetch(`http://localhost:3001/api/internship/${id}/profile-image`, {
+      const response = await fetch(`${API_URL}/api/internship/${id}/profile-image`, {
         method: "POST",
         body: formData,
       });
@@ -109,7 +111,7 @@ const InternshipDashboard = () => {
               <div className="relative w-32 h-32 mx-auto mb-6 group cursor-pointer">
                 {data.profile_image ? (
                   <img 
-                    src={`http://localhost:3001/uploads/${data.profile_image}`} 
+                    src={`${API_URL}/uploads/${data.profile_image}`} 
                     alt="Profile" 
                     className="w-full h-full rounded-full object-cover border-4 border-purple-500/20"
                   />

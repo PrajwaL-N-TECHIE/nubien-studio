@@ -7,6 +7,8 @@ import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { useNavigate } from "react-router-dom";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
+
 const InternshipRegistration = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -41,7 +43,7 @@ const InternshipRegistration = () => {
     try {
       const formData = new FormData(e.currentTarget);
 
-      const response = await fetch('http://localhost:3001/api/register-internship', {
+      const response = await fetch(`${API_URL}/api/register-internship`, {
         method: 'POST',
         // Do NOT set Content-Type header when sending FormData, the browser will set it with the correct boundary
         body: formData,
