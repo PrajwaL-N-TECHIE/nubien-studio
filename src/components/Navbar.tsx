@@ -20,6 +20,7 @@ import {
   Settings,
   Phone,
   Mail,
+  Briefcase,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import Magnetic from "./Magnetic";
@@ -30,6 +31,7 @@ import Magnetic from "./Magnetic";
 const navLinks = [
   { name: "Home", path: "/", icon: Sparkles },
   { name: "Services", path: "/services", icon: Zap },
+  { name: "Internships", path: "/internship-registration", icon: Briefcase },
   { name: "Portfolio", path: "/portfolio", icon: Globe },
   { name: "Company", path: "/company", icon: Settings },
 ];

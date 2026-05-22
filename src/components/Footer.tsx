@@ -10,6 +10,7 @@ import Magnetic from "./Magnetic";
 import { usePerformance } from "@/context/PerformanceContext";
 import emailjs from '@emailjs/browser';
 import { toast } from "sonner";
+import { Link } from "react-router-dom";
 
 // --------------------------------------------------------------------------
 // NEWSLETTER FORM COMPONENT
@@ -291,9 +292,27 @@ const Footer = () => {
   const textOpacity = useTransform(scrollYProgress, [0.4, 0.8], [0, 0.05]);
 
   const links = {
-    Company: ["About Us", "Portfolio", "Services", "Careers", "Blog"],
-    Solutions: ["AI Studio", "Analytics", "Cloud Solutions", "Security", "Enterprise"],
-    Resources: ["Documentation", "Case Studies", "API Reference", "Community", "Support"],
+    Company: [
+      { name: "About Us", path: "/company" },
+      { name: "Portfolio", path: "/portfolio" },
+      { name: "Services", path: "/services" },
+      { name: "Careers", path: "#" },
+      { name: "Blog", path: "#" }
+    ],
+    Solutions: [
+      { name: "AI Studio", path: "#" },
+      { name: "Analytics", path: "#" },
+      { name: "Cloud Solutions", path: "#" },
+      { name: "Security", path: "#" },
+      { name: "Enterprise", path: "#" }
+    ],
+    Resources: [
+      { name: "Apply for Internship", path: "/internship-registration" },
+      { name: "Verify Certificate", path: "/verify" },
+      { name: "API Reference", path: "#" },
+      { name: "Community", path: "#" },
+      { name: "Support", path: "#" }
+    ],
   };
 
   return (
@@ -410,10 +429,16 @@ const Footer = () => {
                 </h4>
                 <ul className="space-y-4">
                   {items.map((item) => (
-                    <li key={item}>
-                      <a href="#" className="text-sm font-medium text-zinc-300 hover:text-white transition-colors">
-                        {item}
-                      </a>
+                    <li key={item.name}>
+                      {item.path.startsWith("/") ? (
+                        <Link to={item.path} className="text-sm font-medium text-zinc-300 hover:text-white transition-colors">
+                          {item.name}
+                        </Link>
+                      ) : (
+                        <a href={item.path} className="text-sm font-medium text-zinc-300 hover:text-white transition-colors">
+                          {item.name}
+                        </a>
+                      )}
                     </li>
                   ))}
                 </ul>
