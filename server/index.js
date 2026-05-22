@@ -139,6 +139,26 @@ app.get('/api/admin/internships', async (req, res) => {
   }
 });
 
+// Admin Route to Clear Database
+app.delete('/api/admin/internships', async (req, res) => {
+  try {
+    const { password } = req.query;
+    
+    if (password !== 'admin@123') {
+      return res.status(401).json({ error: 'Unauthorized: Invalid password' });
+    }
+
+    await db.run('DELETE FROM internships');
+    // Reset auto-increment counter
+    await db.run('DELETE FROM sqlite_sequence WHERE name="internships"');
+    
+    res.json({ success: true, message: 'Database cleared' });
+  } catch (error) {
+    console.error('Error clearing database:', error);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
 // Upload Profile Image
 app.post('/api/internship/:registrationId/profile-image', upload.single('image'), async (req, res) => {
   try {

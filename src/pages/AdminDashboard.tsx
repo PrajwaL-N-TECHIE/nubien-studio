@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Lock, ShieldAlert, ArrowRight, Eye, Search, LogOut } from "lucide-react";
+import { Lock, ShieldAlert, ArrowRight, Eye, Search, LogOut, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
@@ -76,6 +76,28 @@ const AdminDashboard = () => {
     setIsAuthenticated(false);
     setRecords([]);
     setPassword("");
+  };
+
+  const handleDeleteDatabase = async () => {
+    if (!window.confirm("CRITICAL WARNING: Are you sure you want to delete ALL internship registrations? This action cannot be undone.")) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/api/admin/internships?password=${password}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        alert("Database has been successfully cleared.");
+        setRecords([]);
+      } else {
+        alert("Failed to clear database. Unauthorized.");
+      }
+    } catch (error) {
+      console.error("Error clearing database:", error);
+      alert("An error occurred while clearing the database.");
+    }
   };
 
   const filteredRecords = records.filter(record => 
@@ -163,9 +185,17 @@ const AdminDashboard = () => {
                 className="w-full md:w-64 bg-white/5 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-white placeholder-white/40 focus:outline-none focus:border-purple-500/50 transition-colors text-sm"
               />
             </div>
+            
+            <button 
+              onClick={handleDeleteDatabase}
+              className="px-4 py-2 bg-red-900/30 hover:bg-red-600 text-red-400 hover:text-white rounded-xl border border-red-500/20 text-sm font-bold flex items-center gap-2 transition-colors shadow-[0_0_15px_rgba(220,38,38,0)] hover:shadow-[0_0_20px_rgba(220,38,38,0.4)]"
+            >
+              <Trash2 size={16} /> Purge Database
+            </button>
+
             <button 
               onClick={handleLogout}
-              className="px-4 py-2 bg-red-900/30 hover:bg-red-900/50 text-red-400 rounded-xl border border-red-500/20 text-sm font-bold flex items-center gap-2 transition-colors"
+              className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white/70 rounded-xl border border-white/10 text-sm font-bold flex items-center gap-2 transition-colors"
             >
               <LogOut size={16} /> Logout
             </button>
