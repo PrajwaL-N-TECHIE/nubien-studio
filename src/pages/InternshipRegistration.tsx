@@ -1,11 +1,24 @@
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { Sparkles, Send, User, Mail, Phone, BookOpen, GraduationCap, Briefcase, Link as LinkIcon, CheckCircle2 } from "lucide-react";
+import { useState, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Sparkles, Send, User, Mail, Phone, BookOpen, GraduationCap, Briefcase, Link as LinkIcon, CheckCircle2, UploadCloud, QrCode } from "lucide-react";
 import Magnetic from "@/components/Magnetic";
+import emailjs from '@emailjs/browser';
 
 const InternshipRegistration = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [selectedTrack, setSelectedTrack] = useState("");
+  const [fileName, setFileName] = useState("");
+
+  const trackPricing: Record<string, string> = {
+    uiux: "₹899",
+    ai_automation: "₹899",
+    fullstack: "₹1099",
+    blockchain: "₹1099",
+    ai_architect: "₹1299"
+  };
+
+  const selectedPrice = useMemo(() => trackPricing[selectedTrack] || "", [selectedTrack]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -13,29 +26,42 @@ const InternshipRegistration = () => {
     
     try {
       const formData = new FormData(e.currentTarget);
-      const data = {
-        name: formData.get('name'),
-        email: formData.get('email'),
+
+      const response = await fetch('http://localhost:3001/api/register-internship', {
+        method: 'POST',
+        // Do NOT set Content-Type header when sending FormData, the browser will set it with the correct boundary
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to register');
+      }
+
+      // Send email notification
+      const templateParams = {
+        from_name: formData.get('name'),
+        from_email: formData.get('email'),
         phone: formData.get('phone'),
         track: formData.get('track'),
         college: formData.get('college'),
         degree: formData.get('degree'),
-        reason: formData.get('reason'),
+        message: `Reason: ${formData.get('reason')}`,
       };
 
-      const response = await fetch('http://localhost:3001/api/register-internship', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to submit application');
+      try {
+        await emailjs.send(
+          import.meta.env.VITE_EMAILJS_SERVICE_ID || "",
+          import.meta.env.VITE_EMAILJS_TEMPLATE_ID || "",
+          templateParams,
+          import.meta.env.VITE_EMAILJS_PUBLIC_KEY || ""
+        );
+        console.log("Email notification sent successfully.");
+      } catch (emailErr) {
+        console.error("Failed to send email notification:", emailErr);
       }
 
       setIsSuccess(true);
+      setTimeout(() => setIsSuccess(false), 5000);
     } catch (error) {
       console.error('Error submitting form:', error);
       alert('An error occurred while submitting your application. Please try again.');
@@ -171,7 +197,8 @@ const InternshipRegistration = () => {
                   <select
                     name="track"
                     required
-                    defaultValue=""
+                    value={selectedTrack}
+                    onChange={(e) => setSelectedTrack(e.target.value)}
                     className="w-full bg-[#13131a] border border-white/10 rounded-xl py-3 pl-11 pr-4 text-white focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all appearance-none"
                   >
                     <option value="" disabled>Select a track...</option>
@@ -231,6 +258,62 @@ const InternshipRegistration = () => {
                 className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white placeholder:text-white/20 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all resize-none"
               ></textarea>
             </div>
+
+            {/* Dynamic Payment Section */}
+            <AnimatePresence>
+              {selectedTrack && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="bg-purple-900/20 border border-purple-500/30 rounded-2xl p-6 mt-4 space-y-6">
+                    <div className="flex flex-col md:flex-row items-center gap-6">
+                      <div className="flex-1 space-y-4">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 text-xs font-bold uppercase tracking-wider">
+                          Registration Fee
+                        </div>
+                        <h3 className="text-3xl font-bold text-white">{selectedPrice}</h3>
+                        <p className="text-white/70 text-sm">
+                          Please scan the QR code to pay the registration fee for the {document.querySelector(`option[value="${selectedTrack}"]`)?.textContent || "selected"} track. Once paid, upload a screenshot of the successful transaction below.
+                        </p>
+                      </div>
+                      
+                      <div className="w-40 h-40 bg-white p-2 rounded-xl flex-shrink-0 flex items-center justify-center relative overflow-hidden group">
+                        {/* Placeholder QR Code - user replaces with actual image later */}
+                        <div className="absolute inset-0 flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg m-2">
+                          <QrCode size={48} className="text-gray-400" />
+                        </div>
+                        <span className="absolute bottom-4 text-[10px] font-bold text-gray-400 text-center uppercase tracking-widest">
+                          Place QR Here
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-white/80 ml-1">Upload Payment Receipt</label>
+                      <div className="relative group cursor-pointer">
+                        <input
+                          name="receipt"
+                          type="file"
+                          accept="image/*,.pdf"
+                          required
+                          onChange={(e) => setFileName(e.target.files?.[0]?.name || "")}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                        />
+                        <div className="w-full bg-black/40 border border-white/10 group-hover:border-purple-500/50 rounded-xl py-4 px-4 flex items-center justify-center gap-3 transition-all">
+                          <UploadCloud size={20} className={fileName ? "text-green-400" : "text-white/40"} />
+                          <span className={fileName ? "text-green-400 font-medium" : "text-white/60"}>
+                            {fileName || "Click to browse or drag and drop receipt"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Submit Button */}
             <div className="pt-4">

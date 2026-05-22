@@ -4,6 +4,8 @@ import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import multer from 'multer';
+import fs from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -14,6 +16,27 @@ const PORT = 3001;
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Setup Multer for file uploads
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir);
+}
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, uploadDir);
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ storage: storage });
+
+// Serve uploaded files statically if needed later
+app.use('/uploads', express.static(uploadDir));
 
 // Initialize SQLite Database
 let db;
@@ -33,6 +56,7 @@ async function initDB() {
       college TEXT NOT NULL,
       degree TEXT NOT NULL,
       reason TEXT NOT NULL,
+      receipt TEXT NOT NULL,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `);
@@ -40,19 +64,22 @@ async function initDB() {
 }
 
 // Routes
-app.post('/api/register-internship', async (req, res) => {
+app.post('/api/register-internship', upload.single('receipt'), async (req, res) => {
   try {
     const { name, email, phone, track, college, degree, reason } = req.body;
+    const receiptFile = req.file;
 
     // Basic validation
-    if (!name || !email || !phone || !track) {
-      return res.status(400).json({ error: 'Missing required fields' });
+    if (!name || !email || !phone || !track || !receiptFile) {
+      return res.status(400).json({ error: 'Missing required fields or receipt upload' });
     }
 
+    const receiptPath = receiptFile.filename;
+
     const result = await db.run(
-      `INSERT INTO internships (name, email, phone, track, college, degree, reason)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [name, email, phone, track, college, degree, reason]
+      `INSERT INTO internships (name, email, phone, track, college, degree, reason, receipt)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [name, email, phone, track, college, degree, reason, receiptPath]
     );
 
     res.status(201).json({ 
