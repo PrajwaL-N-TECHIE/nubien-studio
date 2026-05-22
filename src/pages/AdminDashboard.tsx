@@ -46,6 +46,11 @@ const AdminDashboard = () => {
       setIsAuthenticated(true);
       fetchRecords();
     }
+
+    // Auto-logout when navigating away from the admin dashboard
+    return () => {
+      sessionStorage.removeItem("adminAuth");
+    };
   }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
