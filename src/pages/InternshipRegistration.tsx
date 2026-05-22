@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, Send, User, Mail, Phone, BookOpen, GraduationCap, Briefcase, Link as LinkIcon, CheckCircle2, UploadCloud, QrCode, Download, ArrowRight, Printer, Plus, Minus } from "lucide-react";
 import Magnetic from "@/components/Magnetic";
@@ -57,7 +57,7 @@ const InternshipRegistration = () => {
     ai_architect: "AI Architect"
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     const fetchStats = async () => {
       try {
         const res = await fetch(`${API_URL}/api/internship/stats`);
