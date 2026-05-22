@@ -3,10 +3,11 @@ import { motion } from "framer-motion";
 import { Lock, ShieldAlert, ArrowRight, Eye, Search, LogOut, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-const API_URL = import.meta.env.PROD ? "" : (import.meta.env.VITE_API_URL || "http://localhost:3001");
+import { db } from "@/lib/firebase";
+import { collection, getDocs, deleteDoc, doc, query, orderBy } from "firebase/firestore";
 
 interface InternshipRecord {
-  id: number;
+  id: string;
   name: string;
   email: string;
   phone: string;
@@ -43,7 +44,7 @@ const AdminDashboard = () => {
     const sessionAuth = sessionStorage.getItem("adminAuth");
     if (sessionAuth === "admin@123") {
       setIsAuthenticated(true);
-      fetchRecords("admin@123");
+      fetchRecords();
     }
   }, []);
 
@@ -53,13 +54,11 @@ const AdminDashboard = () => {
     setError("");
 
     try {
-      const response = await fetch(`${API_URL}/api/admin/internships?password=${password}`);
-      if (!response.ok) {
+      if (password !== "admin@123") {
         throw new Error("Invalid password");
       }
       
-      const data = await response.json();
-      setRecords(data);
+      await fetchRecords();
       setIsAuthenticated(true);
       sessionStorage.setItem("adminAuth", password);
     } catch (err) {
@@ -69,13 +68,15 @@ const AdminDashboard = () => {
     }
   };
 
-  const fetchRecords = async (pass: string) => {
+  const fetchRecords = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/admin/internships?password=${pass}`);
-      if (response.ok) {
-        const data = await response.json();
-        setRecords(data);
-      }
+      const q = query(collection(db, "internships"), orderBy("created_at", "desc"));
+      const querySnapshot = await getDocs(q);
+      const data: InternshipRecord[] = [];
+      querySnapshot.forEach((doc) => {
+        data.push({ id: doc.id, ...doc.data() } as InternshipRecord);
+      });
+      setRecords(data);
     } catch (error) {
       console.error("Failed to fetch records:", error);
     }
@@ -94,37 +95,26 @@ const AdminDashboard = () => {
     }
 
     try {
-      const response = await fetch(`${API_URL}/api/admin/internships?password=${password}`, {
-        method: 'DELETE'
-      });
+      const querySnapshot = await getDocs(collection(db, "internships"));
+      const deletePromises = querySnapshot.docs.map(document => deleteDoc(doc(db, "internships", document.id)));
+      await Promise.all(deletePromises);
 
-      if (response.ok) {
-        alert("Database has been successfully cleared.");
-        setRecords([]);
-      } else {
-        alert("Failed to clear database. Unauthorized.");
-      }
+      alert("Database has been successfully cleared.");
+      setRecords([]);
     } catch (error) {
       console.error("Error clearing database:", error);
       alert("An error occurred while clearing the database.");
     }
   };
 
-  const handleDeleteRecord = async (id: number) => {
+  const handleDeleteRecord = async (id: string) => {
     if (!window.confirm("Are you sure you want to delete this specific registration?")) {
       return;
     }
 
     try {
-      const response = await fetch(`${API_URL}/api/admin/internships/${id}?password=${password}`, {
-        method: 'DELETE'
-      });
-
-      if (response.ok) {
-        setRecords(prev => prev.filter(r => r.id !== id));
-      } else {
-        alert("Failed to delete record. Unauthorized.");
-      }
+      await deleteDoc(doc(db, "internships", id));
+      setRecords(prev => prev.filter(r => r.id !== id));
     } catch (error) {
       console.error("Error deleting record:", error);
       alert("An error occurred while deleting the record.");
@@ -138,8 +128,10 @@ const AdminDashboard = () => {
     record.track.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-IN', {
+  const formatDate = (timestamp: any) => {
+    if (!timestamp) return "-";
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    return date.toLocaleDateString('en-IN', {
       day: 'numeric', month: 'short', year: 'numeric',
       hour: '2-digit', minute: '2-digit'
     });

@@ -7,7 +7,9 @@ import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { useNavigate } from "react-router-dom";
 
-const API_URL = import.meta.env.PROD ? "" : (import.meta.env.VITE_API_URL || "http://localhost:3001");
+import { db, storage } from "@/lib/firebase";
+import { collection, query, where, getDocs, addDoc, serverTimestamp } from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 const FAQs = [
   {
@@ -60,9 +62,13 @@ const InternshipRegistration = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res = await fetch(`${API_URL}/api/internship/stats`);
-        const data = await res.json();
-        setTrackStats(data);
+        const querySnapshot = await getDocs(collection(db, "internships"));
+        const stats: Record<string, number> = {};
+        querySnapshot.forEach((doc) => {
+          const track = doc.data().track;
+          stats[track] = (stats[track] || 0) + 1;
+        });
+        setTrackStats(stats);
       } catch (err) {
         console.error("Failed to fetch stats", err);
       }
@@ -79,13 +85,9 @@ const InternshipRegistration = () => {
     }
     setReferralStatus('verifying');
     try {
-      const res = await fetch(`${API_URL}/api/internship/verify-referral/${cleanCode}`);
-      if (!res.ok) {
-        console.error('Verify referral failed with status:', res.status);
-        throw new Error('Verification failed');
-      }
-      const data = await res.json();
-      setReferralStatus(data.valid ? 'valid' : 'invalid');
+      const q = query(collection(db, "internships"), where("registration_id", "==", cleanCode));
+      const querySnapshot = await getDocs(q);
+      setReferralStatus(!querySnapshot.empty ? 'valid' : 'invalid');
     } catch (err) {
       console.error('Verify referral error:', err);
       setReferralStatus('invalid');
@@ -123,14 +125,18 @@ const InternshipRegistration = () => {
         throw new Error('Please upload a receipt');
       }
 
-      const base64Receipt = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = error => reject(error);
-        reader.readAsDataURL(file);
-      });
+      // Generate unique registration ID (e.g. BLDCY-UIUX-4921)
+      const trackPrefix = (formData.get('track') as string).substring(0, 4).toUpperCase();
+      const randomNum = Math.floor(1000 + Math.random() * 9000);
+      const registrationId = `BLDCY-${trackPrefix}-${randomNum}`;
 
-      const payload = {
+      // Upload receipt to Firebase Storage
+      const storageRef = ref(storage, `receipts/${registrationId}-${file.name}`);
+      const snapshot = await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(snapshot.ref);
+
+      // Save to Firestore
+      const docRef = await addDoc(collection(db, "internships"), {
         name: formData.get('name'),
         email: formData.get('email'),
         phone: formData.get('phone'),
@@ -138,23 +144,13 @@ const InternshipRegistration = () => {
         college: formData.get('college'),
         degree: formData.get('degree'),
         reason: formData.get('reason'),
-        receipt: base64Receipt,
-        ...(referralStatus === 'valid' && referralCode ? { referral_code: referralCode } : {})
-      };
-
-      const response = await fetch(`${API_URL}/api/register-internship`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
+        receipt: downloadURL,
+        registration_id: registrationId,
+        referral_code: referralStatus === 'valid' && referralCode ? referralCode : null,
+        created_at: serverTimestamp()
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to register');
-      }
-      
-      const resultData = await response.json();
+      const resultData = { id: docRef.id, registration_id: registrationId };
 
       // Send email notification
       const templateParams = {
