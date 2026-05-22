@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, CheckCircle, XCircle, ShieldCheck, ArrowLeft, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { audio } from "@/utils/audio";
 
 import { db } from "@/lib/firebase";
 import { collection, query, where, getDocs } from "firebase/firestore";
@@ -50,8 +51,13 @@ const VerifyCertificate = () => {
         created_at: data.created_at?.toDate ? data.created_at.toDate().toISOString() : new Date().toISOString(),
         registration_id: data.registration_id
       });
+      
+      // Play premium success chime
+      audio.playSuccess();
     } catch (err) {
       setError(true);
+      // Play soft error sound
+      audio.playError();
     } finally {
       setLoading(false);
     }
