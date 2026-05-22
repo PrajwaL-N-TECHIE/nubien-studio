@@ -3,8 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Search, CheckCircle, XCircle, ShieldCheck, ArrowLeft, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
-
+import { db } from "@/lib/firebase";
+import { collection, query, where, getDocs } from "firebase/firestore";
 interface VerificationData {
   name: string;
   track: string;
@@ -28,13 +28,20 @@ const VerifyCertificate = () => {
     setResult(null);
 
     try {
-      const response = await fetch(`${API_URL}/api/internship/${searchId.trim()}`);
-      if (!response.ok) {
+      const q = query(collection(db, "internships"), where("registration_id", "==", searchId.trim()));
+      const querySnapshot = await getDocs(q);
+      
+      if (querySnapshot.empty) {
         throw new Error("Not found");
       }
       
-      const data = await response.json();
-      setResult(data);
+      const data = querySnapshot.docs[0].data();
+      setResult({
+        name: data.name,
+        track: data.track,
+        created_at: data.created_at?.toDate ? data.created_at.toDate().toISOString() : new Date().toISOString(),
+        registration_id: data.registration_id
+      });
     } catch (err) {
       setError(true);
     } finally {
