@@ -19,6 +19,14 @@ interface InternshipRecord {
   created_at: string;
 }
 
+const trackNames: Record<string, string> = {
+  uiux: "UI/UX Designer",
+  ai_automation: "AI Automation Engineer",
+  fullstack: "Full Stack Developer",
+  blockchain: "Blockchain Engineer",
+  ai_architect: "AI Architect"
+};
+
 const AdminDashboard = () => {
   const [password, setPassword] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -233,17 +241,19 @@ const AdminDashboard = () => {
             <p className="text-xs text-purple-400 font-bold uppercase mb-1">Total</p>
             <p className="text-3xl font-extrabold text-white">{records.length}</p>
           </motion.div>
-          {['UI/UX Designer', 'AI Automation Engineer', 'Full Stack Developer', 'Blockchain Engineer', 'AI Architect'].map((track, i) => {
-            const count = records.filter(r => r.track === track).length;
+          {Object.entries(trackNames).map(([rawTrack, friendlyName], i) => {
+            const count = records.filter(r => r.track === rawTrack).length;
             return (
               <motion.div 
-                key={track}
+                key={rawTrack}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
+                transition={{ delay: (i + 1) * 0.05 }}
                 className="bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-lg"
               >
-                <p className="text-[10px] text-white/50 font-bold uppercase mb-1 line-clamp-1">{track.replace(' Engineer', '').replace(' Developer', '').replace(' Designer', '')}</p>
+                <p className="text-[10px] text-white/50 font-bold uppercase mb-1 line-clamp-1">
+                  {friendlyName.replace(' Engineer', '').replace(' Developer', '').replace(' Designer', '')}
+                </p>
                 <p className="text-2xl font-extrabold text-white/90">{count}</p>
               </motion.div>
             );
@@ -282,7 +292,7 @@ const AdminDashboard = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="px-3 py-1 bg-purple-900/30 border border-purple-500/20 rounded-full text-xs font-bold text-purple-400">
-                          {record.track}
+                          {trackNames[record.track] || record.track}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
