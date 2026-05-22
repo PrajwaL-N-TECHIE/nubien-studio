@@ -17,11 +17,10 @@ const InternshipRegistration = () => {
         name: formData.get('name'),
         email: formData.get('email'),
         phone: formData.get('phone'),
-        role: formData.get('role'),
+        track: formData.get('track'),
         college: formData.get('college'),
         degree: formData.get('degree'),
-        portfolio: formData.get('portfolio'),
-        why_join: formData.get('why_join'),
+        reason: formData.get('reason'),
       };
 
       const response = await fetch('http://localhost:3001/api/register-internship', {
@@ -162,26 +161,25 @@ const InternshipRegistration = () => {
                 </div>
               </div>
 
-              {/* Role Applying For */}
+              {/* Internship Track */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-white/80 ml-1">Role Applying For</label>
+                <label className="text-sm font-medium text-white/80 ml-1">Internship Track</label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                     <Briefcase size={18} className="text-white/40" />
                   </div>
                   <select
-                    name="role"
+                    name="track"
                     required
                     defaultValue=""
                     className="w-full bg-[#13131a] border border-white/10 rounded-xl py-3 pl-11 pr-4 text-white focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all appearance-none"
                   >
-                    <option value="" disabled>Select a role...</option>
-                    <option value="frontend">Frontend Developer</option>
-                    <option value="backend">Backend Developer</option>
-                    <option value="fullstack">Full Stack Developer</option>
+                    <option value="" disabled>Select a track...</option>
                     <option value="uiux">UI/UX Designer</option>
-                    <option value="ai">AI / Automation Engineer</option>
-                    <option value="marketing">Digital Marketing</option>
+                    <option value="fullstack">Full stack developer</option>
+                    <option value="ai_architect">AI Architect</option>
+                    <option value="ai_automation">AI Automation Engineer</option>
+                    <option value="blockchain">Blockchain engineer</option>
                   </select>
                 </div>
               </div>
@@ -223,28 +221,10 @@ const InternshipRegistration = () => {
               </div>
             </div>
 
-            {/* Resume / Portfolio Link */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-white/80 ml-1">Portfolio / Resume Link</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <LinkIcon size={18} className="text-white/40" />
-                </div>
-                <input
-                  name="portfolio"
-                  required
-                  type="url"
-                  placeholder="https://github.com/johndoe or Drive link"
-                  className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-11 pr-4 text-white placeholder:text-white/20 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all"
-                />
-              </div>
-            </div>
-
-            {/* Why Join Us */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-white/80 ml-1">Why do you want to join Buildicy?</label>
+              <label className="text-sm font-medium text-white/80 ml-1">Why reason to choose this track?</label>
               <textarea
-                name="why_join"
+                name="reason"
                 required
                 rows={4}
                 placeholder="Tell us about your passion and what you hope to achieve..."
@@ -258,7 +238,7 @@ const InternshipRegistration = () => {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full py-4 rounded-xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 text-white flex items-center justify-center gap-2 group hover:shadow-[0_0_30px_rgba(168,85,247,0.4)] transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+                  className="w-full py-4 rounded-xl font-bold bg-gradient-to-r from-purple-600 to-purple-800 text-white flex items-center justify-center gap-2 group hover:shadow-[0_0_30px_rgba(168,85,247,0.4)] transition-all disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? (
                     <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />

@@ -29,11 +29,10 @@ async function initDB() {
       name TEXT NOT NULL,
       email TEXT NOT NULL,
       phone TEXT NOT NULL,
-      role TEXT NOT NULL,
+      track TEXT NOT NULL,
       college TEXT NOT NULL,
       degree TEXT NOT NULL,
-      portfolio TEXT NOT NULL,
-      why_join TEXT NOT NULL,
+      reason TEXT NOT NULL,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `);
@@ -43,17 +42,17 @@ async function initDB() {
 // Routes
 app.post('/api/register-internship', async (req, res) => {
   try {
-    const { name, email, phone, role, college, degree, portfolio, why_join } = req.body;
+    const { name, email, phone, track, college, degree, reason } = req.body;
 
     // Basic validation
-    if (!name || !email || !phone || !role) {
+    if (!name || !email || !phone || !track) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
     const result = await db.run(
-      `INSERT INTO internships (name, email, phone, role, college, degree, portfolio, why_join)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [name, email, phone, role, college, degree, portfolio, why_join]
+      `INSERT INTO internships (name, email, phone, track, college, degree, reason)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [name, email, phone, track, college, degree, reason]
     );
 
     res.status(201).json({ 
