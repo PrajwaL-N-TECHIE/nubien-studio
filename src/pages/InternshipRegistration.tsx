@@ -239,7 +239,7 @@ const InternshipRegistration = () => {
           Internship <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-purple-600">Application</span>
         </h1>
         <p className="text-lg text-white/60">
-          Kickstart your career with Buildicy. We are looking for passionate individuals ready to build the future of the web. Fill out the form below to register your interest.
+          Accelerate your career with the Buildicy Elite Internship Training Program. Gain hands-on experience, expert mentorship, and build industry-grade projects. Enroll below to secure your spot.
         </p>
       </motion.div>
 
