@@ -24,6 +24,14 @@ const InternshipRegistration = () => {
     ai_architect: "₹1299"
   };
 
+  const trackNames: Record<string, string> = {
+    uiux: "UI/UX Designer",
+    ai_automation: "AI Automation Engineer",
+    fullstack: "Full Stack Developer",
+    blockchain: "Blockchain Engineer",
+    ai_architect: "AI Architect"
+  };
+
   const selectedPrice = useMemo(() => trackPricing[selectedTrack] || "", [selectedTrack]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -69,8 +77,8 @@ const InternshipRegistration = () => {
       }
 
       setRegistrationData({
-        name: formData.get('name'),
-        track: document.querySelector(`option[value="${formData.get('track')}"]`)?.textContent,
+        name: formData.get('name') as string,
+        track: trackNames[formData.get('track') as string] || "Internship Track",
         amount: selectedPrice,
         id: resultData.registration_id,
         date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
@@ -78,7 +86,9 @@ const InternshipRegistration = () => {
       
       setIsSuccess(true);
       // Trigger printing animation
-      setTimeout(() => setIsPrinting(true), 500);
+      setTimeout(() => setIsPrinting(true), 100);
+      e.currentTarget.reset();
+      setFileName("");
     } catch (error) {
       console.error('Error submitting form:', error);
       alert('An error occurred while submitting your application. Please try again.');
@@ -134,9 +144,9 @@ const InternshipRegistration = () => {
           
           {/* Animated Receipt */}
           <motion.div
-            initial={{ y: -400, opacity: 0 }}
-            animate={{ y: isPrinting ? 0 : -400, opacity: isPrinting ? 1 : 0 }}
-            transition={{ type: "spring", damping: 20, stiffness: 40, delay: 0.5 }}
+            initial={{ y: -50, opacity: 0 }}
+            animate={{ y: isPrinting ? 0 : -50, opacity: isPrinting ? 1 : 0 }}
+            transition={{ type: "spring", damping: 20, stiffness: 100, delay: 0.2 }}
             className="w-[90%] mx-auto bg-white rounded-b-xl shadow-2xl relative -mt-2 overflow-hidden"
             id="virtual-receipt"
           >
@@ -408,7 +418,7 @@ const InternshipRegistration = () => {
                         <input
                           name="receipt"
                           type="file"
-                          accept="image/*,.pdf"
+                          accept=".png,.jpg,.jpeg,.pdf"
                           required
                           onChange={(e) => setFileName(e.target.files?.[0]?.name || "")}
                           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
