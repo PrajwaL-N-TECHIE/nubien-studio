@@ -15,6 +15,23 @@ class BuildicyAudio {
         }
     }
 
+    // Call this strictly during a user interaction (like onClick) to unlock iOS Safari
+    prime() {
+        try {
+            this.init();
+            if (!this.ctx) return;
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            gain.gain.value = 0; // Silent
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start();
+            osc.stop(this.ctx.currentTime + 0.01);
+        } catch (e) {
+            console.warn("Audio prime failed:", e);
+        }
+    }
+
     playTone(freq: number, type: OscillatorType = 'sine', duration: number = 0.1, volume: number = 0.1) {
         try {
             this.init();

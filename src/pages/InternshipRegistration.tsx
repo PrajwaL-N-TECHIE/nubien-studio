@@ -111,6 +111,8 @@ const InternshipRegistration = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    audio.prime(); // Unlock Web Audio instantly on user interaction for iOS Safari
+    
     setIsSubmitting(true);
     
     try {
@@ -279,9 +281,25 @@ const InternshipRegistration = () => {
       });
       
       pdf.addImage(imgData, 'PNG', 0, 0, canvas.width / 2, canvas.height / 2);
-      pdf.save(`Buildicy_Receipt_${registrationData?.id}.pdf`);
+      
+      // Fix for iOS Safari PDF Download
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      
+      if (isIOS) {
+        // iOS blocks programmatic downloads, so we open it as a data URI for them to "Save to Files"
+        const pdfDataUri = pdf.output('datauristring');
+        const newWindow = window.open();
+        if (newWindow) {
+           newWindow.document.write(`<iframe src="${pdfDataUri}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>`);
+        } else {
+           window.location.assign(pdfDataUri);
+        }
+      } else {
+        pdf.save(`Buildicy_Receipt_${registrationData?.id}.pdf`);
+      }
     } catch (error) {
       console.error('Error generating PDF:', error);
+      alert("Failed to generate PDF. Please try taking a screenshot of the receipt instead.");
     }
   };
 
