@@ -71,17 +71,23 @@ const InternshipRegistration = () => {
   }, []);
 
   const handleVerifyReferral = async (code: string) => {
-    setReferralCode(code);
-    if (code.length < 5) {
+    const cleanCode = code.trim();
+    setReferralCode(cleanCode);
+    if (cleanCode.length < 5) {
       setReferralStatus('idle');
       return;
     }
     setReferralStatus('verifying');
     try {
-      const res = await fetch(`${API_URL}/api/internship/verify-referral/${code}`);
+      const res = await fetch(`${API_URL}/api/internship/verify-referral/${cleanCode}`);
+      if (!res.ok) {
+        console.error('Verify referral failed with status:', res.status);
+        throw new Error('Verification failed');
+      }
       const data = await res.json();
       setReferralStatus(data.valid ? 'valid' : 'invalid');
-    } catch {
+    } catch (err) {
+      console.error('Verify referral error:', err);
       setReferralStatus('invalid');
     }
   };
