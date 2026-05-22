@@ -221,11 +221,11 @@ const InternshipRegistration = () => {
         date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
       });
       
+      form.reset();
+      setFileName("");
       setIsSuccess(true);
       // Trigger printing animation
       setTimeout(() => setIsPrinting(true), 100);
-      e.currentTarget.reset();
-      setFileName("");
     } catch (error) {
       console.error('Error submitting form:', error);
       alert('An error occurred while submitting your application. Please try again.');
