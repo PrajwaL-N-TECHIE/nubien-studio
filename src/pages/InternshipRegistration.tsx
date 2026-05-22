@@ -226,11 +226,14 @@ const InternshipRegistration = () => {
       setFileName("");
       setIsSuccess(true);
       
+      // Scroll to top so they can watch the receipt print!
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      
       // Trigger realistic printing animation and sound
       setTimeout(() => {
         audio.playPrint();
         setIsPrinting(true);
-      }, 300);
+      }, 600);
     } catch (error) {
       console.error('Error submitting form:', error);
       alert('An error occurred while submitting your application. Please try again.');
@@ -547,7 +550,10 @@ const InternshipRegistration = () => {
 
               {/* Referral Code */}
               <div className="md:col-span-2 space-y-2">
-                <label className="text-sm font-medium text-white/80 ml-1">Referral Code (Friend's Registration ID) <span className="text-white/40 font-normal">- Optional</span></label>
+                <div className="flex justify-between items-center">
+                  <label className="text-sm font-medium text-white/80 ml-1">Referral Code (Friend's Registration ID) <span className="text-white/40 font-normal">- Optional</span></label>
+                  {isEarlyBird && <span className="text-[10px] text-purple-400 font-medium bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">Max 10% Discount Limit Reached</span>}
+                </div>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                     <User size={18} className="text-white/40" />
@@ -568,7 +574,9 @@ const InternshipRegistration = () => {
                   {referralStatus === 'invalid' && <div className="absolute right-4 top-1/2 -translate-y-1/2 text-red-400 text-xs">Invalid ID</div>}
                 </div>
                 {referralStatus === 'valid' && (
-                  <p className="text-xs text-green-400/80 ml-1">You both get a 10% discount benefit!</p>
+                  <p className="text-xs text-green-400/80 ml-1">
+                    {isEarlyBird ? "Your friend still gets a 10% discount benefit!" : "You both get a 10% discount benefit!"}
+                  </p>
                 )}
               </div>
             </div>
@@ -603,6 +611,9 @@ const InternshipRegistration = () => {
                             <div className="flex flex-col items-center gap-1">
                               <span className="text-sm text-white/40 line-through">₹{originalPrice}</span>
                               <span className="text-green-400 font-extrabold flex items-center gap-2">₹{finalPrice} <span className="text-[10px] bg-green-500/20 px-2 py-0.5 rounded-full">-10%</span></span>
+                              {(isEarlyBird && referralStatus === 'valid') && (
+                                <span className="text-[10px] text-white/40 mt-1">* Friend still gets benefit!</span>
+                              )}
                             </div>
                           ) : (
                             <span>₹{originalPrice}</span>
