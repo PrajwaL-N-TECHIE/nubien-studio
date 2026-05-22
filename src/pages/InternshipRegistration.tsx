@@ -112,15 +112,42 @@ const InternshipRegistration = () => {
     setIsSubmitting(true);
     
     try {
-      const formData = new FormData(e.currentTarget);
-      if (referralStatus === 'valid' && referralCode) {
-        formData.append('referral_code', referralCode);
+      const form = e.currentTarget;
+      const formData = new FormData(form);
+      
+      // Read file to base64
+      const fileInput = form.querySelector('input[type="file"]') as HTMLInputElement;
+      const file = fileInput?.files?.[0];
+      
+      if (!file) {
+        throw new Error('Please upload a receipt');
       }
+
+      const base64Receipt = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = error => reject(error);
+        reader.readAsDataURL(file);
+      });
+
+      const payload = {
+        name: formData.get('name'),
+        email: formData.get('email'),
+        phone: formData.get('phone'),
+        track: formData.get('track'),
+        college: formData.get('college'),
+        degree: formData.get('degree'),
+        reason: formData.get('reason'),
+        receipt: base64Receipt,
+        ...(referralStatus === 'valid' && referralCode ? { referral_code: referralCode } : {})
+      };
 
       const response = await fetch(`${API_URL}/api/register-internship`, {
         method: 'POST',
-        // Do NOT set Content-Type header when sending FormData, the browser will set it with the correct boundary
-        body: formData,
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
       });
 
       if (!response.ok) {

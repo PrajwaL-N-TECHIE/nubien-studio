@@ -1,16 +1,13 @@
 import express from 'express';
 import cors from 'cors';
-import multer from 'multer';
 import serverless from 'serverless-http';
 import { sql } from '@vercel/postgres';
 
 const app = express();
 
 app.use(cors());
-app.use(express.json());
-
-// Use memory storage for Vercel (since file system is ephemeral)
-const upload = multer({ storage: multer.memoryStorage() });
+// Increase JSON payload limit to handle Base64 images
+app.use(express.json({ limit: '10mb' }));
 
 // Database Initialization (runs on cold start)
 async function initDB() {
@@ -43,17 +40,13 @@ initDB();
 // --------------------------------------------------------------------------
 
 // Register Internship
-app.post('/api/register-internship', upload.single('receipt'), async (req, res) => {
+app.post('/api/register-internship', async (req, res) => {
   try {
-    const { name, email, phone, track, college, degree, reason, referral_code } = req.body;
-    const receiptFile = req.file;
+    const { name, email, phone, track, college, degree, reason, referral_code, receipt } = req.body;
 
-    if (!name || !email || !phone || !track || !college || !degree || !reason || !receiptFile) {
+    if (!name || !email || !phone || !track || !college || !degree || !reason || !receipt) {
       return res.status(400).json({ error: 'All fields including receipt are required' });
     }
-
-    // Convert file buffer to base64 string
-    const base64Receipt = `data:${receiptFile.mimetype};base64,${receiptFile.buffer.toString('base64')}`;
     
     // Generate unique registration ID (e.g. BLDCY-UIUX-4921)
     const trackPrefix = track.substring(0, 4).toUpperCase();
@@ -62,7 +55,7 @@ app.post('/api/register-internship', upload.single('receipt'), async (req, res) 
 
     const result = await sql`
       INSERT INTO internships (name, email, phone, track, college, degree, reason, receipt, registration_id, referral_code)
-      VALUES (${name}, ${email}, ${phone}, ${track}, ${college}, ${degree}, ${reason}, ${base64Receipt}, ${registrationId}, ${referral_code || null})
+      VALUES (${name}, ${email}, ${phone}, ${track}, ${college}, ${degree}, ${reason}, ${receipt}, ${registrationId}, ${referral_code || null})
       RETURNING id, registration_id
     `;
 
@@ -152,10 +145,3 @@ app.delete('/api/admin/internships', async (req, res) => {
 
 // Wrap the Express app with serverless-http
 export default serverless(app);
-
-// Disable Vercel's default body parser so Multer can process multipart/form-data
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
