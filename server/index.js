@@ -57,6 +57,8 @@ async function initDB() {
       degree TEXT NOT NULL,
       reason TEXT NOT NULL,
       receipt TEXT NOT NULL,
+      profile_image TEXT,
+      registration_id TEXT UNIQUE NOT NULL,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `);
@@ -76,19 +78,66 @@ app.post('/api/register-internship', upload.single('receipt'), async (req, res) 
 
     const receiptPath = receiptFile.filename;
 
+    // Generate Unique ID
+    const randomHex = Math.floor(1000 + Math.random() * 9000).toString(); // 4 digit random
+    let trackPrefix = 'INT';
+    if (track === 'uiux') trackPrefix = 'UIUX';
+    if (track === 'fullstack') trackPrefix = 'FS';
+    if (track === 'ai_architect') trackPrefix = 'AIA';
+    if (track === 'ai_automation') trackPrefix = 'AIE';
+    if (track === 'blockchain') trackPrefix = 'BC';
+    
+    const registrationId = `BLDCY-${trackPrefix}-${randomHex}`;
+
     const result = await db.run(
-      `INSERT INTO internships (name, email, phone, track, college, degree, reason, receipt)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [name, email, phone, track, college, degree, reason, receiptPath]
+      `INSERT INTO internships (name, email, phone, track, college, degree, reason, receipt, registration_id)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [name, email, phone, track, college, degree, reason, receiptPath, registrationId]
     );
 
     res.status(201).json({ 
-      message: 'Application received successfully',
-      id: result.lastID 
+      success: true, 
+      id: result.lastID,
+      registration_id: registrationId 
     });
   } catch (error) {
-    console.error('Error saving application:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error('Error saving registration:', error);
+    res.status(500).json({ error: 'Failed to save registration' });
+  }
+});
+
+// Get Dashboard Data
+app.get('/api/internship/:registrationId', async (req, res) => {
+  try {
+    const row = await db.get(
+      'SELECT * FROM internships WHERE registration_id = ?',
+      [req.params.registrationId]
+    );
+    if (!row) {
+      return res.status(404).json({ error: 'Registration not found' });
+    }
+    res.json(row);
+  } catch (error) {
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+// Upload Profile Image
+app.post('/api/internship/:registrationId/profile-image', upload.single('image'), async (req, res) => {
+  try {
+    const imageFile = req.file;
+    if (!imageFile) {
+      return res.status(400).json({ error: 'No image uploaded' });
+    }
+    const imagePath = imageFile.filename;
+    
+    await db.run(
+      'UPDATE internships SET profile_image = ? WHERE registration_id = ?',
+      [imagePath, req.params.registrationId]
+    );
+    res.json({ success: true, profile_image: imagePath });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update profile image' });
   }
 });
 

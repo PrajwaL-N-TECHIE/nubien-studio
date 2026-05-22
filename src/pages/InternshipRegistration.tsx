@@ -1,14 +1,20 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, Send, User, Mail, Phone, BookOpen, GraduationCap, Briefcase, Link as LinkIcon, CheckCircle2, UploadCloud, QrCode } from "lucide-react";
+import { Sparkles, Send, User, Mail, Phone, BookOpen, GraduationCap, Briefcase, Link as LinkIcon, CheckCircle2, UploadCloud, QrCode, Download, ArrowRight, Printer } from "lucide-react";
 import Magnetic from "@/components/Magnetic";
 import emailjs from '@emailjs/browser';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
+import { useNavigate } from "react-router-dom";
 
 const InternshipRegistration = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [registrationData, setRegistrationData] = useState<any>(null);
   const [selectedTrack, setSelectedTrack] = useState("");
   const [fileName, setFileName] = useState("");
+  const [isPrinting, setIsPrinting] = useState(false);
+  const navigate = useNavigate();
 
   const trackPricing: Record<string, string> = {
     uiux: "₹899",
@@ -36,6 +42,8 @@ const InternshipRegistration = () => {
       if (!response.ok) {
         throw new Error('Failed to register');
       }
+      
+      const resultData = await response.json();
 
       // Send email notification
       const templateParams = {
@@ -60,8 +68,17 @@ const InternshipRegistration = () => {
         console.error("Failed to send email notification:", emailErr);
       }
 
+      setRegistrationData({
+        name: formData.get('name'),
+        track: document.querySelector(`option[value="${formData.get('track')}"]`)?.textContent,
+        amount: selectedPrice,
+        id: resultData.registration_id,
+        date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+      });
+      
       setIsSuccess(true);
-      setTimeout(() => setIsSuccess(false), 5000);
+      // Trigger printing animation
+      setTimeout(() => setIsPrinting(true), 500);
     } catch (error) {
       console.error('Error submitting form:', error);
       alert('An error occurred while submitting your application. Please try again.');
@@ -70,35 +87,129 @@ const InternshipRegistration = () => {
     }
   };
 
-  if (isSuccess) {
-    return (
-      <div className="min-h-[80vh] flex items-center justify-center pt-24 pb-12 px-4 relative overflow-hidden">
-        {/* Background Elements */}
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-[120px]" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-600/10 rounded-full blur-[120px]" />
+  const handleDownloadReceipt = async () => {
+    const receiptElement = document.getElementById('virtual-receipt');
+    if (!receiptElement) return;
 
+    try {
+      const canvas = await html2canvas(receiptElement, {
+        scale: 2,
+        backgroundColor: '#ffffff',
+      });
+      
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'px',
+        format: [canvas.width / 2, canvas.height / 2]
+      });
+      
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width / 2, canvas.height / 2);
+      pdf.save(`Buildicy_Receipt_${registrationData?.id}.pdf`);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+    }
+  };
+
+  if (isSuccess && registrationData) {
+    return (
+      <div className="min-h-screen pt-32 pb-24 px-4 relative flex flex-col items-center">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-[120px]" />
+        
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="relative z-10 max-w-md w-full bg-[#0a0a0f]/80 backdrop-blur-2xl border border-white/10 rounded-3xl p-8 md:p-12 text-center"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-12 relative z-10"
         >
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ type: "spring", delay: 0.2 }}
-            className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6"
-          >
+          <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-[0_0_30px_rgba(34,197,94,0.3)]">
             <CheckCircle2 size={40} className="text-green-400" />
-          </motion.div>
-          <h2 className="text-3xl font-bold text-white mb-4">Application Received!</h2>
-          <p className="text-white/60 mb-8">
-            Thank you for applying for the internship program at Buildicy. Our team will review your application and get back to you shortly.
-          </p>
-          <button
-            onClick={() => window.location.href = '/'}
-            className="px-8 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-white font-medium transition-colors border border-white/10"
+          </div>
+          <h2 className="text-4xl font-extrabold text-white mb-2">Registration Complete</h2>
+          <p className="text-white/60">Your virtual receipt is printing...</p>
+        </motion.div>
+
+        {/* Printer Slot */}
+        <div className="w-full max-w-md relative z-10">
+          <div className="w-full h-4 bg-zinc-900 rounded-full shadow-inner border-b border-white/5 relative z-20" />
+          
+          {/* Animated Receipt */}
+          <motion.div
+            initial={{ y: -400, opacity: 0 }}
+            animate={{ y: isPrinting ? 0 : -400, opacity: isPrinting ? 1 : 0 }}
+            transition={{ type: "spring", damping: 20, stiffness: 40, delay: 0.5 }}
+            className="w-[90%] mx-auto bg-white rounded-b-xl shadow-2xl relative -mt-2 overflow-hidden"
+            id="virtual-receipt"
           >
-            Return to Home
+            {/* Receipt Zigzag Bottom */}
+            <div className="absolute bottom-0 left-0 right-0 h-4 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMCIgaGVpZ2h0PSIxMCI+PHBvbHlnb24gcG9pbnRzPSIwLDEwIDUsMCAxMCwxMCIgZmlsbD0iIzBBMEEwRiIvPjwvc3ZnPg==')] bg-repeat-x" />
+            
+            <div className="p-8 pb-12">
+              <div className="flex justify-between items-start mb-8 border-b border-dashed border-gray-300 pb-6">
+                <div>
+                  <h3 className="text-2xl font-black text-purple-900 font-['Syne'] tracking-tighter">BUILDICY</h3>
+                  <p className="text-xs text-gray-500 font-bold tracking-widest uppercase mt-1">Official Receipt</p>
+                </div>
+                <div className="text-right">
+                  <div className="text-gray-400">
+                    <QrCode size={32} />
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <div>
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Registration ID</p>
+                  <p className="text-sm font-['DM_Mono'] font-bold text-gray-900 bg-gray-100 py-2 px-3 rounded inline-block">{registrationData.id}</p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Applicant</p>
+                    <p className="text-sm font-bold text-gray-800">{registrationData.name}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Date</p>
+                    <p className="text-sm font-bold text-gray-800">{registrationData.date}</p>
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Program Track</p>
+                  <p className="text-base font-bold text-purple-700">{registrationData.track}</p>
+                </div>
+
+                <div className="border-t border-dashed border-gray-300 pt-6 mt-6 flex justify-between items-end">
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Amount Paid</p>
+                  <p className="text-2xl font-black text-gray-900">{registrationData.amount}</p>
+                </div>
+                
+                <div className="pt-4 text-center">
+                  <p className="text-[9px] text-gray-400 uppercase tracking-widest font-bold">Status: Verified & Confirmed</p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Action Buttons */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: isPrinting ? 1 : 0, y: isPrinting ? 0 : 20 }}
+          transition={{ delay: 2.5 }}
+          className="flex flex-col sm:flex-row gap-4 mt-12 relative z-10 w-full max-w-md px-4"
+        >
+          <button
+            onClick={handleDownloadReceipt}
+            className="flex-1 py-4 rounded-xl font-bold bg-white/5 border border-white/10 text-white flex items-center justify-center gap-2 hover:bg-white/10 transition-all"
+          >
+            <Download size={18} /> Download PDF
+          </button>
+          
+          <button
+            onClick={() => navigate(`/internship-dashboard/${registrationData?.id}`)}
+            className="flex-1 py-4 rounded-xl font-bold bg-purple-600 text-white flex items-center justify-center gap-2 hover:shadow-[0_0_30px_rgba(168,85,247,0.4)] transition-all"
+          >
+            Dashboard <ArrowRight size={18} />
           </button>
         </motion.div>
       </div>
@@ -120,7 +231,7 @@ const InternshipRegistration = () => {
           <span>Join The Team</span>
         </div>
         <h1 className="text-4xl md:text-6xl font-extrabold text-white mb-6 tracking-tight">
-          Internship <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">Application</span>
+          Internship <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-purple-600">Application</span>
         </h1>
         <p className="text-lg text-white/60">
           Kickstart your career with Buildicy. We are looking for passionate individuals ready to build the future of the web. Fill out the form below to register your interest.
