@@ -212,16 +212,9 @@ const InternshipRegistration = () => {
         >
           <button
             onClick={handleDownloadReceipt}
-            className="flex-1 py-4 rounded-xl font-bold bg-white/5 border border-white/10 text-white flex items-center justify-center gap-2 hover:bg-white/10 transition-all"
+            className="w-full py-4 rounded-xl font-bold bg-purple-600 text-white flex items-center justify-center gap-2 hover:shadow-[0_0_30px_rgba(168,85,247,0.4)] transition-all"
           >
-            <Download size={18} /> Download PDF
-          </button>
-          
-          <button
-            onClick={() => navigate(`/internship-dashboard/${registrationData?.id}`)}
-            className="flex-1 py-4 rounded-xl font-bold bg-purple-600 text-white flex items-center justify-center gap-2 hover:shadow-[0_0_30px_rgba(168,85,247,0.4)] transition-all"
-          >
-            Dashboard <ArrowRight size={18} />
+            <Download size={18} /> Download Receipt PDF
           </button>
         </motion.div>
       </div>
