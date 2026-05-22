@@ -16,6 +16,9 @@ const InternshipRegistration = () => {
   const [selectedTrack, setSelectedTrack] = useState("");
   const [fileName, setFileName] = useState("");
   const [isPrinting, setIsPrinting] = useState(false);
+  const [totalRegistrations, setTotalRegistrations] = useState(0);
+  const [referralCode, setReferralCode] = useState("");
+  const [referralStatus, setReferralStatus] = useState<'idle' | 'verifying' | 'valid' | 'invalid'>('idle');
   const navigate = useNavigate();
 
   const trackPricing: Record<string, string> = {
@@ -34,7 +37,50 @@ const InternshipRegistration = () => {
     ai_architect: "AI Architect"
   };
 
-  const selectedPrice = useMemo(() => trackPricing[selectedTrack] || "", [selectedTrack]);
+  React.useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/internship/stats`);
+        const data = await res.json();
+        if (data.total_registrations !== undefined) {
+          setTotalRegistrations(data.total_registrations);
+        }
+      } catch (err) {
+        console.error("Failed to fetch stats", err);
+      }
+    };
+    fetchStats();
+  }, []);
+
+  const handleVerifyReferral = async (code: string) => {
+    setReferralCode(code);
+    if (code.length < 5) {
+      setReferralStatus('idle');
+      return;
+    }
+    setReferralStatus('verifying');
+    try {
+      const res = await fetch(`${API_URL}/api/internship/verify-referral/${code}`);
+      const data = await res.json();
+      setReferralStatus(data.valid ? 'valid' : 'invalid');
+    } catch {
+      setReferralStatus('invalid');
+    }
+  };
+
+  const isEarlyBird = totalRegistrations < 10;
+  
+  const originalPrice = parseInt(trackPricing[selectedTrack]?.replace('₹', '') || '0');
+  
+  const finalPrice = useMemo(() => {
+    if (originalPrice === 0) return 0;
+    // Max discount is 10% (either Early Bird or Referral)
+    const hasDiscount = isEarlyBird || referralStatus === 'valid';
+    if (hasDiscount) {
+      return Math.round(originalPrice * 0.9);
+    }
+    return originalPrice;
+  }, [originalPrice, isEarlyBird, referralStatus]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -42,6 +88,9 @@ const InternshipRegistration = () => {
     
     try {
       const formData = new FormData(e.currentTarget);
+      if (referralStatus === 'valid' && referralCode) {
+        formData.append('referral_code', referralCode);
+      }
 
       const response = await fetch(`${API_URL}/api/register-internship`, {
         method: 'POST',
@@ -81,7 +130,7 @@ const InternshipRegistration = () => {
       setRegistrationData({
         name: formData.get('name') as string,
         track: trackNames[formData.get('track') as string] || "Internship Track",
-        amount: selectedPrice,
+        amount: `₹${finalPrice}`,
         id: resultData.registration_id,
         date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
       });
@@ -243,6 +292,30 @@ const InternshipRegistration = () => {
         </p>
       </motion.div>
 
+      {/* Early Bird Banner */}
+      <AnimatePresence>
+        {isEarlyBird && !isSuccess && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="max-w-2xl w-full mx-auto mb-8 bg-gradient-to-r from-purple-900/40 to-indigo-900/40 border border-purple-500/30 rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between shadow-[0_0_30px_rgba(168,85,247,0.15)] relative z-10"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center animate-pulse">
+                <Sparkles size={18} className="text-purple-400" />
+              </div>
+              <div className="text-left">
+                <h3 className="font-bold text-white">Early Bird Offer Active!</h3>
+                <p className="text-sm text-purple-200/80">First 10 registrations get 10% off. Only {10 - totalRegistrations} spots left.</p>
+              </div>
+            </div>
+            <div className="mt-4 md:mt-0 font-bold text-purple-300 bg-purple-500/10 px-4 py-2 rounded-xl">
+              10% Discount Applied
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -362,17 +435,50 @@ const InternshipRegistration = () => {
                   />
                 </div>
               </div>
-            </div>
+              
+              {/* Reason for Joining */}
+              <div className="md:col-span-2 space-y-2">
+                <label className="text-sm font-medium text-white/80 ml-1">Why do you want to join this program?</label>
+                <div className="relative">
+                  <div className="absolute top-3 left-0 pl-4 pointer-events-none">
+                    <BookOpen size={18} className="text-white/40" />
+                  </div>
+                  <textarea
+                    name="reason"
+                    required
+                    rows={4}
+                    placeholder="Tell us about your passion and what you hope to learn..."
+                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-11 pr-4 text-white placeholder:text-white/20 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all resize-none"
+                  />
+                </div>
+              </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-white/80 ml-1">Why reason to choose this track?</label>
-              <textarea
-                name="reason"
-                required
-                rows={4}
-                placeholder="Tell us about your passion and what you hope to achieve..."
-                className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white placeholder:text-white/20 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all resize-none"
-              ></textarea>
+              {/* Referral Code */}
+              <div className="md:col-span-2 space-y-2">
+                <label className="text-sm font-medium text-white/80 ml-1">Referral Code (Friend's Registration ID) <span className="text-white/40 font-normal">- Optional</span></label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <User size={18} className="text-white/40" />
+                  </div>
+                  <input
+                    type="text"
+                    value={referralCode}
+                    onChange={(e) => handleVerifyReferral(e.target.value)}
+                    placeholder="e.g. BLDCY-UIUX-1234"
+                    className={`w-full bg-white/5 border rounded-xl py-3 pl-11 pr-4 text-white placeholder:text-white/20 focus:outline-none transition-all ${
+                      referralStatus === 'valid' ? 'border-green-500/50 focus:border-green-500/50 focus:ring-green-500/50' :
+                      referralStatus === 'invalid' ? 'border-red-500/50 focus:border-red-500/50 focus:ring-red-500/50' :
+                      'border-white/10 focus:border-purple-500/50 focus:ring-purple-500/50'
+                    }`}
+                  />
+                  {referralStatus === 'verifying' && <div className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 text-xs">Verifying...</div>}
+                  {referralStatus === 'valid' && <div className="absolute right-4 top-1/2 -translate-y-1/2 text-green-400 text-xs font-bold flex items-center gap-1"><CheckCircle2 size={12}/> Valid (10% Off)</div>}
+                  {referralStatus === 'invalid' && <div className="absolute right-4 top-1/2 -translate-y-1/2 text-red-400 text-xs">Invalid ID</div>}
+                </div>
+                {referralStatus === 'valid' && (
+                  <p className="text-xs text-green-400/80 ml-1">You both get a 10% discount benefit!</p>
+                )}
+              </div>
             </div>
 
             {/* Dynamic Payment Section */}
@@ -390,20 +496,30 @@ const InternshipRegistration = () => {
                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 text-xs font-bold uppercase tracking-wider">
                           Registration Fee
                         </div>
-                        <h3 className="text-3xl font-bold text-white">{selectedPrice}</h3>
+                        <h3 className="text-3xl font-bold text-white">₹{finalPrice}</h3>
                         <p className="text-white/70 text-sm">
                           Please scan the QR code to pay the registration fee for the {document.querySelector(`option[value="${selectedTrack}"]`)?.textContent || "selected"} track. Once paid, upload a screenshot of the successful transaction below.
                         </p>
                       </div>
                       
-                      <div className="w-40 h-40 bg-white p-2 rounded-xl flex-shrink-0 flex items-center justify-center relative overflow-hidden group">
-                        {/* Placeholder QR Code - user replaces with actual image later */}
-                        <div className="absolute inset-0 flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg m-2">
-                          <QrCode size={48} className="text-gray-400" />
+                      <div className="flex flex-col items-center justify-center p-6 bg-white/5 rounded-2xl border border-white/10 text-center">
+                        <QrCode size={40} className="text-white mb-4" />
+                        <p className="text-sm text-white/60 mb-2">Scan to Pay via UPI</p>
+                        
+                        <div className="text-2xl font-bold text-white mb-4">
+                          {finalPrice < originalPrice ? (
+                            <div className="flex flex-col items-center gap-1">
+                              <span className="text-sm text-white/40 line-through">₹{originalPrice}</span>
+                              <span className="text-green-400 font-extrabold flex items-center gap-2">₹{finalPrice} <span className="text-[10px] bg-green-500/20 px-2 py-0.5 rounded-full">-10%</span></span>
+                            </div>
+                          ) : (
+                            <span>₹{originalPrice}</span>
+                          )}
                         </div>
-                        <span className="absolute bottom-4 text-[10px] font-bold text-gray-400 text-center uppercase tracking-widest">
-                          Place QR Here
-                        </span>
+
+                        <p className="text-xs font-mono text-purple-300 bg-purple-900/30 px-3 py-1.5 rounded-lg border border-purple-500/20">
+                          buildicy@ybl
+                        </p>
                       </div>
                     </div>
 

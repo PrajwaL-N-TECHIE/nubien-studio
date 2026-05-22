@@ -16,6 +16,7 @@ interface InternshipRecord {
   reason: string;
   receipt: string;
   registration_id: string;
+  referral_code: string | null;
   created_at: string;
 }
 
@@ -267,19 +268,20 @@ const AdminDashboard = () => {
         >
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-white/5 border-b border-white/10">
-                  <th className="px-6 py-4 text-xs font-bold text-white/50 uppercase tracking-wider">Applicant</th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/50 uppercase tracking-wider">Track</th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/50 uppercase tracking-wider">Contact</th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/50 uppercase tracking-wider">Date</th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/50 uppercase tracking-wider text-right">Actions</th>
+              <thead className="bg-[#050507]">
+                <tr>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-white/40 uppercase tracking-wider">Applicant</th>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-white/40 uppercase tracking-wider">Track</th>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-white/40 uppercase tracking-wider">Contact</th>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-white/40 uppercase tracking-wider">Referral</th>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-white/40 uppercase tracking-wider">Date</th>
+                  <th className="px-6 py-4 text-right text-xs font-bold text-white/40 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
                 {filteredRecords.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-6 py-12 text-center text-white/40">
+                    <td colSpan={6} className="px-6 py-12 text-center text-white/40">
                       No registrations found.
                     </td>
                   </tr>
@@ -296,11 +298,22 @@ const AdminDashboard = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-white/80">{record.email}</div>
-                        <div className="text-xs text-white/40 mt-1">{record.phone}</div>
+                        <div className="text-sm text-white">{record.email}</div>
+                        <div className="text-xs text-white/40">{record.phone}</div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-white/60">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {record.referral_code ? (
+                          <span className="px-2.5 py-1 bg-green-900/30 border border-green-500/20 rounded-md text-xs font-bold text-green-400 font-mono">
+                            {record.referral_code}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-white/20">-</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-white/60">
                         {formatDate(record.created_at)}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right">
                         <div className="flex items-center justify-end gap-2">

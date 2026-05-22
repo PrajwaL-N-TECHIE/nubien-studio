@@ -46,53 +46,57 @@ async function initDB() {
     driver: sqlite3.Database
   });
 
-  await db.exec(`
-    CREATE TABLE IF NOT EXISTS internships (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      email TEXT NOT NULL,
-      phone TEXT NOT NULL,
-      track TEXT NOT NULL,
-      college TEXT NOT NULL,
-      degree TEXT NOT NULL,
-      reason TEXT NOT NULL,
-      receipt TEXT NOT NULL,
-      profile_image TEXT,
-      registration_id TEXT UNIQUE NOT NULL,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
-  console.log('Database initialized successfully.');
+  try {
+    await db.exec(`
+      CREATE TABLE IF NOT EXISTS internships (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        email TEXT NOT NULL,
+        phone TEXT NOT NULL,
+        track TEXT NOT NULL,
+        college TEXT NOT NULL,
+        degree TEXT NOT NULL,
+        reason TEXT NOT NULL,
+        receipt TEXT NOT NULL,
+        registration_id TEXT UNIQUE NOT NULL,
+        referral_code TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    console.log('Database initialized successfully.');
+    
+    // Attempt to add the column for existing databases (ignores error if it already exists)
+    try {
+      await db.exec("ALTER TABLE internships ADD COLUMN referral_code TEXT");
+    } catch (e) {
+      // Column already exists, ignore
+    }
+  } catch (err) {
+    console.error('Error creating internships table:', err);
+  }
 }
 
 // Routes
 app.post('/api/register-internship', upload.single('receipt'), async (req, res) => {
   try {
-    const { name, email, phone, track, college, degree, reason } = req.body;
+    const { name, email, phone, track, college, degree, reason, referral_code } = req.body;
     const receiptFile = req.file;
 
-    // Basic validation
-    if (!name || !email || !phone || !track || !receiptFile) {
-      return res.status(400).json({ error: 'Missing required fields or receipt upload' });
+    if (!name || !email || !phone || !track || !college || !degree || !reason || !receiptFile) {
+      return res.status(400).json({ error: 'All fields including receipt are required' });
     }
 
     const receiptPath = receiptFile.filename;
-
-    // Generate Unique ID
-    const randomHex = Math.floor(1000 + Math.random() * 9000).toString(); // 4 digit random
-    let trackPrefix = 'INT';
-    if (track === 'uiux') trackPrefix = 'UIUX';
-    if (track === 'fullstack') trackPrefix = 'FS';
-    if (track === 'ai_architect') trackPrefix = 'AIA';
-    if (track === 'ai_automation') trackPrefix = 'AIE';
-    if (track === 'blockchain') trackPrefix = 'BC';
     
-    const registrationId = `BLDCY-${trackPrefix}-${randomHex}`;
+    // Generate unique registration ID (e.g. BLDCY-UIUX-4921)
+    const trackPrefix = track.substring(0, 4).toUpperCase();
+    const randomNum = Math.floor(1000 + Math.random() * 9000);
+    const registrationId = `BLDCY-${trackPrefix}-${randomNum}`;
 
     const result = await db.run(
-      `INSERT INTO internships (name, email, phone, track, college, degree, reason, receipt, registration_id)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [name, email, phone, track, college, degree, reason, receiptPath, registrationId]
+      `INSERT INTO internships (name, email, phone, track, college, degree, reason, receipt, registration_id, referral_code)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [name, email, phone, track, college, degree, reason, receiptPath, registrationId, referral_code || null]
     );
 
     res.status(201).json({ 
@@ -103,6 +107,26 @@ app.post('/api/register-internship', upload.single('receipt'), async (req, res) 
   } catch (error) {
     console.error('Error saving registration:', error);
     res.status(500).json({ error: 'Failed to save registration' });
+  }
+});
+
+// Get total registration stats (for early bird)
+app.get('/api/internship/stats', async (req, res) => {
+  try {
+    const row = await db.get('SELECT COUNT(*) as count FROM internships');
+    res.json({ total_registrations: row.count });
+  } catch (error) {
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+// Verify if a referral ID exists
+app.get('/api/internship/verify-referral/:id', async (req, res) => {
+  try {
+    const row = await db.get('SELECT id FROM internships WHERE registration_id = ?', [req.params.id]);
+    res.json({ valid: !!row });
+  } catch (error) {
+    res.status(500).json({ error: 'Database error' });
   }
 });
 
