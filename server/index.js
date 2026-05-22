@@ -159,6 +159,25 @@ app.delete('/api/admin/internships', async (req, res) => {
   }
 });
 
+// Admin Route to Delete Single Record
+app.delete('/api/admin/internships/:id', async (req, res) => {
+  try {
+    const { password } = req.query;
+    
+    if (password !== 'admin@123') {
+      return res.status(401).json({ error: 'Unauthorized: Invalid password' });
+    }
+
+    const { id } = req.params;
+    await db.run('DELETE FROM internships WHERE id = ?', [id]);
+    
+    res.json({ success: true, message: 'Record deleted' });
+  } catch (error) {
+    console.error('Error deleting record:', error);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
 // Upload Profile Image
 app.post('/api/internship/:registrationId/profile-image', upload.single('image'), async (req, res) => {
   try {

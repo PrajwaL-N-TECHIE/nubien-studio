@@ -100,6 +100,27 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleDeleteRecord = async (id: number) => {
+    if (!window.confirm("Are you sure you want to delete this specific registration?")) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/api/admin/internships/${id}?password=${password}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        setRecords(prev => prev.filter(r => r.id !== id));
+      } else {
+        alert("Failed to delete record. Unauthorized.");
+      }
+    } catch (error) {
+      console.error("Error deleting record:", error);
+      alert("An error occurred while deleting the record.");
+    }
+  };
+
   const filteredRecords = records.filter(record => 
     record.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     record.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -202,6 +223,33 @@ const AdminDashboard = () => {
           </div>
         </div>
 
+        {/* Analytics Section */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-purple-900/20 border border-purple-500/30 rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-lg"
+          >
+            <p className="text-xs text-purple-400 font-bold uppercase mb-1">Total</p>
+            <p className="text-3xl font-extrabold text-white">{records.length}</p>
+          </motion.div>
+          {['UI/UX Designer', 'AI Automation Engineer', 'Full Stack Developer', 'Blockchain Engineer', 'AI Architect'].map((track, i) => {
+            const count = records.filter(r => r.track === track).length;
+            return (
+              <motion.div 
+                key={track}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05 }}
+                className="bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-lg"
+              >
+                <p className="text-[10px] text-white/50 font-bold uppercase mb-1 line-clamp-1">{track.replace(' Engineer', '').replace(' Developer', '').replace(' Designer', '')}</p>
+                <p className="text-2xl font-extrabold text-white/90">{count}</p>
+              </motion.div>
+            );
+          })}
+        </div>
+
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -215,7 +263,7 @@ const AdminDashboard = () => {
                   <th className="px-6 py-4 text-xs font-bold text-white/50 uppercase tracking-wider">Track</th>
                   <th className="px-6 py-4 text-xs font-bold text-white/50 uppercase tracking-wider">Contact</th>
                   <th className="px-6 py-4 text-xs font-bold text-white/50 uppercase tracking-wider">Date</th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/50 uppercase tracking-wider text-right">Receipt</th>
+                  <th className="px-6 py-4 text-xs font-bold text-white/50 uppercase tracking-wider text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
@@ -245,14 +293,23 @@ const AdminDashboard = () => {
                         {formatDate(record.created_at)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right">
-                        <a 
-                          href={`${API_URL}/uploads/${record.receipt}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-sm text-white transition-colors"
-                        >
-                          <Eye size={16} /> View
-                        </a>
+                        <div className="flex items-center justify-end gap-2">
+                          <a 
+                            href={`${API_URL}/uploads/${record.receipt}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-sm text-white transition-colors"
+                          >
+                            <Eye size={16} /> View
+                          </a>
+                          <button
+                            onClick={() => handleDeleteRecord(record.id)}
+                            className="inline-flex items-center justify-center w-8 h-8 bg-red-900/20 hover:bg-red-600 text-red-400 hover:text-white border border-red-500/20 rounded-lg transition-colors"
+                            title="Delete this record"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))

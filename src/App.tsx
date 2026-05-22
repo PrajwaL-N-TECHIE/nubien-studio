@@ -24,6 +24,7 @@ const Portfolio = lazy(() => import("./pages/Portfolio"));
 const Company = lazy(() => import("./pages/Company"));
 const InternshipRegistration = lazy(() => import("./pages/InternshipRegistration"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const VerifyCertificate = lazy(() => import("./pages/VerifyCertificate"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -42,6 +43,7 @@ const AnimatedRoutes = () => {
           <Route path="/company" element={<Company />} />
           <Route path="/internship-registration" element={<InternshipRegistration />} />
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/verify" element={<VerifyCertificate />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
