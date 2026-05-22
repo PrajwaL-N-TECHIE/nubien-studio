@@ -12,6 +12,14 @@ interface VerificationData {
   registration_id: string;
 }
 
+const trackNames: Record<string, string> = {
+  uiux: "UI/UX Designer",
+  ai_automation: "AI Automation Engineer",
+  fullstack: "Full Stack Developer",
+  blockchain: "Blockchain Engineer",
+  ai_architect: "AI Architect"
+};
+
 const VerifyCertificate = () => {
   const [searchId, setSearchId] = useState("");
   const [loading, setLoading] = useState(false);
@@ -123,7 +131,7 @@ const VerifyCertificate = () => {
                 </div>
                 <div>
                   <p className="text-[11px] text-white/40 uppercase tracking-widest font-bold mb-1">Program Track</p>
-                  <p className="text-white/90">{result.track}</p>
+                  <p className="text-white/90">{trackNames[result.track] || result.track}</p>
                 </div>
                 <div>
                   <p className="text-[11px] text-white/40 uppercase tracking-widest font-bold mb-1">Registration Date</p>
