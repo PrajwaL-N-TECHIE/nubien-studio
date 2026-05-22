@@ -117,6 +117,25 @@ const InternshipRegistration = () => {
       const form = e.currentTarget;
       const formData = new FormData(form);
       
+      const email = formData.get('email') as string;
+      const phone = formData.get('phone') as string;
+
+      // Strict Regex Validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const phoneRegex = /^(?:\+?\d{1,3})?[-.\s]?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/;
+
+      if (!emailRegex.test(email)) {
+        alert("Please enter a valid email address.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (!phoneRegex.test(phone)) {
+        alert("Please enter a valid mobile number (10-15 digits).");
+        setIsSubmitting(false);
+        return;
+      }
+      
       // Read file to base64
       const fileInput = form.querySelector('input[type="file"]') as HTMLInputElement;
       const file = fileInput?.files?.[0];
@@ -291,8 +310,8 @@ const InternshipRegistration = () => {
           <motion.div
             initial={{ y: "-80%", opacity: 0 }}
             animate={{ y: isPrinting ? "0%" : "-80%", opacity: isPrinting ? 1 : 0 }}
-            transition={{ type: "tween", ease: "linear", duration: 2.5, delay: 0.2 }}
-            className="w-[90%] mx-auto bg-white rounded-b-xl shadow-2xl relative -mt-2 overflow-hidden"
+            transition={{ type: "tween", ease: "steps(25, end)", duration: 2.5, delay: 0.2 }}
+            className="w-[90%] mx-auto bg-white rounded-b-xl shadow-2xl relative -mt-2 overflow-hidden border-t-2 border-gray-200"
             id="virtual-receipt"
           >
             {/* Receipt Zigzag Bottom */}
@@ -300,9 +319,12 @@ const InternshipRegistration = () => {
             
             <div className="p-8 pb-12">
               <div className="flex justify-between items-start mb-8 border-b border-dashed border-gray-300 pb-6">
-                <div>
-                  <h3 className="text-2xl font-black text-purple-900 font-['Syne'] tracking-tighter">BUILDICY</h3>
-                  <p className="text-xs text-gray-500 font-bold tracking-widest uppercase mt-1">Official Receipt</p>
+                <div className="flex items-center gap-3">
+                  <img src="/favicon.ico" alt="Buildicy Logo" className="w-10 h-10 object-contain drop-shadow-md" />
+                  <div>
+                    <h3 className="text-2xl font-black text-purple-900 font-['Syne'] tracking-tighter">BUILDICY</h3>
+                    <p className="text-xs text-gray-500 font-bold tracking-widest uppercase mt-0.5">Official Receipt</p>
+                  </div>
                 </div>
                 <div className="text-right">
                   <div className="text-gray-400">
@@ -448,8 +470,10 @@ const InternshipRegistration = () => {
                     name="email"
                     required
                     type="email"
+                    pattern="[^\s@]+@[^\s@]+\.[^\s@]+"
+                    title="Please enter a valid email address"
                     placeholder="john@example.com"
-                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-11 pr-4 text-white placeholder:text-white/20 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-11 pr-4 text-white placeholder:text-white/20 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all invalid:border-red-500/30"
                   />
                 </div>
               </div>
@@ -465,8 +489,10 @@ const InternshipRegistration = () => {
                     name="phone"
                     required
                     type="tel"
+                    pattern="^(?:\+?\d{1,3})?[-.\s]?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$"
+                    title="Please enter a valid 10+ digit mobile number"
                     placeholder="+91 98765 43210"
-                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-11 pr-4 text-white placeholder:text-white/20 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-11 pr-4 text-white placeholder:text-white/20 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all invalid:border-red-500/30"
                   />
                 </div>
               </div>
