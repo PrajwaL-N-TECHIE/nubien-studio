@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, Send, User, Mail, Phone, BookOpen, GraduationCap, Briefcase, Link as LinkIcon, CheckCircle2, UploadCloud, QrCode, Download, ArrowRight, Printer } from "lucide-react";
+import { Sparkles, Send, User, Mail, Phone, BookOpen, GraduationCap, Briefcase, Link as LinkIcon, CheckCircle2, UploadCloud, QrCode, Download, ArrowRight, Printer, Plus, Minus } from "lucide-react";
 import Magnetic from "@/components/Magnetic";
 import emailjs from '@emailjs/browser';
 import html2canvas from 'html2canvas';
@@ -9,6 +9,25 @@ import { useNavigate } from "react-router-dom";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
 
+const FAQs = [
+  {
+    question: "Is this a paid internship?",
+    answer: "No, this is an exclusive paid training program where you will be mentored by industry experts, work on real-world projects, and build a production-grade portfolio. The fee covers the cost of training, resources, and certification."
+  },
+  {
+    question: "Will I get a certificate?",
+    answer: "Yes, upon successful completion, you will receive a verifiable, industry-recognized certificate from Buildicy."
+  },
+  {
+    question: "How long is the program?",
+    answer: "The program typically runs for 4-6 weeks depending on the track you choose, with flexible hours suited for students."
+  },
+  {
+    question: "Do I need prior experience?",
+    answer: "Basic understanding of your chosen field is helpful, but our program is designed to take you from fundamentals to advanced concepts through hands-on building."
+  }
+];
+
 const InternshipRegistration = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -16,9 +35,10 @@ const InternshipRegistration = () => {
   const [selectedTrack, setSelectedTrack] = useState("");
   const [fileName, setFileName] = useState("");
   const [isPrinting, setIsPrinting] = useState(false);
-  const [totalRegistrations, setTotalRegistrations] = useState(0);
+  const [trackStats, setTrackStats] = useState<Record<string, number>>({});
   const [referralCode, setReferralCode] = useState("");
   const [referralStatus, setReferralStatus] = useState<'idle' | 'verifying' | 'valid' | 'invalid'>('idle');
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
   const navigate = useNavigate();
 
   const trackPricing: Record<string, string> = {
@@ -42,9 +62,7 @@ const InternshipRegistration = () => {
       try {
         const res = await fetch(`${API_URL}/api/internship/stats`);
         const data = await res.json();
-        if (data.total_registrations !== undefined) {
-          setTotalRegistrations(data.total_registrations);
-        }
+        setTrackStats(data);
       } catch (err) {
         console.error("Failed to fetch stats", err);
       }
@@ -68,7 +86,8 @@ const InternshipRegistration = () => {
     }
   };
 
-  const isEarlyBird = totalRegistrations < 10;
+  const trackCount = selectedTrack ? (trackStats[selectedTrack] || 0) : 0;
+  const isEarlyBird = selectedTrack !== "" && trackCount < 10;
   
   const originalPrice = parseInt(trackPricing[selectedTrack]?.replace('₹', '') || '0');
   
@@ -282,7 +301,7 @@ const InternshipRegistration = () => {
       >
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-sm font-medium mb-6">
           <Sparkles size={16} />
-          <span>Join The Team</span>
+          <span>Internship Program</span>
         </div>
         <h1 className="text-4xl md:text-6xl font-extrabold text-white mb-6 tracking-tight">
           Internship <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-purple-600">Application</span>
@@ -298,6 +317,7 @@ const InternshipRegistration = () => {
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95 }}
             className="max-w-2xl w-full mx-auto mb-8 bg-gradient-to-r from-purple-900/40 to-indigo-900/40 border border-purple-500/30 rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between shadow-[0_0_30px_rgba(168,85,247,0.15)] relative z-10"
           >
             <div className="flex items-center gap-3">
@@ -306,7 +326,7 @@ const InternshipRegistration = () => {
               </div>
               <div className="text-left">
                 <h3 className="font-bold text-white">Early Bird Offer Active!</h3>
-                <p className="text-sm text-purple-200/80">First 10 registrations get 10% off. Only {10 - totalRegistrations} spots left.</p>
+                <p className="text-sm text-purple-200/80">First 10 registrations in this track get 10% off. Only {10 - trackCount} spots left.</p>
               </div>
             </div>
             <div className="mt-4 md:mt-0 font-bold text-purple-300 bg-purple-500/10 px-4 py-2 rounded-xl">
@@ -568,6 +588,46 @@ const InternshipRegistration = () => {
             </div>
           </form>
         </div>
+
+        {/* FAQ Section */}
+        {!isSuccess && (
+          <div className="mt-16 bg-[#0a0a0f]/80 backdrop-blur-2xl border border-white/10 rounded-3xl p-6 md:p-10 shadow-2xl">
+            <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
+              <BookOpen className="text-purple-500" /> Frequently Asked Questions
+            </h2>
+            <div className="space-y-4">
+              {FAQs.map((faq, index) => (
+                <div key={index} className="border border-white/10 rounded-xl overflow-hidden bg-white/5 transition-colors hover:bg-white/10">
+                  <button
+                    onClick={() => setOpenFaq(openFaq === index ? null : index)}
+                    className="w-full px-6 py-4 flex items-center justify-between text-left focus:outline-none"
+                  >
+                    <span className="font-semibold text-white">{faq.question}</span>
+                    {openFaq === index ? (
+                      <Minus size={18} className="text-purple-400 flex-shrink-0" />
+                    ) : (
+                      <Plus size={18} className="text-purple-400 flex-shrink-0" />
+                    )}
+                  </button>
+                  <AnimatePresence>
+                    {openFaq === index && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="px-6 pb-4 text-white/60 text-sm leading-relaxed border-t border-white/5 pt-3">
+                          {faq.answer}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </motion.div>
     </div>
   );

@@ -198,22 +198,6 @@ const LiveStatus = () => {
       const hour = new Date().getHours();
       const tMult = (hour >= 10 && hour <= 22) ? 1.05 : 0.85;
       setActiveUsers(Math.floor(BASE.ACTIVE * tMult + (Math.random() * 20)));
-
-      // Silent Cloud Sync (Attempts to sync with global pool)
-      const silentFetch = async (url: string) => {
-        try {
-          const res = await fetch(url, { mode: 'cors', cache: 'no-cache' });
-          if (res.ok) return await res.json();
-        } catch (e) { }
-        return null;
-      };
-
-      const ns = "buildicy_elite_final_v1";
-      const viewSync = await silentFetch(`https://api.counterapi.dev/v1/${ns}/total_views/up`);
-      if (viewSync && viewSync.count > v) {
-        setPageViews(viewSync.count);
-        localStorage.setItem(STORAGE_KEYS.VIEWS, viewSync.count.toString());
-      }
     };
     updateCounters();
 

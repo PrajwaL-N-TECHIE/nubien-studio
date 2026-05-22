@@ -110,11 +110,13 @@ app.post('/api/register-internship', upload.single('receipt'), async (req, res) 
   }
 });
 
-// Get total registration stats (for early bird)
+// Get total registration stats per track (for early bird)
 app.get('/api/internship/stats', async (req, res) => {
   try {
-    const row = await db.get('SELECT COUNT(*) as count FROM internships');
-    res.json({ total_registrations: row.count });
+    const rows = await db.all('SELECT track, COUNT(*) as count FROM internships GROUP BY track');
+    const stats: Record<string, number> = {};
+    rows.forEach((r: any) => { stats[r.track] = r.count; });
+    res.json(stats);
   } catch (error) {
     res.status(500).json({ error: 'Database error' });
   }
