@@ -35,6 +35,7 @@ const AdminDashboard = () => {
   const [records, setRecords] = useState<InternshipRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [viewReceiptUrl, setViewReceiptUrl] = useState<string | null>(null);
   const navigate = useNavigate();
 
   // Load auth state from session storage to prevent re-login on refresh
@@ -317,14 +318,15 @@ const AdminDashboard = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <a 
-                            href={`${API_URL}/uploads/${record.receipt}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                          <button
+                            onClick={() => {
+                              const isBase64 = record.receipt.startsWith('data:');
+                              setViewReceiptUrl(isBase64 ? record.receipt : `${API_URL}/uploads/${record.receipt}`);
+                            }}
                             className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-sm text-white transition-colors"
                           >
                             <Eye size={16} /> View
-                          </a>
+                          </button>
                           <button
                             onClick={() => handleDeleteRecord(record.id)}
                             className="inline-flex items-center justify-center w-8 h-8 bg-red-900/20 hover:bg-red-600 text-red-400 hover:text-white border border-red-500/20 rounded-lg transition-colors"
@@ -342,6 +344,26 @@ const AdminDashboard = () => {
           </div>
         </motion.div>
       </div>
+
+      {/* Receipt Modal */}
+      {viewReceiptUrl && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={() => setViewReceiptUrl(null)}>
+          <div className="relative max-w-4xl w-full max-h-[90vh] flex flex-col items-center justify-center">
+            <button 
+              className="absolute -top-12 right-0 text-white hover:text-red-400 bg-white/10 rounded-full p-2 transition-colors"
+              onClick={() => setViewReceiptUrl(null)}
+            >
+              Close
+            </button>
+            <img 
+              src={viewReceiptUrl} 
+              alt="Payment Receipt" 
+              className="max-w-full max-h-[85vh] object-contain rounded-lg border border-white/20 shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
