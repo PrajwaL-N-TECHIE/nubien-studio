@@ -101,10 +101,10 @@ const InternshipRegistration = () => {
   const originalPrice = parseInt(trackPricing[selectedTrack]?.replace('₹', '') || '0');
   
   const discountPercent = useMemo(() => {
-    let d = 0;
-    if (isEarlyBird) d += 10;
-    if (referralStatus === 'valid') d += 5;
-    return d;
+    // Only one offer is applied (the highest one)
+    if (isEarlyBird) return 10;
+    if (referralStatus === 'valid') return 5;
+    return 0;
   }, [isEarlyBird, referralStatus]);
 
   const finalPrice = useMemo(() => {
@@ -648,7 +648,7 @@ const InternshipRegistration = () => {
                 </div>
                 {referralStatus === 'valid' && (
                   <p className="text-xs text-green-400/80 ml-1">
-                    You both get a 5% discount benefit! {isEarlyBird && "(Stacked with Early Bird!)"}
+                    {isEarlyBird ? "Your friend still gets a 5% discount benefit! (You keep your 10% Early Bird)" : "You both get a 5% discount benefit!"}
                   </p>
                 )}
               </div>
@@ -685,7 +685,7 @@ const InternshipRegistration = () => {
                               <span className="text-sm text-white/40 line-through">₹{originalPrice}</span>
                               <span className="text-green-400 font-extrabold flex items-center gap-2">₹{finalPrice} <span className="text-[10px] bg-green-500/20 px-2 py-0.5 rounded-full">-{discountPercent}%</span></span>
                               {(isEarlyBird && referralStatus === 'valid') && (
-                                <span className="text-[10px] text-white/40 mt-1">* 15% Stacked Discount Applied!</span>
+                                <span className="text-[10px] text-white/40 mt-1">* Friend still gets benefit!</span>
                               )}
                             </div>
                           ) : (
