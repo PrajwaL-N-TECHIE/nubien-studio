@@ -361,15 +361,20 @@ const AdminDashboard = () => {
 
       {/* Receipt Image Modal */}
       {viewReceiptUrl && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm" onClick={() => setViewReceiptUrl(null)}>
-          <div className="relative max-w-4xl max-h-[90vh] w-full" onClick={e => e.stopPropagation()}>
-            <button 
-              onClick={() => setViewReceiptUrl(null)}
-              className="absolute -top-12 right-0 text-white/50 hover:text-white"
-            >
-              Close
-            </button>
-            <img src={viewReceiptUrl} alt="Payment Receipt" className="w-full h-full object-contain rounded-lg" />
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 sm:p-8 bg-black/90 backdrop-blur-sm" onClick={() => setViewReceiptUrl(null)}>
+          <div className="relative max-w-md w-full max-h-[85vh] flex flex-col" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-end mb-4">
+              <button 
+                onClick={() => setViewReceiptUrl(null)}
+                className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/20 transition-colors"
+                title="Close"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <div className="w-full flex-1 overflow-hidden rounded-2xl border border-white/10 bg-[#0a0a0f] flex items-center justify-center p-2 shadow-2xl">
+              <img src={viewReceiptUrl} alt="Payment Receipt" className="max-w-full max-h-full object-contain rounded-xl" />
+            </div>
           </div>
         </div>
       )}
