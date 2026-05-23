@@ -138,9 +138,8 @@ const InternshipRegistration = () => {
   const discountPercent = useMemo(() => {
     // Only one offer is applied (the highest one)
     if (isEarlyBird) return 10;
-    if (referralStatus === 'valid') return 5;
     return 0;
-  }, [isEarlyBird, referralStatus]);
+  }, [isEarlyBird]);
 
   const finalPrice = useMemo(() => {
     if (originalPrice === 0) return 0;
@@ -716,12 +715,12 @@ const InternshipRegistration = () => {
                     }`}
                   />
                   {referralStatus === 'verifying' && <div className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 text-xs">Verifying...</div>}
-                  {referralStatus === 'valid' && <div className="absolute right-4 top-1/2 -translate-y-1/2 text-green-400 text-xs font-bold flex items-center gap-1"><CheckCircle2 size={12}/> Valid (5% Off)</div>}
+                  {referralStatus === 'valid' && <div className="absolute right-4 top-1/2 -translate-y-1/2 text-green-400 text-xs font-bold flex items-center gap-1"><CheckCircle2 size={12}/> Valid Code</div>}
                   {referralStatus === 'invalid' && <div className="absolute right-4 top-1/2 -translate-y-1/2 text-red-400 text-xs">Invalid ID</div>}
                 </div>
                 {referralStatus === 'valid' && (
                   <p className="text-xs text-green-400/80 ml-1">
-                    {isEarlyBird ? "Your friend still gets a 5% discount benefit! (You keep your 10% Early Bird)" : "You both get a 5% discount benefit!"}
+                    Code applied successfully! Your friend will receive their referral reward.
                   </p>
                 )}
               </div>
@@ -769,9 +768,6 @@ const InternshipRegistration = () => {
                             <div className="flex flex-col items-center gap-1">
                               <span className="text-sm text-white/40 line-through">₹{originalPrice}</span>
                               <span className="text-green-400 font-extrabold flex items-center gap-2">₹{finalPrice} <span className="text-[10px] bg-green-500/20 px-2 py-0.5 rounded-full">-{discountPercent}%</span></span>
-                              {(isEarlyBird && referralStatus === 'valid') && (
-                                <span className="text-[10px] text-white/40 mt-1">* Friend still gets benefit!</span>
-                              )}
                             </div>
                           ) : (
                             <span>₹{originalPrice}</span>
