@@ -5,7 +5,8 @@ import {
   LogOut, UploadCloud, PlayCircle, FileText, CheckCircle2,
   Send, Sparkles, AlertCircle, FileLock2, Code2, 
   ChevronRight, Activity, Terminal, Users, Globe,
-  GitBranch, GraduationCap, Star, ShieldCheck
+  GitBranch, GraduationCap, Star, ShieldCheck,
+  UserCircle, Focus, CodeSquare, Target, Clock, Copy
 } from "lucide-react";
 import Magnetic from "@/components/Magnetic";
 import PageTransition from "@/components/PageTransition";
@@ -94,22 +95,29 @@ const MissionControl = () => (
 
     </div>
 
-    {/* Dropzone */}
-    <div className="bg-[#0C0C12]/80 border border-white/10 rounded-3xl p-8">
-      <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-        <UploadCloud className="text-purple-400" /> Assignment Dropzone
-      </h2>
-      <div className="w-full border-2 border-dashed border-white/10 hover:border-purple-500/50 rounded-2xl p-10 flex flex-col items-center justify-center gap-4 transition-all cursor-pointer group bg-white/[0.02]">
-        <div className="w-16 h-16 rounded-full bg-purple-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-          <UploadCloud size={28} className="text-purple-400" />
+      {/* Daily Quests */}
+      <div className="col-span-1 bg-[#0C0C12]/80 border border-white/10 rounded-3xl p-8 group overflow-hidden relative">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/10 rounded-full blur-[40px] -mr-16 -mt-16" />
+        <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+          <Target className="text-yellow-500" /> Daily Quests
+        </h2>
+        <div className="space-y-4 relative z-10">
+          {[
+            { task: "Submit W3 Assignment", xp: 150, done: false },
+            { task: "Review 1 Peer Project", xp: 50, done: true },
+            { task: "Attend Live Session", xp: 100, done: false },
+          ].map((quest, i) => (
+            <div key={i} className={`flex items-center justify-between p-3 rounded-xl border ${quest.done ? 'bg-white/5 border-white/5 opacity-50' : 'bg-yellow-500/10 border-yellow-500/20'} transition-colors`}>
+              <div className="flex items-center gap-3">
+                <div className={`w-5 h-5 rounded flex items-center justify-center ${quest.done ? 'bg-white/20' : 'border border-yellow-500/50'}`}>
+                  {quest.done && <CheckCircle2 size={12} />}
+                </div>
+                <span className={`text-sm ${quest.done ? 'line-through text-zinc-500' : 'text-white'}`}>{quest.task}</span>
+              </div>
+              <span className={`text-xs font-bold font-mono ${quest.done ? 'text-zinc-600' : 'text-yellow-500'}`}>+{quest.xp} XP</span>
+            </div>
+          ))}
         </div>
-        <div className="text-center">
-          <p className="text-white font-medium mb-1">Drag and drop your project ZIP or PDF</p>
-          <p className="text-sm text-zinc-500">Maximum file size: 50MB</p>
-        </div>
-        <button className="mt-2 px-6 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-full text-sm font-bold transition-all shadow-[0_0_20px_rgba(168,85,247,0.3)]">
-          Browse Files
-        </button>
       </div>
     </div>
     </div>
@@ -446,6 +454,176 @@ const LivePortfolio = () => (
   </div>
 );
 
+const SnippetVault = () => (
+  <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="flex items-center justify-between mb-8">
+      <div>
+        <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+          <CodeSquare className="text-orange-500" /> Component Vault
+        </h2>
+        <p className="text-zinc-400 text-sm mt-1">Your personal library of reusable code snippets gathered during the internship.</p>
+      </div>
+      <button className="px-4 py-2 bg-orange-600 hover:bg-orange-500 text-white rounded-xl text-sm font-bold transition-all shadow-[0_0_15px_rgba(249,115,22,0.3)]">
+        + New Snippet
+      </button>
+    </div>
+
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {[
+        { title: "useDebounce Hook", lang: "TypeScript", code: "export function useDebounce(value, delay) {..." },
+        { title: "Glassmorphism Card", lang: "CSS", code: ".glass { backdrop-filter: blur(10px); ... }" },
+        { title: "Axios Interceptor", lang: "JavaScript", code: "axios.interceptors.request.use((config) => {..." },
+        { title: "Firebase Auth Flow", lang: "TypeScript", code: "const signIn = async () => {..." }
+      ].map((snippet, i) => (
+        <div key={i} className="bg-[#0C0C12]/80 border border-white/10 rounded-2xl p-6 group hover:border-orange-500/30 transition-all">
+          <div className="flex justify-between items-start mb-4">
+            <div>
+              <h3 className="font-bold text-white mb-1">{snippet.title}</h3>
+              <span className="text-[10px] font-mono uppercase tracking-widest text-orange-400 bg-orange-500/10 px-2 py-1 rounded-md">{snippet.lang}</span>
+            </div>
+            <button className="text-zinc-500 hover:text-white transition-colors p-2 hover:bg-white/5 rounded-lg">
+              <Copy size={16} />
+            </button>
+          </div>
+          <div className="bg-black/50 border border-white/5 rounded-xl p-4 font-mono text-sm text-zinc-400 overflow-hidden text-ellipsis whitespace-nowrap">
+            {snippet.code}
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const FocusMode = () => {
+  const [isActive, setIsActive] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(25 * 60);
+
+  return (
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className={`transition-all duration-1000 ${isActive ? 'fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center' : 'bg-[#0C0C12]/80 border border-white/10 rounded-3xl p-12 text-center relative overflow-hidden'}`}>
+        
+        {isActive && (
+          <div className="absolute inset-0 z-0 opacity-40 mix-blend-screen pointer-events-none flex items-center justify-center gap-2">
+             {/* Mock visualizer bars */}
+             {[...Array(20)].map((_, i) => (
+               <motion.div 
+                 key={i}
+                 animate={{ height: ['20px', `${Math.random() * 200 + 50}px`, '20px'] }}
+                 transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: i * 0.1 }}
+                 className="w-2 bg-gradient-to-t from-pink-500 to-purple-500 rounded-full blur-[2px]"
+               />
+             ))}
+          </div>
+        )}
+
+        <div className="relative z-10 flex flex-col items-center justify-center">
+          {!isActive && (
+            <>
+              <Focus size={48} className="text-pink-500 mb-6" />
+              <h2 className="text-3xl font-black text-white mb-2">Deep Work Zone</h2>
+              <p className="text-zinc-400 max-w-md mx-auto mb-10">Activate Focus Mode to start a Pomodoro session with built-in lo-fi beats and visualizer. The rest of the dashboard will dim.</p>
+            </>
+          )}
+          
+          <div className={`font-mono font-black tabular-nums transition-all ${isActive ? 'text-[12rem] text-transparent bg-clip-text bg-gradient-to-b from-white to-white/20' : 'text-6xl text-white mb-8'}`}>
+            {Math.floor(timeLeft / 60).toString().padStart(2, '0')}:{(timeLeft % 60).toString().padStart(2, '0')}
+          </div>
+
+          <div className="flex gap-4">
+            <button 
+              onClick={() => setIsActive(!isActive)}
+              className={`px-8 py-4 rounded-2xl font-bold transition-all flex items-center gap-2 ${isActive ? 'bg-white/10 hover:bg-white/20 text-white backdrop-blur-md' : 'bg-pink-600 hover:bg-pink-500 text-white shadow-[0_0_30px_rgba(236,72,153,0.3)]'}`}
+            >
+              {isActive ? 'Exit Focus Mode' : 'Enter Focus Mode'}
+            </button>
+            {!isActive && (
+              <button className="w-14 h-14 bg-white/5 hover:bg-white/10 rounded-2xl flex items-center justify-center transition-colors">
+                <Clock size={20} className="text-zinc-400" />
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const ProfileCustomization = () => (
+  <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="flex flex-col lg:flex-row gap-8">
+      
+      {/* Edit Form */}
+      <div className="flex-1 space-y-6">
+        <div className="bg-[#0C0C12]/80 border border-white/10 rounded-3xl p-8">
+          <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+            <UserCircle className="text-blue-400" /> Identity Matrix
+          </h2>
+          
+          <div className="flex items-center gap-6 mb-8">
+            <div className="w-24 h-24 rounded-full bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden group cursor-pointer relative">
+              <span className="text-2xl font-bold text-zinc-500">AD</span>
+              <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <UploadCloud size={20} className="text-white" />
+              </div>
+            </div>
+            <div>
+              <button className="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-sm font-medium transition-colors mb-2 block">Upload Avatar</button>
+              <p className="text-xs text-zinc-500">JPG, PNG. Max 2MB.</p>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-bold text-zinc-400 block mb-2">Display Name</label>
+              <input type="text" defaultValue="Alex Developer" className="w-full bg-[#1A1A24]/60 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-blue-500/50 focus:outline-none" />
+            </div>
+            <div>
+              <label className="text-sm font-bold text-zinc-400 block mb-2">Short Bio</label>
+              <textarea defaultValue="Building the future of the web. Passionate about AI and React." className="w-full h-24 bg-[#1A1A24]/60 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-blue-500/50 focus:outline-none" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-bold text-zinc-400 block mb-2">GitHub URL</label>
+                <input type="text" defaultValue="github.com/alexdev" className="w-full bg-[#1A1A24]/60 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-blue-500/50 focus:outline-none" />
+              </div>
+              <div>
+                <label className="text-sm font-bold text-zinc-400 block mb-2">LinkedIn URL</label>
+                <input type="text" defaultValue="linkedin.com/in/alexdev" className="w-full bg-[#1A1A24]/60 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-blue-500/50 focus:outline-none" />
+              </div>
+            </div>
+            <button className="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-all shadow-[0_0_20px_rgba(37,99,235,0.3)] mt-4">
+              Save Profile Identity
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Real-time Card Preview */}
+      <div className="w-full lg:w-80">
+        <div className="sticky top-24">
+          <p className="text-xs font-mono uppercase tracking-widest text-zinc-500 font-bold mb-4 ml-2">Live Portfolio Preview</p>
+          <div className="w-full aspect-[3/4] bg-gradient-to-b from-[#1a1a24] to-black rounded-3xl border border-white/20 shadow-2xl p-6 flex flex-col items-center justify-center text-center relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/20 rounded-full blur-[40px] -mr-10 -mt-10 pointer-events-none" />
+            
+            <div className="w-24 h-24 rounded-full bg-[#0C0C12] border-4 border-[#1a1a24] shadow-xl flex items-center justify-center mb-6 z-10">
+              <span className="text-3xl font-black text-blue-400">AD</span>
+            </div>
+            <h3 className="text-2xl font-black text-white mb-2 z-10">Alex Developer</h3>
+            <p className="text-blue-400 font-mono text-sm mb-6 z-10">Full Stack Engineer</p>
+            <p className="text-sm text-zinc-400 leading-relaxed mb-8 z-10">Building the future of the web. Passionate about AI and React.</p>
+            
+            <div className="flex gap-4 w-full z-10">
+              <div className="flex-1 py-3 bg-white/5 rounded-xl border border-white/10 text-xs font-bold hover:bg-white/10 transition-colors cursor-pointer">GitHub</div>
+              <div className="flex-1 py-3 bg-blue-600/20 text-blue-400 rounded-xl border border-blue-500/30 text-xs font-bold hover:bg-blue-600/30 transition-colors cursor-pointer">LinkedIn</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+);
+
 // --- MAIN LAYOUT ---
 
 export default function StudentDashboard() {
@@ -462,11 +640,14 @@ export default function StudentDashboard() {
   const STUDENT_TABS = [
     { id: 'mission', label: 'Mission Control', icon: LayoutDashboard },
     { id: 'vault', label: 'The Vault', icon: BookOpen },
+    { id: 'snippets', label: 'Snippet Vault', icon: CodeSquare },
+    { id: 'focus', label: 'Focus Mode', icon: Focus },
     { id: 'collab', label: 'Peer Review', icon: Users },
+    { id: 'mentor', label: 'AI Mentor', icon: Bot },
     { id: 'portfolio', label: 'Live Portfolio', icon: Globe },
     { id: 'leaderboard', label: 'Leaderboard', icon: Trophy },
-    { id: 'mentor', label: 'AI Mentor', icon: Bot },
     { id: 'career', label: 'Career Prep', icon: Briefcase },
+    { id: 'profile', label: 'My Profile', icon: UserCircle },
   ];
 
   const ALUMNI_TABS = [
@@ -593,11 +774,14 @@ export default function StudentDashboard() {
           <div className="pb-20 md:pb-0">
             {activeTab === 'mission' && <MissionControl />}
             {activeTab === 'vault' && <Vault />}
+            {activeTab === 'snippets' && <SnippetVault />}
+            {activeTab === 'focus' && <FocusMode />}
             {activeTab === 'collab' && <PeerReview />}
             {activeTab === 'portfolio' && <LivePortfolio />}
             {activeTab === 'leaderboard' && <Leaderboard />}
             {activeTab === 'mentor' && <AIMentor />}
             {activeTab === 'career' && <CareerPrep />}
+            {activeTab === 'profile' && <ProfileCustomization />}
             
             {/* Mock Alumni Views */}
             {activeTab === 'alumni_jobs' && (
