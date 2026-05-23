@@ -695,11 +695,11 @@ const InternshipRegistration = () => {
                         <img 
                           src="/images/payment-qr.jpg" 
                           alt="Payment QR Code" 
-                          className="w-48 h-48 object-cover mb-4 rounded-xl shadow-lg border border-white/20"
+                          className="w-full max-w-[280px] h-auto object-contain mb-4 rounded-xl shadow-lg border border-white/20 bg-white"
                         />
                         <p className="text-sm text-white/60 mb-2">Scan to Pay via UPI</p>
                         
-                        <div className="text-2xl font-bold text-white mb-4">
+                        <div className="text-2xl font-bold text-white">
                           {finalPrice < originalPrice ? (
                             <div className="flex flex-col items-center gap-1">
                               <span className="text-sm text-white/40 line-through">₹{originalPrice}</span>
@@ -712,10 +712,6 @@ const InternshipRegistration = () => {
                             <span>₹{originalPrice}</span>
                           )}
                         </div>
-
-                        <p className="text-xs font-mono text-purple-300 bg-purple-900/30 px-3 py-1.5 rounded-lg border border-purple-500/20 select-all">
-                          prajwalgenious-1@okhdfcbank
-                        </p>
                       </div>
                     </div>
 
