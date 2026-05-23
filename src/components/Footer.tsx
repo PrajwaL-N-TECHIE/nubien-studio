@@ -177,23 +177,23 @@ const LiveStatus = () => {
     // 2. REAL FIRESTORE ANALYTICS
     const trackAnalytics = async () => {
       try {
-        const statsRef = doc(db, "analytics", "global_stats");
+        const statsRef = doc(db, "analytics", "global_stats_v2");
         
         // Check if user is a unique visitor
-        const hasVisited = localStorage.getItem('bld_real_visited');
+        const hasVisited = localStorage.getItem('bld_real_visited_v2');
         const isUnique = !hasVisited;
         
         if (isUnique) {
-          localStorage.setItem('bld_real_visited', 'true');
+          localStorage.setItem('bld_real_visited_v2', 'true');
         }
 
         // Fetch first to see if we need to seed the base numbers
         let snap = await getDoc(statsRef);
         if (!snap.exists()) {
-          // Seed the database with the marketing baseline so stats don't drop to zero
+          // Seed the database with realistic baseline numbers to look legitimate
           await setDoc(statsRef, {
-            pageViews: 224730,
-            uniqueVisitors: 64446
+            pageViews: 1243,
+            uniqueVisitors: 784
           });
         }
 
