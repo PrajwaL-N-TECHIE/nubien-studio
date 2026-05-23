@@ -697,7 +697,16 @@ const InternshipRegistration = () => {
                           alt="Payment QR Code" 
                           className="w-full max-w-[280px] h-auto object-contain mb-4 rounded-xl shadow-lg border border-white/20 bg-white"
                         />
-                        <p className="text-sm text-white/60 mb-2">Scan to Pay via UPI</p>
+                        <div className="flex flex-col items-center gap-2 mb-4">
+                          <p className="text-sm text-white/60">Scan to Pay via UPI</p>
+                          <a 
+                            href="/images/payment-qr.jpg" 
+                            download="buildicy-payment-qr.jpg"
+                            className="text-xs font-bold text-purple-400 bg-purple-500/10 hover:bg-purple-500/20 px-4 py-2 rounded-full transition-colors flex items-center gap-2 border border-purple-500/20"
+                          >
+                            <Download size={14} /> Download QR Code
+                          </a>
+                        </div>
                         
                         <div className="text-2xl font-bold text-white">
                           {finalPrice < originalPrice ? (
