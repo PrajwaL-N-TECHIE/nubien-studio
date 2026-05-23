@@ -515,11 +515,11 @@ const InternshipRegistration = () => {
                       onChange={(e) => setCountryCode(e.target.value)}
                       className="w-full bg-[#13131a] border border-white/10 rounded-xl py-3 px-3 text-white focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all appearance-none"
                     >
-                      <option value="+91">🇮🇳 IN (+91)</option>
-                      <option value="+1">🇺🇸 US (+1)</option>
-                      <option value="+44">🇬🇧 UK (+44)</option>
-                      <option value="+61">🇦🇺 AU (+61)</option>
-                      <option value="+971">🇦🇪 AE (+971)</option>
+                      <option value="+91">🇮🇳 (+91)</option>
+                      <option value="+1">🇺🇸 (+1)</option>
+                      <option value="+44">🇬🇧 (+44)</option>
+                      <option value="+61">🇦🇺 (+61)</option>
+                      <option value="+971">🇦🇪 (+971)</option>
                     </select>
                   </div>
                   <div className="relative flex-1">
