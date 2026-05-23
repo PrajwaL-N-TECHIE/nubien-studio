@@ -446,7 +446,7 @@ const Footer = () => {
         {/* BOTTOM BAR */}
         <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-4 relative z-10">
           <p className="text-[10px] text-zinc-500 font-bold tracking-[0.2em] uppercase font-['DM_Mono']">
-            © {new Date().getFullYear()} BUILDICY STUDIO.
+            © {new Date().getFullYear()} BUILDICY STUDIO<Link to="/admin" className="hover:text-purple-500 cursor-pointer">.</Link>
           </p>
           <div className="flex items-center gap-6">
             <p className="text-[10px] text-zinc-500 font-extrabold tracking-[0.2em] uppercase font-['DM_Mono'] flex items-center gap-2">

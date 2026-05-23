@@ -13,20 +13,20 @@ import { audio } from "@/utils/audio";
 
 const FAQs = [
   {
-    question: "Is this a paid internship?",
-    answer: "No, this is an exclusive paid training program where you will be mentored by industry experts, work on real-world projects, and build a production-grade portfolio. The fee covers the cost of training, resources, and certification."
+    question: "What is the program duration and schedule?",
+    answer: "The program is an intensive 30-Day Training. The weekly schedule includes Live Training Sessions on Monday, Wednesday, and Friday, with Assignments & Reviews every Sunday."
   },
   {
-    question: "Will I get a certificate?",
-    answer: "Yes, upon successful completion, you will receive a verifiable, industry-recognized certificate from Buildicy."
+    question: "What does the internship include?",
+    answer: "You will receive 12 Live Sessions, 4 Assignments, and 1 Industry Project. We also include Career Readiness: Resume Building, LinkedIn Optimization, Mock Interviews, Industry Mentorship, and Community Access."
   },
   {
-    question: "How long is the program?",
-    answer: "The program typically runs for 4-6 weeks depending on the track you choose, with flexible hours suited for students."
+    question: "What is the Week 1 & Week 2 Learning Journey?",
+    answer: "Week 1 focuses on Foundations: Domain Introduction, Tools Setup, and Core Concepts. Week 2 covers Intermediate Learning: Advanced Concepts, Industry Workflows, and Practical Implementations."
   },
   {
-    question: "Do I need prior experience?",
-    answer: "Basic understanding of your chosen field is helpful, but our program is designed to take you from fundamentals to advanced concepts through hands-on building."
+    question: "What happens in Weeks 3 & 4?",
+    answer: "Week 3 is dedicated to Project Development: Planning, Development Sessions, Testing & Optimization. Week 4 focuses entirely on Career Readiness, culminating in your Final Project Submission."
   }
 ];
 
