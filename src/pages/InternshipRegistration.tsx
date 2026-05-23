@@ -14,19 +14,35 @@ import { audio } from "@/utils/audio";
 const FAQs = [
   {
     question: "What is the program duration and schedule?",
-    answer: "The program is an intensive 30-Day Training. The weekly schedule includes Live Training Sessions on Monday, Wednesday, and Friday, with Assignments & Reviews every Sunday."
+    answer: [
+      "• Duration: 30 Days (Intensive Training)",
+      "• Monday, Wednesday, Friday – Live Training Sessions",
+      "• Sunday – Assignments & Reviews"
+    ]
   },
   {
     question: "What does the internship include?",
-    answer: "You will receive 12 Live Sessions, 4 Assignments, and 1 Industry Project. We also include Career Readiness: Resume Building, LinkedIn Optimization, Mock Interviews, Industry Mentorship, and Community Access."
+    answer: [
+      "• 12 Live Sessions & 4 Assignments",
+      "• 1 Industry Project",
+      "• Career Readiness: Resume Building & LinkedIn Optimization",
+      "• Mock Interviews & Industry Mentorship",
+      "• Exclusive Community Access"
+    ]
   },
   {
     question: "What is the Week 1 & Week 2 Learning Journey?",
-    answer: "Week 1 focuses on Foundations: Domain Introduction, Tools Setup, and Core Concepts. Week 2 covers Intermediate Learning: Advanced Concepts, Industry Workflows, and Practical Implementations."
+    answer: [
+      "Week 1 – Foundations: Domain Introduction, Tools Setup, Core Concepts.",
+      "Week 2 – Intermediate: Advanced Concepts, Industry Workflows, Practical Implementations."
+    ]
   },
   {
     question: "What happens in Weeks 3 & 4?",
-    answer: "Week 3 is dedicated to Project Development: Planning, Development Sessions, Testing & Optimization. Week 4 focuses entirely on Career Readiness, culminating in your Final Project Submission."
+    answer: [
+      "Week 3 – Project Development: Planning, Development Sessions, Testing & Optimization.",
+      "Week 4 – Career Readiness: Resume Building, LinkedIn/GitHub Optimization, Mock Interviews, Final Project Submission."
+    ]
   }
 ];
 
@@ -774,7 +790,9 @@ const InternshipRegistration = () => {
                         className="overflow-hidden"
                       >
                         <div className="px-6 pb-4 text-white/60 text-sm leading-relaxed border-t border-white/5 pt-3">
-                          {faq.answer}
+                          {Array.isArray(faq.answer) ? faq.answer.map((line, i) => (
+                            <p key={i} className="mb-1.5 last:mb-0">{line}</p>
+                          )) : faq.answer}
                         </div>
                       </motion.div>
                     )}
