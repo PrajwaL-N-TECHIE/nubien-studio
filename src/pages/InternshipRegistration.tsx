@@ -449,37 +449,30 @@ const InternshipRegistration = () => {
             <Download size={18} /> Download Receipt PDF
           </button>
 
-          {/* WhatsApp Comms Uplink */}
-          <div className="bg-gradient-to-b from-[#12121A] to-[#0A0A0F] border border-green-500/20 rounded-2xl p-6 shadow-[0_0_40px_rgba(34,197,94,0.1)] relative overflow-hidden group">
-            {/* Radar Animation Background */}
-            <div className="absolute top-0 right-0 -mr-16 -mt-16 w-32 h-32 bg-green-500/10 rounded-full blur-2xl group-hover:bg-green-500/20 transition-all duration-700" />
-            <div className="absolute top-4 right-4 text-green-500/30 animate-pulse">
-              <Radio size={48} strokeWidth={1} />
-            </div>
+          {/* Professional WhatsApp Community Join */}
+          <div className="bg-white/5 border border-green-500/30 rounded-2xl p-6 shadow-2xl relative overflow-hidden group">
+            {/* Subtle Green Glow Background */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-green-500/5 rounded-full blur-3xl opacity-50" />
 
-            <div className="flex items-start gap-4 relative z-10">
-              <div className="w-12 h-12 rounded-xl bg-green-500/10 border border-green-500/30 flex items-center justify-center shrink-0">
-                <MessageCircle size={24} className="text-green-400" />
+            <div className="flex flex-col items-center text-center relative z-10">
+              <div className="w-16 h-16 rounded-full bg-green-500/10 border border-green-500/20 flex items-center justify-center mb-4 shadow-[0_0_20px_rgba(34,197,94,0.15)]">
+                <MessageCircle size={32} className="text-green-400" />
               </div>
-              <div className="text-left">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                  <span className="text-[10px] text-green-400 font-bold uppercase tracking-widest">Secure Uplink Ready</span>
-                </div>
-                <h3 className="text-xl font-bold text-white mb-2">Initialize Comms</h3>
-                <p className="text-sm text-white/60 mb-6 leading-relaxed">
-                  Join the official Buildicy Internship WhatsApp cohort. Meet your mentors, team members, and receive mission-critical updates.
-                </p>
-                
-                <a 
-                  href="https://chat.whatsapp.com/LL3eS7iMgHk7tsvKCQh1ZO"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full py-3 rounded-xl font-bold bg-green-500 text-black flex items-center justify-center gap-2 hover:bg-green-400 hover:shadow-[0_0_20px_rgba(34,197,94,0.4)] transition-all"
-                >
-                  <MessageCircle size={18} /> Join WhatsApp HQ
-                </a>
-              </div>
+              
+              <h3 className="text-xl font-bold text-white mb-2">Next Step: Join the Community</h3>
+              <p className="text-sm text-white/70 mb-6 leading-relaxed max-w-[280px]">
+                Connect with your mentors, meet your fellow interns, and get the latest official program updates.
+              </p>
+              
+              <a 
+                href="https://chat.whatsapp.com/LL3eS7iMgHk7tsvKCQh1ZO"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-4 rounded-xl font-bold bg-[#25D366] text-white flex items-center justify-center gap-2 hover:bg-[#22bf5b] hover:shadow-[0_0_30px_rgba(37,211,102,0.4)] transition-all animate-pulse"
+                style={{ animationDuration: '2s' }}
+              >
+                <MessageCircle size={20} /> Join Official WhatsApp Group
+              </a>
             </div>
           </div>
         </motion.div>
