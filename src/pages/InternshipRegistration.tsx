@@ -111,6 +111,25 @@ const InternshipRegistration = () => {
     }
   };
 
+  const handleDownloadQR = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('/images/payment-qr.jpg');
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'buildicy-payment-qr.jpg';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading QR code:', error);
+      window.open('/images/payment-qr.jpg', '_blank'); // Fallback
+    }
+  };
+
   const trackCount = selectedTrack ? (trackStats[selectedTrack] || 0) : 0;
   const isEarlyBird = selectedTrack !== "" && trackCount < 10;
   
@@ -699,13 +718,12 @@ const InternshipRegistration = () => {
                         />
                         <div className="flex flex-col items-center gap-2 mb-4">
                           <p className="text-sm text-white/60">Scan to Pay via UPI</p>
-                          <a 
-                            href="/images/payment-qr.jpg" 
-                            download="buildicy-payment-qr.jpg"
+                          <button 
+                            onClick={handleDownloadQR}
                             className="text-xs font-bold text-purple-400 bg-purple-500/10 hover:bg-purple-500/20 px-4 py-2 rounded-full transition-colors flex items-center gap-2 border border-purple-500/20"
                           >
                             <Download size={14} /> Download QR Code
-                          </a>
+                          </button>
                         </div>
                         
                         <div className="text-2xl font-bold text-white">
