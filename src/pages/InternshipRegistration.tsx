@@ -692,7 +692,11 @@ const InternshipRegistration = () => {
                       </div>
                       
                       <div className="flex flex-col items-center justify-center p-6 bg-white/5 rounded-2xl border border-white/10 text-center">
-                        <QrCode size={40} className="text-white mb-4" />
+                        <img 
+                          src="/images/payment-qr.jpg" 
+                          alt="Payment QR Code" 
+                          className="w-48 h-48 object-cover mb-4 rounded-xl shadow-lg border border-white/20"
+                        />
                         <p className="text-sm text-white/60 mb-2">Scan to Pay via UPI</p>
                         
                         <div className="text-2xl font-bold text-white mb-4">
@@ -709,8 +713,8 @@ const InternshipRegistration = () => {
                           )}
                         </div>
 
-                        <p className="text-xs font-mono text-purple-300 bg-purple-900/30 px-3 py-1.5 rounded-lg border border-purple-500/20">
-                          buildicy@ybl
+                        <p className="text-xs font-mono text-purple-300 bg-purple-900/30 px-3 py-1.5 rounded-lg border border-purple-500/20 select-all">
+                          prajwalgenious-1@okhdfcbank
                         </p>
                       </div>
                     </div>
