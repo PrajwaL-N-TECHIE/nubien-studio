@@ -678,7 +678,7 @@ const InternshipRegistration = () => {
                           {finalPrice < originalPrice ? (
                             <div className="flex flex-col items-center gap-1">
                               <span className="text-sm text-white/40 line-through">₹{originalPrice}</span>
-                              <span className="text-green-400 font-extrabold flex items-center gap-2">₹{finalPrice} <span className="text-[10px] bg-green-500/20 px-2 py-0.5 rounded-full">-10%</span></span>
+                              <span className="text-green-400 font-extrabold flex items-center gap-2">₹{finalPrice} <span className="text-[10px] bg-green-500/20 px-2 py-0.5 rounded-full">-5%</span></span>
                               {(isEarlyBird && referralStatus === 'valid') && (
                                 <span className="text-[10px] text-white/40 mt-1">* Friend still gets benefit!</span>
                               )}
