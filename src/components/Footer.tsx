@@ -314,9 +314,9 @@ const Footer = () => {
     Resources: [
       { name: "Apply for Internship", path: "/internship-registration" },
       { name: "Verify Certificate", path: "/verify" },
+      { name: "Student Login", path: "/student-dashboard" },
       { name: "API Reference", path: "#" },
-      { name: "Community", path: "#" },
-      { name: "Support", path: "#" }
+      { name: "Community", path: "#" }
     ],
   };
 
