@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Lock, ShieldAlert, ArrowRight, Eye, Search, LogOut, Trash2, Info, X } from "lucide-react";
+import { Lock, ShieldAlert, ArrowRight, Eye, EyeOff, Search, LogOut, Trash2, Info, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import { db } from "@/lib/firebase";
@@ -31,6 +31,7 @@ const trackNames: Record<string, string> = {
 
 const AdminDashboard = () => {
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [error, setError] = useState("");
   const [records, setRecords] = useState<InternshipRecord[]>([]);
@@ -164,13 +165,20 @@ const AdminDashboard = () => {
             <div className="relative">
               <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40" size={20} />
               <input 
-                type="password"
+                type={showPassword ? "text" : "password"}
                 placeholder="Enter admin password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-xl py-4 pl-12 pr-4 text-white placeholder-white/40 focus:outline-none focus:border-red-500/50 transition-colors"
+                className="w-full bg-white/5 border border-white/10 rounded-xl py-4 pl-12 pr-12 text-white placeholder-white/40 focus:outline-none focus:border-red-500/50 transition-colors"
                 required
               />
+              <button 
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors"
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
             </div>
 
             {error && (
@@ -353,7 +361,7 @@ const AdminDashboard = () => {
 
       {/* Receipt Image Modal */}
       {viewReceiptUrl && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm" onClick={() => setViewReceiptUrl(null)}>
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm" onClick={() => setViewReceiptUrl(null)}>
           <div className="relative max-w-4xl max-h-[90vh] w-full" onClick={e => e.stopPropagation()}>
             <button 
               onClick={() => setViewReceiptUrl(null)}
@@ -368,7 +376,7 @@ const AdminDashboard = () => {
 
       {/* Full Details Modal */}
       {selectedStudent && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm" onClick={() => setSelectedStudent(null)}>
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm" onClick={() => setSelectedStudent(null)}>
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}

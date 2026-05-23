@@ -41,6 +41,7 @@ const InternshipRegistration = () => {
   const [referralCode, setReferralCode] = useState("");
   const [referralStatus, setReferralStatus] = useState<'idle' | 'verifying' | 'valid' | 'invalid'>('idle');
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [countryCode, setCountryCode] = useState("+91");
   const navigate = useNavigate();
 
   const trackPricing: Record<string, string> = {
@@ -101,10 +102,10 @@ const InternshipRegistration = () => {
   
   const finalPrice = useMemo(() => {
     if (originalPrice === 0) return 0;
-    // Max discount is 10% (either Early Bird or Referral)
+    // Max discount is 5% (either Early Bird or Referral)
     const hasDiscount = isEarlyBird || referralStatus === 'valid';
     if (hasDiscount) {
-      return Math.round(originalPrice * 0.9);
+      return Math.round(originalPrice * 0.95);
     }
     return originalPrice;
   }, [originalPrice, isEarlyBird, referralStatus]);
@@ -120,11 +121,12 @@ const InternshipRegistration = () => {
       const formData = new FormData(form);
       
       const email = formData.get('email') as string;
-      const phone = formData.get('phone') as string;
+      const localPhone = formData.get('phone') as string;
+      const phone = `${countryCode} ${localPhone}`;
 
       // Strict Regex Validation
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      const phoneRegex = /^(?:\+?\d{1,3})?[-.\s]?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/;
+      const phoneRegex = /^\d{7,15}$/; // Validate the local part is digits only, 7-15 length
 
       if (!emailRegex.test(email)) {
         alert("Please enter a valid email address.");
@@ -132,8 +134,8 @@ const InternshipRegistration = () => {
         return;
       }
 
-      if (!phoneRegex.test(phone)) {
-        alert("Please enter a valid mobile number (10-15 digits).");
+      if (!phoneRegex.test(localPhone.replace(/[\s-]/g, ''))) {
+        alert("Please enter a valid mobile number.");
         setIsSubmitting(false);
         return;
       }
@@ -506,19 +508,34 @@ const InternshipRegistration = () => {
               {/* Phone Number */}
               <div className="space-y-2">
                 <label className="text-sm font-medium text-white/80 ml-1">Phone Number</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <Phone size={18} className="text-white/40" />
+                <div className="flex gap-2">
+                  <div className="relative w-1/3 max-w-[120px]">
+                    <select
+                      value={countryCode}
+                      onChange={(e) => setCountryCode(e.target.value)}
+                      className="w-full bg-[#13131a] border border-white/10 rounded-xl py-3 px-3 text-white focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all appearance-none"
+                    >
+                      <option value="+91">🇮🇳 IN (+91)</option>
+                      <option value="+1">🇺🇸 US (+1)</option>
+                      <option value="+44">🇬🇧 UK (+44)</option>
+                      <option value="+61">🇦🇺 AU (+61)</option>
+                      <option value="+971">🇦🇪 AE (+971)</option>
+                    </select>
                   </div>
-                  <input
-                    name="phone"
-                    required
-                    type="tel"
-                    pattern="^(?:\+?\d{1,3})?[-.\s]?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$"
-                    title="Please enter a valid 10+ digit mobile number"
-                    placeholder="+91 98765 43210"
-                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-11 pr-4 text-white placeholder:text-white/20 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all invalid:border-red-500/30"
-                  />
+                  <div className="relative flex-1">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <Phone size={18} className="text-white/40" />
+                    </div>
+                    <input
+                      name="phone"
+                      required
+                      type="tel"
+                      pattern="^[\d\s-]{7,15}$"
+                      title="Please enter a valid mobile number"
+                      placeholder="98765 43210"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-11 pr-4 text-white placeholder:text-white/20 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all invalid:border-red-500/30"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -603,7 +620,7 @@ const InternshipRegistration = () => {
               <div className="md:col-span-2 space-y-2">
                 <div className="flex justify-between items-center">
                   <label className="text-sm font-medium text-white/80 ml-1">Referral Code (Friend's Registration ID) <span className="text-white/40 font-normal">- Optional</span></label>
-                  {isEarlyBird && <span className="text-[10px] text-purple-400 font-medium bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">Max 10% Discount Limit Reached</span>}
+                  {isEarlyBird && <span className="text-[10px] text-purple-400 font-medium bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">Max 5% Discount Limit Reached</span>}
                 </div>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -621,12 +638,12 @@ const InternshipRegistration = () => {
                     }`}
                   />
                   {referralStatus === 'verifying' && <div className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 text-xs">Verifying...</div>}
-                  {referralStatus === 'valid' && <div className="absolute right-4 top-1/2 -translate-y-1/2 text-green-400 text-xs font-bold flex items-center gap-1"><CheckCircle2 size={12}/> Valid (10% Off)</div>}
+                  {referralStatus === 'valid' && <div className="absolute right-4 top-1/2 -translate-y-1/2 text-green-400 text-xs font-bold flex items-center gap-1"><CheckCircle2 size={12}/> Valid (5% Off)</div>}
                   {referralStatus === 'invalid' && <div className="absolute right-4 top-1/2 -translate-y-1/2 text-red-400 text-xs">Invalid ID</div>}
                 </div>
                 {referralStatus === 'valid' && (
                   <p className="text-xs text-green-400/80 ml-1">
-                    {isEarlyBird ? "Your friend still gets a 10% discount benefit!" : "You both get a 10% discount benefit!"}
+                    {isEarlyBird ? "Your friend still gets a 5% discount benefit!" : "You both get a 5% discount benefit!"}
                   </p>
                 )}
               </div>
