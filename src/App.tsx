@@ -53,6 +53,23 @@ const AnimatedRoutes = () => {
   );
 };
 
+const GlobalLayout = ({ children }: { children: React.ReactNode }) => {
+  const location = useLocation();
+  const isStandaloneRoute = location.pathname.includes('/student-dashboard') || location.pathname.includes('/admin');
+
+  return (
+    <div className="bg-[#050507] min-h-screen flex flex-col text-white">
+      {!isStandaloneRoute && <Navbar />}
+      
+      <main className="flex-grow">
+        {children}
+      </main>
+
+      {!isStandaloneRoute && <Footer />}
+    </div>
+  );
+};
+
 const App = () => {
   const [isScouterOpen, setIsScouterOpen] = useState(false);
 
@@ -75,28 +92,17 @@ const App = () => {
           <Sonner />
           <BrowserRouter>
             <SmoothScroll>
-              {/* Global Layout Wrapper */}
-              <div className="bg-[#050507] min-h-screen flex flex-col text-white">
+              {/* Global Layout Wrapper handles conditional Navbar/Footer */}
+              <GlobalLayout>
+                <AnimatedRoutes />
+              </GlobalLayout>
 
-                {/* Navbar with contact trigger */}
-                <Navbar />
-
-                {/* Main content area */}
-                <main className="flex-grow">
-                  <AnimatedRoutes />
-                </main>
-
-                {/* Footer with contact trigger */}
-                <Footer />
-
-                {/* Advanced Contact Onboarding Modal */}
-                <AnimatePresence>
-                  {isScouterOpen && (
-                    <ContactScouter isOpen={isScouterOpen} onClose={() => setIsScouterOpen(false)} />
-                  )}
-                </AnimatePresence>
-
-              </div>
+              {/* Advanced Contact Onboarding Modal */}
+              <AnimatePresence>
+                {isScouterOpen && (
+                  <ContactScouter isOpen={isScouterOpen} onClose={() => setIsScouterOpen(false)} />
+                )}
+              </AnimatePresence>
             </SmoothScroll>
           </BrowserRouter>
         </TooltipProvider>
