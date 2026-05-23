@@ -100,15 +100,20 @@ const InternshipRegistration = () => {
   
   const originalPrice = parseInt(trackPricing[selectedTrack]?.replace('₹', '') || '0');
   
+  const discountPercent = useMemo(() => {
+    let d = 0;
+    if (isEarlyBird) d += 10;
+    if (referralStatus === 'valid') d += 5;
+    return d;
+  }, [isEarlyBird, referralStatus]);
+
   const finalPrice = useMemo(() => {
     if (originalPrice === 0) return 0;
-    // Max discount is 5% (either Early Bird or Referral)
-    const hasDiscount = isEarlyBird || referralStatus === 'valid';
-    if (hasDiscount) {
-      return Math.round(originalPrice * 0.95);
+    if (discountPercent > 0) {
+      return Math.round(originalPrice * (1 - (discountPercent / 100)));
     }
     return originalPrice;
-  }, [originalPrice, isEarlyBird, referralStatus]);
+  }, [originalPrice, discountPercent]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -620,7 +625,7 @@ const InternshipRegistration = () => {
               <div className="md:col-span-2 space-y-2">
                 <div className="flex justify-between items-center">
                   <label className="text-sm font-medium text-white/80 ml-1">Referral Code (Friend's Registration ID) <span className="text-white/40 font-normal">- Optional</span></label>
-                  {isEarlyBird && <span className="text-[10px] text-purple-400 font-medium bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">Max 5% Discount Limit Reached</span>}
+                  {isEarlyBird && <span className="text-[10px] text-green-400 font-medium bg-green-500/10 px-2 py-0.5 rounded border border-green-500/20">Early Bird 10% Active!</span>}
                 </div>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -643,7 +648,7 @@ const InternshipRegistration = () => {
                 </div>
                 {referralStatus === 'valid' && (
                   <p className="text-xs text-green-400/80 ml-1">
-                    {isEarlyBird ? "Your friend still gets a 5% discount benefit!" : "You both get a 5% discount benefit!"}
+                    You both get a 5% discount benefit! {isEarlyBird && "(Stacked with Early Bird!)"}
                   </p>
                 )}
               </div>
@@ -678,9 +683,9 @@ const InternshipRegistration = () => {
                           {finalPrice < originalPrice ? (
                             <div className="flex flex-col items-center gap-1">
                               <span className="text-sm text-white/40 line-through">₹{originalPrice}</span>
-                              <span className="text-green-400 font-extrabold flex items-center gap-2">₹{finalPrice} <span className="text-[10px] bg-green-500/20 px-2 py-0.5 rounded-full">-5%</span></span>
+                              <span className="text-green-400 font-extrabold flex items-center gap-2">₹{finalPrice} <span className="text-[10px] bg-green-500/20 px-2 py-0.5 rounded-full">-{discountPercent}%</span></span>
                               {(isEarlyBird && referralStatus === 'valid') && (
-                                <span className="text-[10px] text-white/40 mt-1">* Friend still gets benefit!</span>
+                                <span className="text-[10px] text-white/40 mt-1">* 15% Stacked Discount Applied!</span>
                               )}
                             </div>
                           ) : (
