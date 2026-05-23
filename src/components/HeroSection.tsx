@@ -184,14 +184,16 @@ const HeroSection = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.25, ease: customEase }}
-          className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-purple-900/30 border border-purple-500/30 text-purple-200 hover:bg-purple-800/40 hover:border-purple-400/60 transition-all shadow-[0_0_20px_rgba(168,85,247,0.2)] hover:shadow-[0_0_30px_rgba(168,85,247,0.4)] cursor-pointer group"
+          className="inline-flex items-center gap-3 px-6 sm:px-8 py-3 sm:py-4 mt-2 rounded-full bg-gradient-to-r from-purple-900/80 to-indigo-900/80 border border-purple-400/60 text-white hover:border-purple-300 hover:scale-[1.02] transition-all shadow-[0_0_30px_rgba(168,85,247,0.4)] hover:shadow-[0_0_50px_rgba(168,85,247,0.6)] cursor-pointer group backdrop-blur-xl"
         >
-          <span className="relative flex h-2.5 w-2.5">
+          <span className="relative flex h-3 sm:h-4 w-3 sm:w-4">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
+            <span className="relative inline-flex rounded-full h-3 sm:h-4 w-3 sm:w-4 bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.8)]"></span>
           </span>
-          <span className="text-[11px] font-bold uppercase tracking-[0.15em] font-['DM_Mono'] ml-1">Internships Training Open Now</span>
-          <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform ml-1" />
+          <span className="text-xs sm:text-sm md:text-base font-bold uppercase tracking-[0.15em] sm:tracking-[0.2em] font-['DM_Mono'] text-white drop-shadow-md">
+            Internships Training Open Now
+          </span>
+          <ArrowRight size={18} className="group-hover:translate-x-1.5 transition-transform text-purple-300" />
         </motion.a>
 
         {/* -------------------------------------------------------------------------- */}
