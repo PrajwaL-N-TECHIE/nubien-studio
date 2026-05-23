@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, Send, User, Mail, Phone, BookOpen, GraduationCap, Briefcase, Link as LinkIcon, CheckCircle2, UploadCloud, QrCode, Download, ArrowRight, Printer, Plus, Minus } from "lucide-react";
+import { Sparkles, Send, User, Mail, Phone, BookOpen, GraduationCap, Briefcase, Link as LinkIcon, CheckCircle2, UploadCloud, QrCode, Download, ArrowRight, Printer, Plus, Minus, Copy, Linkedin, Image as ImageIcon } from "lucide-react";
 import Magnetic from "@/components/Magnetic";
 import emailjs from '@emailjs/browser';
 import html2canvas from 'html2canvas';
@@ -56,6 +56,7 @@ const InternshipRegistration = () => {
   const [trackStats, setTrackStats] = useState<Record<string, number>>({});
   const [referralCode, setReferralCode] = useState("");
   const [referralStatus, setReferralStatus] = useState<'idle' | 'verifying' | 'valid' | 'invalid'>('idle');
+  const [copiedPost, setCopiedPost] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [countryCode, setCountryCode] = useState("+91");
   const navigate = useNavigate();
@@ -324,11 +325,9 @@ const InternshipRegistration = () => {
       
       pdf.addImage(imgData, 'PNG', 0, 0, canvas.width / 2, canvas.height / 2);
       
-      // Fix for iOS Safari PDF Download
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
       
       if (isIOS) {
-        // iOS blocks programmatic downloads, so we open it as a data URI for them to "Save to Files"
         const pdfDataUri = pdf.output('datauristring');
         const newWindow = window.open();
         if (newWindow) {
@@ -342,6 +341,32 @@ const InternshipRegistration = () => {
     } catch (error) {
       console.error('Error generating PDF:', error);
       alert("Failed to generate PDF. Please try taking a screenshot of the receipt instead.");
+    }
+  };
+
+  const linkedInPostText = `I am thrilled to announce that I've been selected for the Elite Internship Program at @Buildicy! 🚀\n\nI will be joining the ${registrationData?.track} track to upskill, gain hands-on experience, and build real-world projects.\n\nLooking forward to this amazing journey and connecting with fellow tech enthusiasts! 💻✨\n\n#Buildicy #Internship #${registrationData?.track?.replace(/ /g, '')} #TechJourney #CareerGrowth`;
+
+  const handleCopyPost = () => {
+    navigator.clipboard.writeText(linkedInPostText);
+    setCopiedPost(true);
+    setTimeout(() => setCopiedPost(false), 2000);
+  };
+
+  const handleDownloadBadge = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('/images/linkedin-badge.png');
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'buildicy-selection-badge.png';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      window.open('/images/linkedin-badge.png', '_blank');
     }
   };
 
@@ -440,7 +465,7 @@ const InternshipRegistration = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: isPrinting ? 1 : 0, y: isPrinting ? 0 : 20 }}
           transition={{ delay: 2.5 }}
-          className="flex flex-col sm:flex-row gap-4 mt-12 relative z-10 w-full max-w-md px-4"
+          className="flex flex-col gap-8 mt-12 relative z-10 w-full max-w-md px-4 pb-12"
         >
           <button
             onClick={handleDownloadReceipt}
@@ -448,6 +473,57 @@ const InternshipRegistration = () => {
           >
             <Download size={18} /> Download Receipt PDF
           </button>
+
+          {/* LinkedIn Share Card */}
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-6 shadow-2xl backdrop-blur-sm">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
+                <Linkedin size={20} className="text-blue-400" />
+              </div>
+              <div className="text-left">
+                <h3 className="font-bold text-white">Share the Good News!</h3>
+                <p className="text-xs text-white/60">Let your network know you're in.</p>
+              </div>
+            </div>
+
+            {/* Badge Preview */}
+            <div className="mb-4 relative group">
+              <img 
+                src="/images/linkedin-badge.png" 
+                alt="Selection Badge" 
+                className="w-full h-auto rounded-xl border border-white/20 shadow-lg object-cover"
+              />
+              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex items-center justify-center backdrop-blur-sm">
+                <button 
+                  onClick={handleDownloadBadge}
+                  className="bg-white text-black font-bold px-4 py-2 rounded-full text-sm flex items-center gap-2 hover:scale-105 transition-transform"
+                >
+                  <Download size={16} /> Save Image
+                </button>
+              </div>
+            </div>
+
+            {/* Post Content */}
+            <div className="bg-black/40 rounded-xl p-4 mb-4 border border-white/5 text-left relative group">
+              <p className="text-sm text-white/80 whitespace-pre-wrap">{linkedInPostText}</p>
+              <button 
+                onClick={handleCopyPost}
+                className="absolute top-2 right-2 p-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors"
+                title="Copy text"
+              >
+                {copiedPost ? <CheckCircle2 size={16} className="text-green-400" /> : <Copy size={16} className="text-white/60" />}
+              </button>
+            </div>
+
+            <a 
+              href={`https://www.linkedin.com/feed/?shareActive=true&text=${encodeURIComponent(linkedInPostText)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full py-3 rounded-xl font-bold bg-[#0A66C2] text-white flex items-center justify-center gap-2 hover:bg-[#084e96] transition-colors"
+            >
+              <Linkedin size={18} /> Post on LinkedIn
+            </a>
+          </div>
         </motion.div>
       </div>
     );
