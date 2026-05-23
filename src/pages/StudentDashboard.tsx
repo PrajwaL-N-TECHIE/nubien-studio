@@ -95,6 +95,26 @@ const MissionControl = () => (
 
     </div>
 
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Dropzone */}
+      <div className="col-span-1 lg:col-span-2 bg-[#0C0C12]/80 border border-white/10 rounded-3xl p-8">
+        <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+          <UploadCloud className="text-purple-400" /> Assignment Dropzone
+        </h2>
+        <div className="w-full border-2 border-dashed border-white/10 hover:border-purple-500/50 rounded-2xl p-10 flex flex-col items-center justify-center gap-4 transition-all cursor-pointer group bg-white/[0.02]">
+          <div className="w-16 h-16 rounded-full bg-purple-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+            <UploadCloud size={28} className="text-purple-400" />
+          </div>
+          <div className="text-center">
+            <p className="text-white font-medium mb-1">Drag and drop your project ZIP or PDF</p>
+            <p className="text-sm text-zinc-500">Maximum file size: 50MB</p>
+          </div>
+          <button className="mt-2 px-6 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-full text-sm font-bold transition-all shadow-[0_0_20px_rgba(168,85,247,0.3)]">
+            Browse Files
+          </button>
+        </div>
+      </div>
+
       {/* Daily Quests */}
       <div className="col-span-1 bg-[#0C0C12]/80 border border-white/10 rounded-3xl p-8 group overflow-hidden relative">
         <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/10 rounded-full blur-[40px] -mr-16 -mt-16" />
@@ -119,7 +139,6 @@ const MissionControl = () => (
           ))}
         </div>
       </div>
-    </div>
     </div>
 
     {/* Gamified Skill Tree */}
