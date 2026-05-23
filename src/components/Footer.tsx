@@ -11,6 +11,8 @@ import { usePerformance } from "@/context/PerformanceContext";
 import emailjs from '@emailjs/browser';
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
+import { doc, getDoc, setDoc, increment } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 // --------------------------------------------------------------------------
 // NEWSLETTER FORM COMPONENT
@@ -172,41 +174,59 @@ const LiveStatus = () => {
     };
     fetchLocation();
 
-    // 2. TRUE PERSISTENCE CORE
-    const updateCounters = async () => {
-      const STORAGE_KEYS = { VIEWS: 'bld_views_v4', VISITORS: 'bld_visitors_v4' };
-      const BASE = { VIEWS: 224730, VISITORS: 64446, ACTIVE: 651 };
+    // 2. REAL FIRESTORE ANALYTICS
+    const trackAnalytics = async () => {
+      try {
+        const statsRef = doc(db, "analytics", "global_stats");
+        
+        // Check if user is a unique visitor
+        const hasVisited = localStorage.getItem('bld_real_visited');
+        const isUnique = !hasVisited;
+        
+        if (isUnique) {
+          localStorage.setItem('bld_real_visited', 'true');
+        }
 
-      const getPersistedVal = (k: string, b: number) => {
-        const s = localStorage.getItem(k);
-        return s ? parseInt(s, 10) || b : b;
-      };
+        // Fetch first to see if we need to seed the base numbers
+        let snap = await getDoc(statsRef);
+        if (!snap.exists()) {
+          // Seed the database with the marketing baseline so stats don't drop to zero
+          await setDoc(statsRef, {
+            pageViews: 224730,
+            uniqueVisitors: 64446
+          });
+        }
 
-      let v = getPersistedVal(STORAGE_KEYS.VIEWS, BASE.VIEWS);
-      let p = getPersistedVal(STORAGE_KEYS.VISITORS, BASE.VISITORS);
+        // Increment in real-time
+        await setDoc(statsRef, {
+          pageViews: increment(1),
+          uniqueVisitors: increment(isUnique ? 1 : 0)
+        }, { merge: true });
 
-      // INCREMENT REAL GROWTH (Persistent for this visitor)
-      v += Math.floor(Math.random() * 2) + 1;
-      if (Math.random() > 0.85) p += 1;
-
-      localStorage.setItem(STORAGE_KEYS.VIEWS, v.toString());
-      localStorage.setItem(STORAGE_KEYS.VISITORS, p.toString());
-
-      setPageViews(v);
-      setVisitorCount(p);
-
-      const hour = new Date().getHours();
-      const tMult = (hour >= 10 && hour <= 22) ? 1.05 : 0.85;
-      setActiveUsers(Math.floor(BASE.ACTIVE * tMult + (Math.random() * 20)));
+        // Get final synced numbers
+        snap = await getDoc(statsRef);
+        if (snap.exists()) {
+          const data = snap.data();
+          setPageViews(data.pageViews || 0);
+          setVisitorCount(data.uniqueVisitors || 0);
+        }
+      } catch (err) {
+        console.error("Failed to sync real analytics", err);
+      }
     };
-    updateCounters();
+    
+    trackAnalytics();
+
+    // Active users is hard to track accurately without a heartbeat system, 
+    // so we'll simulate a realistic low active user count (e.g. 12 - 25 active right now)
+    const hour = new Date().getHours();
+    const tMult = (hour >= 10 && hour <= 22) ? 1.2 : 0.8;
+    setActiveUsers(Math.floor(15 * tMult + (Math.random() * 10)));
 
     const timer = setInterval(() => setTime(new Date()), 1000);
-    const refreshInterval = setInterval(updateCounters, 30000);
 
     return () => {
       clearInterval(timer);
-      clearInterval(refreshInterval);
     };
   }, []);
 
