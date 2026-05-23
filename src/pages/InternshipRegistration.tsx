@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, Send, User, Mail, Phone, BookOpen, GraduationCap, Briefcase, Link as LinkIcon, CheckCircle2, UploadCloud, QrCode, Download, ArrowRight, Printer, Plus, Minus, MessageCircle, Radio } from "lucide-react";
+import { Sparkles, Send, User, Mail, Phone, BookOpen, GraduationCap, Briefcase, Link as LinkIcon, CheckCircle2, UploadCloud, QrCode, Download, ArrowRight, Printer, Plus, Minus, MessageCircle, Radio, Linkedin } from "lucide-react";
 import Magnetic from "@/components/Magnetic";
 import emailjs from '@emailjs/browser';
 import html2canvas from 'html2canvas';
@@ -464,15 +464,26 @@ const InternshipRegistration = () => {
                 Connect with your mentors, meet your fellow interns, and get the latest official program updates.
               </p>
               
-              <a 
-                href="https://chat.whatsapp.com/LL3eS7iMgHk7tsvKCQh1ZO"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full py-4 rounded-xl font-bold bg-[#25D366] text-white flex items-center justify-center gap-2 hover:bg-[#22bf5b] hover:shadow-[0_0_30px_rgba(37,211,102,0.4)] transition-all animate-pulse"
-                style={{ animationDuration: '2s' }}
-              >
-                <MessageCircle size={20} /> Join Official WhatsApp Group
-              </a>
+              <div className="flex flex-col gap-3 w-full">
+                <a 
+                  href="https://chat.whatsapp.com/LL3eS7iMgHk7tsvKCQh1ZO"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full py-4 rounded-xl font-bold bg-[#25D366] text-white flex items-center justify-center gap-2 hover:bg-[#22bf5b] hover:shadow-[0_0_30px_rgba(37,211,102,0.4)] transition-all animate-pulse"
+                  style={{ animationDuration: '2s' }}
+                >
+                  <MessageCircle size={20} /> Join Official WhatsApp Group
+                </a>
+
+                <a 
+                  href="https://www.linkedin.com/company/buildicy/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full py-4 rounded-xl font-bold bg-[#0A66C2]/10 border border-[#0A66C2]/30 text-[#0A66C2] flex items-center justify-center gap-2 hover:bg-[#0A66C2] hover:text-white hover:shadow-[0_0_30px_rgba(10,102,194,0.4)] transition-all"
+                >
+                  <Linkedin size={20} /> Follow Buildicy on LinkedIn
+                </a>
+              </div>
             </div>
           </div>
         </motion.div>
