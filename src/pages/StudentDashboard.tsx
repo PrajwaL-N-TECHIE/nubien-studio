@@ -4,7 +4,8 @@ import {
   LayoutDashboard, BookOpen, Trophy, Bot, Briefcase, 
   LogOut, UploadCloud, PlayCircle, FileText, CheckCircle2,
   Send, Sparkles, AlertCircle, FileLock2, Code2, 
-  ChevronRight, Activity, Terminal
+  ChevronRight, Activity, Terminal, Users, Globe,
+  GitBranch, GraduationCap, Star, ShieldCheck
 } from "lucide-react";
 import Magnetic from "@/components/Magnetic";
 import PageTransition from "@/components/PageTransition";
@@ -109,6 +110,32 @@ const MissionControl = () => (
         <button className="mt-2 px-6 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-full text-sm font-bold transition-all shadow-[0_0_20px_rgba(168,85,247,0.3)]">
           Browse Files
         </button>
+      </div>
+    </div>
+    </div>
+
+    {/* Gamified Skill Tree */}
+    <div className="bg-[#0C0C12]/80 border border-white/10 rounded-3xl p-8">
+      <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+        <GitBranch className="text-purple-400" /> Skill Tree
+      </h2>
+      <div className="relative flex justify-between items-center px-4">
+        <div className="absolute top-1/2 left-8 right-8 h-1 bg-white/5 -translate-y-1/2 z-0" />
+        <div className="absolute top-1/2 left-8 w-[40%] h-1 bg-purple-500 shadow-[0_0_10px_rgba(168,85,247,0.5)] -translate-y-1/2 z-0" />
+        
+        {[
+          { label: "W1: Core", unlocked: true },
+          { label: "W2: Logic", unlocked: true },
+          { label: "W3: Build", unlocked: false },
+          { label: "W4: Career", unlocked: false }
+        ].map((node, i) => (
+          <div key={i} className="relative z-10 flex flex-col items-center gap-3">
+            <div className={`w-12 h-12 rounded-full flex items-center justify-center border-4 ${node.unlocked ? 'bg-purple-900 border-purple-500 shadow-[0_0_20px_rgba(168,85,247,0.4)]' : 'bg-[#12121A] border-white/10'}`}>
+              {node.unlocked ? <CheckCircle2 size={20} className="text-white" /> : <FileLock2 size={20} className="text-zinc-600" />}
+            </div>
+            <span className={`text-xs font-bold font-mono tracking-widest uppercase ${node.unlocked ? 'text-purple-400' : 'text-zinc-600'}`}>{node.label}</span>
+          </div>
+        ))}
       </div>
     </div>
   </div>
@@ -327,11 +354,104 @@ const CareerPrep = () => (
   </div>
 );
 
+const PeerReview = () => (
+  <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="bg-gradient-to-r from-teal-900/20 to-emerald-900/20 border border-teal-500/20 rounded-3xl p-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+        <div>
+          <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+            <Users className="text-teal-400" /> Peer-to-Peer Review
+          </h2>
+          <p className="text-zinc-400 text-sm mt-1">Review a peer's project to unlock your own Grade & XP.</p>
+        </div>
+        <div className="px-4 py-2 bg-teal-500/10 border border-teal-500/30 rounded-xl text-teal-400 font-mono text-sm font-bold flex items-center gap-2">
+          <ShieldCheck size={16} /> Anonymous Mode Active
+        </div>
+      </div>
+
+      <div className="bg-[#0C0C12] border border-white/5 rounded-2xl p-6">
+        <h3 className="font-bold text-white mb-2 text-lg">Submission #8492 - React Hooks refactor</h3>
+        <p className="text-sm text-zinc-400 mb-6">Please review the implementation of useMemo in the provided sandbox.</p>
+        
+        <div className="flex gap-4 mb-8">
+          <button className="px-6 py-3 bg-white/5 hover:bg-white/10 rounded-xl text-sm font-medium transition-colors flex items-center gap-2">
+            <Code2 size={16} /> View Code Sandbox
+          </button>
+          <button className="px-6 py-3 bg-white/5 hover:bg-white/10 rounded-xl text-sm font-medium transition-colors flex items-center gap-2">
+            <Globe size={16} /> View Live Demo
+          </button>
+        </div>
+
+        <div className="space-y-4">
+          <label className="text-sm font-bold text-zinc-300">Constructive Feedback (Required)</label>
+          <textarea 
+            placeholder="I noticed you used useMemo here, but since the array is small, it might actually degrade performance due to overhead..."
+            className="w-full h-32 bg-[#1A1A24]/60 border border-white/10 rounded-xl p-4 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-teal-500/50"
+          />
+          <div className="flex items-center gap-4">
+            <label className="text-sm font-bold text-zinc-300">Grade</label>
+            <div className="flex gap-2">
+              {[1, 2, 3, 4, 5].map(star => (
+                <button key={star} className="text-zinc-600 hover:text-teal-400 transition-colors">
+                  <Star size={24} />
+                </button>
+              ))}
+            </div>
+          </div>
+          <button className="mt-4 px-8 py-3 bg-teal-600 hover:bg-teal-500 text-white font-bold rounded-xl transition-all shadow-[0_0_20px_rgba(20,184,166,0.3)]">
+            Submit Review & Unlock My Grade
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+const LivePortfolio = () => (
+  <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="bg-[#0C0C12]/80 border border-white/10 rounded-3xl p-8 text-center relative overflow-hidden">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-blue-900/20 via-[#0C0C12]/80 to-[#0C0C12]/80 pointer-events-none" />
+      <Globe size={48} className="text-blue-400 mx-auto mb-4 relative z-10" />
+      <h2 className="text-2xl font-bold text-white mb-2 relative z-10">Your Proof-of-Work Portfolio</h2>
+      <p className="text-zinc-400 text-sm max-w-lg mx-auto mb-6 relative z-10">
+        Your assignments are automatically compiled into a beautiful, public portfolio. Send this link to recruiters instead of a PDF certificate.
+      </p>
+      
+      <div className="max-w-md mx-auto bg-black/50 border border-white/10 rounded-xl p-4 flex items-center justify-between mb-8 relative z-10">
+        <span className="text-zinc-300 font-mono text-sm truncate">buildicy.com/interns/alex-developer</span>
+        <button className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-xs font-bold transition-colors">
+          Copy Link
+        </button>
+      </div>
+
+      <div className="w-full aspect-video max-w-3xl mx-auto rounded-2xl overflow-hidden border border-white/20 shadow-2xl relative z-10 bg-gradient-to-b from-[#1a1a24] to-black p-4 flex flex-col">
+        <div className="flex gap-2 mb-4">
+          <div className="w-3 h-3 rounded-full bg-red-500" />
+          <div className="w-3 h-3 rounded-full bg-yellow-500" />
+          <div className="w-3 h-3 rounded-full bg-green-500" />
+        </div>
+        <div className="flex-1 border border-white/10 rounded-xl bg-[#050507] p-8 flex flex-col items-center justify-center text-center">
+          <div className="w-20 h-20 rounded-full bg-blue-500/20 flex items-center justify-center mb-4">
+            <span className="text-2xl font-bold text-blue-400">AD</span>
+          </div>
+          <h3 className="text-xl font-bold text-white">Alex Developer</h3>
+          <p className="text-blue-400 font-mono text-sm mb-6">Full Stack Engineer</p>
+          <div className="grid grid-cols-2 gap-4 w-full max-w-sm">
+            <div className="h-24 bg-white/5 border border-white/10 rounded-xl" />
+            <div className="h-24 bg-white/5 border border-white/10 rounded-xl" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
 // --- MAIN LAYOUT ---
 
 export default function StudentDashboard() {
   const [activeTab, setActiveTab] = useState('mission');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isAlumniMode, setIsAlumniMode] = useState(false);
   const { isLowEnd } = usePerformance();
 
   // Scroll to top on mount
@@ -339,13 +459,29 @@ export default function StudentDashboard() {
     window.scrollTo(0, 0);
   }, []);
 
-  const TABS = [
+  const STUDENT_TABS = [
     { id: 'mission', label: 'Mission Control', icon: LayoutDashboard },
     { id: 'vault', label: 'The Vault', icon: BookOpen },
+    { id: 'collab', label: 'Peer Review', icon: Users },
+    { id: 'portfolio', label: 'Live Portfolio', icon: Globe },
     { id: 'leaderboard', label: 'Leaderboard', icon: Trophy },
     { id: 'mentor', label: 'AI Mentor', icon: Bot },
     { id: 'career', label: 'Career Prep', icon: Briefcase },
   ];
+
+  const ALUMNI_TABS = [
+    { id: 'alumni_jobs', label: 'Exclusive Jobs', icon: Briefcase },
+    { id: 'alumni_network', label: 'Alumni Directory', icon: Users },
+    { id: 'portfolio', label: 'My Portfolio', icon: Globe },
+  ];
+
+  const TABS = isAlumniMode ? ALUMNI_TABS : STUDENT_TABS;
+
+  // Auto-switch tab if current tab doesn't exist in new mode
+  useEffect(() => {
+    if (isAlumniMode && !ALUMNI_TABS.find(t => t.id === activeTab)) setActiveTab('alumni_jobs');
+    if (!isAlumniMode && !STUDENT_TABS.find(t => t.id === activeTab)) setActiveTab('mission');
+  }, [isAlumniMode]);
 
   return (
     <PageTransition>
@@ -355,14 +491,17 @@ export default function StudentDashboard() {
       <aside className={`fixed md:sticky top-0 left-0 h-screen w-72 bg-[#0C0C12] border-r border-white/5 flex flex-col transition-transform duration-300 z-50 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
         
         {/* Brand */}
-        <div className="p-8 border-b border-white/5">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-purple-600 rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(168,85,247,0.4)]">
-              <Sparkles size={20} className="text-white" />
+        <div className="p-8 border-b border-white/5 relative overflow-hidden">
+          {isAlumniMode && <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/20 to-amber-500/5 pointer-events-none" />}
+          <div className="flex items-center gap-3 relative z-10">
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(168,85,247,0.4)] ${isAlumniMode ? 'bg-yellow-600 shadow-yellow-500/40' : 'bg-purple-600'}`}>
+              {isAlumniMode ? <GraduationCap size={20} className="text-white" /> : <Sparkles size={20} className="text-white" />}
             </div>
             <div>
               <h1 className="font-bold tracking-tight">Buildicy OS</h1>
-              <p className="text-[10px] text-purple-400 uppercase tracking-widest font-mono">Student Portal</p>
+              <p className={`text-[10px] uppercase tracking-widest font-mono ${isAlumniMode ? 'text-yellow-500' : 'text-purple-400'}`}>
+                {isAlumniMode ? 'Alumni Network' : 'Student Portal'}
+              </p>
             </div>
           </div>
         </div>
@@ -389,7 +528,7 @@ export default function StudentDashboard() {
               }}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-medium ${
                 activeTab === tab.id 
-                  ? 'bg-purple-600 text-white shadow-[0_0_15px_rgba(168,85,247,0.3)]' 
+                  ? (isAlumniMode ? 'bg-yellow-600 text-white shadow-[0_0_15px_rgba(202,138,4,0.3)]' : 'bg-purple-600 text-white shadow-[0_0_15px_rgba(168,85,247,0.3)]') 
                   : 'text-zinc-400 hover:bg-white/5 hover:text-white'
               }`}
             >
@@ -399,8 +538,14 @@ export default function StudentDashboard() {
           ))}
         </nav>
 
-        {/* Logout */}
-        <div className="p-4 mt-auto border-t border-white/5">
+        {/* Alumni Toggle & Logout */}
+        <div className="p-4 mt-auto border-t border-white/5 space-y-2">
+          <button 
+            onClick={() => setIsAlumniMode(!isAlumniMode)}
+            className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-colors ${isAlumniMode ? 'bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20' : 'bg-white/5 text-zinc-300 hover:bg-white/10'}`}
+          >
+            <GraduationCap size={18} /> {isAlumniMode ? 'Exit Alumni Mode' : 'Simulate Alumni Mode'}
+          </button>
           <button 
             onClick={() => window.location.href = '/'}
             className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-400 hover:bg-red-500/10 rounded-xl transition-colors"
@@ -428,19 +573,19 @@ export default function StudentDashboard() {
 
       {/* Main Content Area */}
       <main className="flex-1 p-6 md:p-12 overflow-hidden relative">
-        {/* Subtle background glow based on tab */}
+        {/* Subtle background glow based on tab/mode */}
         {!isLowEnd && (
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-purple-900/10 rounded-full blur-[120px] pointer-events-none -z-10" />
+          <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] rounded-full blur-[120px] pointer-events-none -z-10 ${isAlumniMode ? 'bg-yellow-900/10' : 'bg-purple-900/10'}`} />
         )}
 
         <div className="max-w-5xl mx-auto h-full">
           {/* Header */}
           <header className="mb-10 hidden md:block">
             <div className="flex items-center gap-2 text-sm text-zinc-500 mb-2 font-mono uppercase tracking-widest">
-              <span>Portal</span> <ChevronRight size={12} /> <span className="text-purple-400">{TABS.find(t => t.id === activeTab)?.label}</span>
+              <span>Portal</span> <ChevronRight size={12} /> <span className={isAlumniMode ? 'text-yellow-500' : 'text-purple-400'}>{TABS.find(t => t.id === activeTab)?.label}</span>
             </div>
             <h1 className="text-3xl font-black text-white">
-              Welcome back, {STUDENT.name.split(' ')[0]}.
+              {isAlumniMode ? `Welcome to the Alumni Network, ${STUDENT.name.split(' ')[0]}.` : `Welcome back, ${STUDENT.name.split(' ')[0]}.`}
             </h1>
           </header>
 
@@ -448,9 +593,28 @@ export default function StudentDashboard() {
           <div className="pb-20 md:pb-0">
             {activeTab === 'mission' && <MissionControl />}
             {activeTab === 'vault' && <Vault />}
+            {activeTab === 'collab' && <PeerReview />}
+            {activeTab === 'portfolio' && <LivePortfolio />}
             {activeTab === 'leaderboard' && <Leaderboard />}
             {activeTab === 'mentor' && <AIMentor />}
             {activeTab === 'career' && <CareerPrep />}
+            
+            {/* Mock Alumni Views */}
+            {activeTab === 'alumni_jobs' && (
+              <div className="bg-[#0C0C12]/80 border border-white/10 rounded-3xl p-12 text-center">
+                <Briefcase size={48} className="text-yellow-500 mx-auto mb-4" />
+                <h2 className="text-2xl font-bold text-white mb-2">Exclusive Partner Jobs</h2>
+                <p className="text-zinc-400">As a certified Buildicy Alumni, you have priority access to full-time roles and freelance overflow gigs from our agency.</p>
+                <button className="mt-6 px-6 py-3 bg-yellow-600 hover:bg-yellow-500 text-white font-bold rounded-xl shadow-[0_0_20px_rgba(202,138,4,0.3)]">Browse 14 Open Roles</button>
+              </div>
+            )}
+            {activeTab === 'alumni_network' && (
+              <div className="bg-[#0C0C12]/80 border border-white/10 rounded-3xl p-12 text-center">
+                <Users size={48} className="text-yellow-500 mx-auto mb-4" />
+                <h2 className="text-2xl font-bold text-white mb-2">The Directory</h2>
+                <p className="text-zinc-400">Network with 4,200+ other alumni. Find co-founders, hire talent, or join an open-source project.</p>
+              </div>
+            )}
           </div>
         </div>
       </main>
