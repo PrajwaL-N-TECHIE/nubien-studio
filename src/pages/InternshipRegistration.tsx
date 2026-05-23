@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, Send, User, Mail, Phone, BookOpen, GraduationCap, Briefcase, Link as LinkIcon, CheckCircle2, UploadCloud, QrCode, Download, ArrowRight, Printer, Plus, Minus } from "lucide-react";
+import { Sparkles, Send, User, Mail, Phone, BookOpen, GraduationCap, Briefcase, Link as LinkIcon, CheckCircle2, UploadCloud, QrCode, Download, ArrowRight, Printer, Plus, Minus, MessageCircle, Radio } from "lucide-react";
 import Magnetic from "@/components/Magnetic";
 import emailjs from '@emailjs/browser';
 import html2canvas from 'html2canvas';
@@ -440,14 +440,48 @@ const InternshipRegistration = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: isPrinting ? 1 : 0, y: isPrinting ? 0 : 20 }}
           transition={{ delay: 2.5 }}
-          className="flex flex-col sm:flex-row gap-4 mt-12 relative z-10 w-full max-w-md px-4"
+          className="flex flex-col gap-6 mt-12 relative z-10 w-full max-w-md px-4 pb-12"
         >
           <button
             onClick={handleDownloadReceipt}
-            className="w-full py-4 rounded-xl font-bold bg-purple-600 text-white flex items-center justify-center gap-2 hover:shadow-[0_0_30px_rgba(168,85,247,0.4)] transition-all"
+            className="w-full py-4 rounded-xl font-bold bg-white/10 text-white flex items-center justify-center gap-2 hover:bg-white/20 transition-all border border-white/10"
           >
             <Download size={18} /> Download Receipt PDF
           </button>
+
+          {/* WhatsApp Comms Uplink */}
+          <div className="bg-gradient-to-b from-[#12121A] to-[#0A0A0F] border border-green-500/20 rounded-2xl p-6 shadow-[0_0_40px_rgba(34,197,94,0.1)] relative overflow-hidden group">
+            {/* Radar Animation Background */}
+            <div className="absolute top-0 right-0 -mr-16 -mt-16 w-32 h-32 bg-green-500/10 rounded-full blur-2xl group-hover:bg-green-500/20 transition-all duration-700" />
+            <div className="absolute top-4 right-4 text-green-500/30 animate-pulse">
+              <Radio size={48} strokeWidth={1} />
+            </div>
+
+            <div className="flex items-start gap-4 relative z-10">
+              <div className="w-12 h-12 rounded-xl bg-green-500/10 border border-green-500/30 flex items-center justify-center shrink-0">
+                <MessageCircle size={24} className="text-green-400" />
+              </div>
+              <div className="text-left">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                  <span className="text-[10px] text-green-400 font-bold uppercase tracking-widest">Secure Uplink Ready</span>
+                </div>
+                <h3 className="text-xl font-bold text-white mb-2">Initialize Comms</h3>
+                <p className="text-sm text-white/60 mb-6 leading-relaxed">
+                  Join the official Buildicy Internship WhatsApp cohort. Meet your mentors, team members, and receive mission-critical updates.
+                </p>
+                
+                <a 
+                  href="https://chat.whatsapp.com/LL3eS7iMgHk7tsvKCQh1ZO"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full py-3 rounded-xl font-bold bg-green-500 text-black flex items-center justify-center gap-2 hover:bg-green-400 hover:shadow-[0_0_20px_rgba(34,197,94,0.4)] transition-all"
+                >
+                  <MessageCircle size={18} /> Join WhatsApp HQ
+                </a>
+              </div>
+            </div>
+          </div>
         </motion.div>
       </div>
     );
