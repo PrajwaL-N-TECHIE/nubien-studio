@@ -5,11 +5,8 @@ import { Link } from "react-router-dom";
 import TiltCard from "./TiltCard";
 import Magnetic from "./Magnetic";
 import { usePerformance } from "@/context/PerformanceContext";
-import PrajwalImage from "@/assets/prajwal.jpg";
 import NuvaafImage from "@/assets/nuvaaf.jpg";
 import MayurImage from "@/assets/mayur.jpg";
-import MizbhaImage from "@/assets/mizbha.jpg";
-import LathikaImage from "@/assets/lathika.jpg";
 // --------------------------------------------------------------------------
 // PHYSICS-BASED GLASS DISTORTION
 // --------------------------------------------------------------------------
@@ -158,7 +155,7 @@ const milestones = [
     {
         year: "The Beginning",
         title: "A Vision",
-        description: "Prajwal.N, driven by a passion for technology and design, decided to build something that truly helps people.",
+        description: "Our team, driven by a passion for technology and design, decided to build something that truly helps people.",
         icon: Heart,
         color: "#A855F7"
     },
@@ -256,23 +253,10 @@ const LaboratorySection = () => {
                         Driven by <span className="italic bg-gradient-to-r from-white via-zinc-400 to-zinc-600 bg-clip-text text-transparent">Vision & Purpose.</span>
                     </h2>
                     <div className="flex flex-col gap-12 max-w-6xl mx-auto">
-                        {/* Row 1: Founder */}
-                        <div className="flex justify-center">
-                            <div className="w-full md:w-[60%] lg:w-[45%]">
-                                <LeadershipCard name="Prajwal.N" role="Founder & AI Engineer" isCEO={true} imageSrc={PrajwalImage} />
-                            </div>
-                        </div>
-
-                        {/* Row 2: Co-founders */}
+                        {/* Co-founders */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 w-full px-0 md:px-8">
                             <LeadershipCard name="Nuvaaf AN" role="Co-founder & AI Automation Engineer" description="Driving the integration of advanced AI workflows and automation systems to streamline processes and elevate intelligent digital solutions." imageSrc={NuvaafImage} imageWrapperClassName="scale-[1.35] translate-y-[8%]" />
                             <LeadershipCard name="Mayur P" role="Co-founder & Web3 Developer" description="Pioneering decentralized applications and Web3 infrastructure, focusing on secure, scalable blockchain solutions for the modern web." imageSrc={MayurImage} />
-                        </div>
-
-                        {/* Row 3: Engineering & Creative */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 w-full px-0 md:px-8">
-                            <LeadershipCard name="Mizbha Fathima" role="Frontend Engineer & Creative Lead" description="Crafting immersive user experiences and leading creative direction with an emphasis on seamless, pixel-perfect frontend design." imageSrc={MizbhaImage} />
-                            <LeadershipCard name="Lathika J" role="Full Stack Developer & Client Success Lead" description="Bridging robust backend architecture with intuitive frontend interfaces, ensuring exceptional client satisfaction through dedicated support and delivery." imageSrc={LathikaImage} imageWrapperClassName="scale-[1.35] translate-y-[12%]" imgClassName="object-center" />
                         </div>
                     </div>
                 </div>
