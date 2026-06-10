@@ -870,6 +870,10 @@ export default function StudentDashboard() {
 
   return (
     <PageTransition>
+      <style>{`
+        .vercel-toolbar { display: none !important; }
+        #vercel-toolbar-wrapper { display: none !important; }
+      `}</style>
       <div className="min-h-screen bg-[#050507] text-white flex flex-col md:flex-row relative z-10 pt-20 md:pt-0">
       
       {/* Sidebar Navigation */}
@@ -880,13 +884,13 @@ export default function StudentDashboard() {
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-purple-500/50 to-transparent" />
           <div className="absolute inset-0 bg-purple-500/5 pointer-events-none" />
           <div className="flex items-center gap-4 relative z-10">
-            <div className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-[0_0_30px_rgba(168,85,247,0.3)] bg-gradient-to-br from-purple-500 to-indigo-600 border border-white/10">
-              <Sparkles size={22} className="text-white" />
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-[0_0_30px_rgba(168,85,247,0.3)] bg-gradient-to-br from-purple-500 to-indigo-600 border border-white/10 overflow-hidden">
+              <img src="/favicon.svg" alt="Buildicy" className="w-8 h-8 object-contain" />
             </div>
             <div>
-              <h1 className="font-black tracking-tight text-xl text-white bg-clip-text text-transparent bg-gradient-to-br from-white to-white/60">Buildicy<span className="text-purple-400">OS</span></h1>
+              <h1 className="font-black tracking-tight text-xl text-white bg-clip-text text-transparent bg-gradient-to-br from-white to-white/60">Buildicy</h1>
               <p className="text-[10px] uppercase tracking-[0.2em] font-mono text-zinc-400">
-                Student Portal
+                LMS Portal
               </p>
             </div>
           </div>
@@ -993,26 +997,9 @@ export default function StudentDashboard() {
 
         <div className="max-w-5xl mx-auto h-full">
           {/* Header */}
-          <header className="mb-8">
+          <header className="mb-4">
             <div className="flex items-center gap-2 text-sm text-zinc-500 mb-2 font-mono uppercase tracking-widest">
               <span>Portal</span> <ChevronRight size={12} /> <span className="text-purple-400">{STUDENT_TABS.find(t => t.id === activeTab)?.label}</span>
-            </div>
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
-              <h1 className="text-3xl font-black text-white">
-                Welcome back, {student.name.split(' ')[0]}.
-              </h1>
-              <div className="flex items-center gap-3 w-full mt-2 md:mt-0 md:w-auto">
-                <button 
-                  onClick={() => {
-                    sessionStorage.removeItem("studentAuth");
-                    navigate('/student-login');
-                  }}
-                  className="p-3 w-12 md:w-auto md:px-4 md:py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl md:rounded-full font-bold flex items-center justify-center gap-2 transition-colors border border-red-500/20 flex-shrink-0"
-                  title="Logout"
-                >
-                  <LogOut size={16} /> <span className="hidden md:inline">Logout</span>
-                </button>
-              </div>
             </div>
           </header>
 
