@@ -853,15 +853,7 @@ export default function StudentDashboard() {
   const STUDENT_TABS = [
     { id: 'mission', label: 'Mission Control', icon: LayoutDashboard },
     { id: 'vault', label: 'The Vault', icon: BookOpen },
-    { id: 'dropzone', label: 'Dropzone', icon: UploadCloud },
-    { id: 'snippets', label: 'Snippet Vault', icon: CodeSquare },
-    { id: 'focus', label: 'Focus Mode', icon: Focus },
-    { id: 'collab', label: 'Peer Review', icon: Users },
-    { id: 'mentor', label: 'AI Mentor', icon: Bot },
-    { id: 'portfolio', label: 'Live Portfolio', icon: Globe },
-    { id: 'leaderboard', label: 'Leaderboard', icon: Trophy },
-    { id: 'career', label: 'Career Prep', icon: Briefcase },
-    { id: 'profile', label: 'My Profile', icon: UserCircle },
+    { id: 'dropzone', label: 'Dropzone', icon: UploadCloud }
   ];
 
   const ALUMNI_TABS = [
@@ -1018,14 +1010,6 @@ export default function StudentDashboard() {
                 {activeTab === 'mission' && <MissionControl />}
                 {activeTab === 'vault' && <Vault materials={materials} />}
                 {activeTab === 'dropzone' && <Dropzone assignments={assignments} student={student} />}
-                {activeTab === 'snippets' && <SnippetVault />}
-                {activeTab === 'focus' && <FocusMode />}
-                {activeTab === 'collab' && <PeerReview />}
-                {activeTab === 'portfolio' && <LivePortfolio />}
-                {activeTab === 'leaderboard' && <Leaderboard />}
-                {activeTab === 'mentor' && <AIMentor />}
-                {activeTab === 'career' && <CareerPrep />}
-                {activeTab === 'profile' && <ProfileCustomization />}
                 
                 {/* Mock Alumni Views */}
                 {activeTab === 'alumni_jobs' && (
