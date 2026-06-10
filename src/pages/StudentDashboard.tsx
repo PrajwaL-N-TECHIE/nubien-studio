@@ -134,7 +134,7 @@ const MissionControl = ({ materials, assignments }: { materials: Material[], ass
              </p>
              <button 
                 onClick={() => {
-                  navigator.clipboard.writeText("https://meet.google.com/zkw-xntf-ydh");
+                  navigator.clipboard.writeText("https://meet.google.com/jav-qrof-svb");
                   alert("Meet Link copied to clipboard!");
                 }}
                 className="w-full py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl font-bold transition-all text-sm border border-white/5 flex items-center justify-center gap-2"
