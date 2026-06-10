@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Lock, ShieldAlert, ArrowRight, Eye, EyeOff, Search, LogOut, Trash2, Info, X } from "lucide-react";
+import { Lock, ShieldAlert, ArrowRight, Eye, EyeOff, Search, LogOut, Trash2, Info, X, Settings, Save } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import { db } from "@/lib/firebase";
-import { collection, getDocs, deleteDoc, doc, query, orderBy } from "firebase/firestore";
+import { collection, getDocs, deleteDoc, doc, query, orderBy, setDoc, getDoc } from "firebase/firestore";
 
 interface InternshipRecord {
   id: string;
@@ -18,6 +18,7 @@ interface InternshipRecord {
   receipt: string;
   registration_id: string;
   referral_code: string | null;
+  cohort: string;
   created_at: string;
 }
 
@@ -39,6 +40,11 @@ const AdminDashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [viewReceiptUrl, setViewReceiptUrl] = useState<string | null>(null);
   const [selectedStudent, setSelectedStudent] = useState<InternshipRecord | null>(null);
+  
+  // Settings State
+  const [currentCohort, setCurrentCohort] = useState("Summer 2026");
+  const [isSavingCohort, setIsSavingCohort] = useState(false);
+  
   const navigate = useNavigate();
 
   // Load auth state from session storage to prevent re-login on refresh
@@ -66,12 +72,40 @@ const AdminDashboard = () => {
       }
       
       await fetchRecords();
+      await fetchSettings();
       setIsAuthenticated(true);
       sessionStorage.setItem("adminAuth", password);
     } catch (err) {
       setError("Unauthorized access. Invalid credentials.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchSettings = async () => {
+    try {
+      const docRef = doc(db, "settings", "global");
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists() && docSnap.data().current_cohort) {
+        setCurrentCohort(docSnap.data().current_cohort);
+      }
+    } catch (error) {
+      console.error("Failed to fetch settings:", error);
+    }
+  };
+
+  const handleSaveCohort = async () => {
+    setIsSavingCohort(true);
+    try {
+      await setDoc(doc(db, "settings", "global"), {
+        current_cohort: currentCohort
+      }, { merge: true });
+      alert("Active cohort successfully updated! New registrations will now be saved under: " + currentCohort);
+    } catch (error) {
+      console.error("Failed to update cohort:", error);
+      alert("Failed to update cohort setting.");
+    } finally {
+      setIsSavingCohort(false);
     }
   };
 
@@ -268,6 +302,40 @@ const AdminDashboard = () => {
           })}
         </div>
 
+        {/* Global Settings Section */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-8 shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-6"
+        >
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center">
+              <Settings className="text-purple-400" size={24} />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-white mb-1">Active Registration Cohort</h3>
+              <p className="text-sm text-white/50">All new registrations will be tagged with this batch label.</p>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-3 w-full md:w-auto">
+            <input 
+              type="text" 
+              value={currentCohort}
+              onChange={(e) => setCurrentCohort(e.target.value)}
+              placeholder="e.g. Summer 2026"
+              className="flex-1 md:w-48 bg-[#050507] border border-white/10 rounded-xl py-2 px-4 text-white placeholder-white/40 focus:outline-none focus:border-purple-500/50 transition-colors"
+            />
+            <button 
+              onClick={handleSaveCohort}
+              disabled={isSavingCohort}
+              className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold flex items-center gap-2 transition-colors disabled:opacity-50 whitespace-nowrap"
+            >
+              {isSavingCohort ? "Saving..." : <><Save size={16} /> Save</>}
+            </button>
+          </div>
+        </motion.div>
+
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -280,7 +348,7 @@ const AdminDashboard = () => {
                   <th className="px-6 py-4 text-left text-xs font-bold text-white/40 uppercase tracking-wider">Applicant</th>
                   <th className="px-6 py-4 text-left text-xs font-bold text-white/40 uppercase tracking-wider">Track</th>
                   <th className="px-6 py-4 text-left text-xs font-bold text-white/40 uppercase tracking-wider">Contact</th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-white/40 uppercase tracking-wider">Referral</th>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-white/40 uppercase tracking-wider">Cohort / Referral</th>
                   <th className="px-6 py-4 text-left text-xs font-bold text-white/40 uppercase tracking-wider">Date</th>
                   <th className="px-6 py-4 text-right text-xs font-bold text-white/40 uppercase tracking-wider">Actions</th>
                 </tr>
@@ -309,13 +377,16 @@ const AdminDashboard = () => {
                         <div className="text-xs text-white/40">{record.phone}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        {record.referral_code ? (
-                          <span className="px-2.5 py-1 bg-green-900/30 border border-green-500/20 rounded-md text-xs font-bold text-green-400 font-mono">
-                            {record.referral_code}
+                        <div className="flex flex-col gap-2 items-start">
+                          <span className="px-2 py-0.5 bg-blue-900/30 border border-blue-500/20 rounded text-[10px] font-bold text-blue-400 uppercase tracking-wider">
+                            {record.cohort || "Legacy"}
                           </span>
-                        ) : (
-                          <span className="text-xs text-white/20">-</span>
-                        )}
+                          {record.referral_code && (
+                            <span className="px-2 py-0.5 bg-green-900/30 border border-green-500/20 rounded text-[10px] font-bold text-green-400 font-mono">
+                              Ref: {record.referral_code}
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-white/60">
