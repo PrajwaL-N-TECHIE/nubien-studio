@@ -68,6 +68,7 @@ const GlobalLayout = ({ children }: { children: React.ReactNode }) => {
       </main>
 
       {!isStandaloneRoute && <Footer />}
+      {!isStandaloneRoute && <CoreVitalsHUD />}
     </div>
   );
 };
@@ -88,7 +89,6 @@ const App = () => {
         <Preloader />
         <CustomCursor />
         <NoiseOverlay />
-        <CoreVitalsHUD />
         <TooltipProvider>
           <Toaster />
           <Sonner />
