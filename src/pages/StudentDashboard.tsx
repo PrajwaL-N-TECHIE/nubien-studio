@@ -8,18 +8,50 @@ import {
   GitBranch, GraduationCap, Star, ShieldCheck,
   UserCircle, Focus, CodeSquare, Target, Clock, Copy
 } from "lucide-react";
-import Magnetic from "@/components/Magnetic";
-import PageTransition from "@/components/PageTransition";
 import { usePerformance } from "@/context/PerformanceContext";
+import { useNavigate } from "react-router-dom";
+import { db, storage } from "@/lib/firebase";
+import { collection, query, where, getDocs, addDoc, serverTimestamp, orderBy } from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
-// --- MOCK DATA ---
-const STUDENT = {
-  name: "Alex Developer",
-  track: "Full Stack Engineer",
-  xp: 4250,
-  progress: 65, // percentage
-  nextSession: "Tomorrow, 6:00 PM EST",
-  rank: 3
+interface StudentData {
+  id: string;
+  name: string;
+  track: string;
+  cohort: string;
+  registration_id: string;
+  xp?: number;
+  progress?: number;
+}
+
+interface Material {
+  id: string;
+  title: string;
+  type: 'pdf' | 'link' | 'video';
+  url: string;
+  cohort: string;
+}
+
+interface Assignment {
+  id: string;
+  title: string;
+  description: string;
+  due_date: string;
+  cohort: string;
+}
+
+interface Submission {
+  id?: string;
+  assignment_id: string;
+  student_id: string;
+  file_url: string;
+  status: 'pending' | 'approved' | 'rejected';
+}
+
+const getStudentSession = (): StudentData => {
+  const data = sessionStorage.getItem("studentAuth");
+  if(data) return JSON.parse(data);
+  return { id: "demo", name: "Guest User", track: "Unknown", cohort: "batch-1", registration_id: "DEMO-000", xp: 0, progress: 0 };
 };
 
 const LEADERBOARD = [
@@ -28,14 +60,6 @@ const LEADERBOARD = [
   { id: 3, name: "Alex Developer", track: "Full Stack Engineer", xp: 4250, rank: 3 },
   { id: 4, name: "Priya Patel", track: "Blockchain Engineer", xp: 3900, rank: 4 },
   { id: 5, name: "David Kim", track: "Full Stack Engineer", xp: 3750, rank: 5 },
-];
-
-const VAULT_RESOURCES = [
-  { title: "Week 1: Core Fundamentals", type: "video", duration: "1h 45m", icon: PlayCircle, locked: false },
-  { title: "Advanced State Management", type: "code", format: "GitHub Repo", icon: Code2, locked: false },
-  { title: "Week 2: Backend Architecture", type: "video", duration: "2h 10m", icon: PlayCircle, locked: false },
-  { title: "Database Schema Cheatsheet", type: "pdf", format: "PDF Document", icon: FileText, locked: false },
-  { title: "Week 3: Project Integration", type: "video", duration: "TBA", icon: FileLock2, locked: true },
 ];
 
 // --- SUB-COMPONENTS ---
@@ -57,13 +81,13 @@ const MissionControl = () => (
               <circle cx="64" cy="64" r="58" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-white/5" />
               <circle 
                 cx="64" cy="64" r="58" stroke="currentColor" strokeWidth="8" fill="transparent" 
-                strokeDasharray="364" strokeDashoffset={364 - (364 * STUDENT.progress) / 100}
+                strokeDasharray="364" strokeDashoffset={364 - (364 * (getStudentSession().progress || 0)) / 100}
                 className="text-purple-500 transition-all duration-1000 ease-out" 
                 strokeLinecap="round" 
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-3xl font-black text-white">{STUDENT.progress}%</span>
+              <span className="text-3xl font-black text-white">{getStudentSession().progress || 0}%</span>
               <span className="text-[10px] text-zinc-400 uppercase tracking-widest">Completed</span>
             </div>
           </div>
@@ -87,7 +111,7 @@ const MissionControl = () => (
           <PlayCircle className="text-indigo-400" size={24} />
         </div>
         <h3 className="text-zinc-300 font-medium mb-1">Next Live Session</h3>
-        <p className="text-xl font-bold text-white mb-6">{STUDENT.nextSession}</p>
+        <p className="text-xl font-bold text-white mb-6">Upcoming</p>
         <button className="w-full py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl font-medium transition-all text-sm border border-white/5">
           Copy Meet Link
         </button>
@@ -168,40 +192,172 @@ const MissionControl = () => (
   </div>
 );
 
-const Vault = () => (
-  <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-    <div className="flex items-center justify-between mb-8">
-      <div>
-        <h2 className="text-2xl font-bold text-white">The Vault</h2>
-        <p className="text-zinc-400 text-sm mt-1">Access all recorded sessions, slide decks, and code repos.</p>
+const Vault = ({ materials }: { materials: Material[] }) => {
+  const student = getStudentSession();
+
+  const handleOpenMaterial = async (mat: Material) => {
+    try {
+      await addDoc(collection(db, "access_logs"), {
+        material_id: mat.id,
+        material_title: mat.title,
+        student_id: student.id,
+        student_name: student.name,
+        accessed_at: serverTimestamp()
+      });
+      window.open(mat.url, "_blank");
+    } catch(err) {
+      console.error("Failed to log access", err);
+      window.open(mat.url, "_blank");
+    }
+  };
+
+  return (
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h2 className="text-2xl font-bold text-white">The Vault</h2>
+          <p className="text-zinc-400 text-sm mt-1">Access all your cohort's documents, links, and slides.</p>
+        </div>
       </div>
-      <div className="px-4 py-2 bg-white/5 border border-white/10 rounded-full text-xs text-zinc-300 font-mono">
-        Filter: All Resources
+
+      <div className="grid gap-4">
+        {materials.length === 0 ? (
+          <div className="text-center py-12 text-zinc-500">No materials uploaded yet.</div>
+        ) : materials.map((res) => {
+          let Icon = FileText;
+          if(res.type === 'video') Icon = PlayCircle;
+          if(res.type === 'link') Icon = Code2;
+
+          return (
+            <div key={res.id} className="flex items-center justify-between p-5 rounded-2xl border bg-[#0C0C12]/80 border-white/10 hover:border-purple-500/30 transition-all cursor-pointer group" onClick={() => handleOpenMaterial(res)}>
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-purple-500/10 group-hover:bg-purple-500/20 transition-colors">
+                  <Icon size={20} className="text-purple-400" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-white group-hover:text-purple-400 transition-colors">{res.title}</h3>
+                  <p className="text-xs text-zinc-500 mt-1 uppercase tracking-wider font-mono">
+                    {res.type}
+                  </p>
+                </div>
+              </div>
+              <button className="p-3 rounded-xl bg-white/5 hover:bg-white/10 text-white transition-all">
+                <ChevronRight size={18} />
+              </button>
+            </div>
+          );
+        })}
       </div>
     </div>
+  );
+};
 
-    <div className="grid gap-4">
-      {VAULT_RESOURCES.map((res, i) => (
-        <div key={i} className={`flex items-center justify-between p-5 rounded-2xl border ${res.locked ? 'bg-black/40 border-white/5 opacity-60' : 'bg-[#0C0C12]/80 border-white/10 hover:border-purple-500/30'} transition-all`}>
-          <div className="flex items-center gap-4">
-            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${res.locked ? 'bg-white/5' : 'bg-purple-500/10'}`}>
-              <res.icon size={20} className={res.locked ? 'text-zinc-600' : 'text-purple-400'} />
+const Dropzone = ({ assignments, student }: { assignments: Assignment[], student: StudentData }) => {
+  const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [selectedAssignId, setSelectedAssignId] = useState<string>("");
+  const [file, setFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+
+  useEffect(() => {
+    const fetchSubmissions = async () => {
+      const q = query(collection(db, "submissions"), where("student_id", "==", student.id));
+      const snap = await getDocs(q);
+      const data: Submission[] = [];
+      snap.forEach(doc => data.push({ id: doc.id, ...doc.data() } as Submission));
+      setSubmissions(data);
+    };
+    fetchSubmissions();
+  }, [student.id]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedAssignId || !file) return;
+    setIsUploading(true);
+
+    try {
+      const storageRef = ref(storage, `submissions/${student.id}_${Date.now()}_${file.name}`);
+      const uploadResult = await uploadBytes(storageRef, file);
+      const url = await getDownloadURL(uploadResult.ref);
+
+      const newSub = {
+        assignment_id: selectedAssignId,
+        student_id: student.id,
+        student_name: student.name,
+        cohort: student.cohort,
+        file_url: url,
+        status: 'pending' as const,
+        submitted_at: serverTimestamp()
+      };
+
+      await addDoc(collection(db, "submissions"), newSub);
+      setSubmissions(prev => [...prev, newSub as Submission]);
+      setFile(null);
+      setSelectedAssignId("");
+      alert("Assignment submitted successfully!");
+    } catch (err) {
+      console.error(err);
+      alert("Upload failed.");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h2 className="text-2xl font-bold text-white">The Dropzone</h2>
+          <p className="text-zinc-400 text-sm mt-1">Submit your assignments for review and grading.</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="bg-[#0a0a0f]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-6">
+          <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2"><UploadCloud size={20} className="text-blue-400" /> Submit Work</h3>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-xs font-bold text-white/40 uppercase mb-2">Select Assignment</label>
+              <select required value={selectedAssignId} onChange={e => setSelectedAssignId(e.target.value)} className="w-full bg-[#050507] border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-blue-500/50">
+                <option value="">-- Choose Assignment --</option>
+                {assignments.map(a => (
+                  <option key={a.id} value={a.id}>{a.title} (Due: {a.due_date})</option>
+                ))}
+              </select>
             </div>
             <div>
-              <h3 className={`font-bold ${res.locked ? 'text-zinc-500' : 'text-white'}`}>{res.title}</h3>
-              <p className="text-xs text-zinc-500 mt-1 uppercase tracking-wider font-mono">
-                {res.type === 'video' ? `Runtime: ${res.duration}` : res.format}
-              </p>
+              <label className="block text-xs font-bold text-white/40 uppercase mb-2">Upload File (PDF/ZIP)</label>
+              <input type="file" required onChange={e => setFile(e.target.files?.[0] || null)} className="w-full bg-[#050507] border border-white/10 rounded-xl py-2 px-4 text-white file:mr-4 file:py-1 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-blue-500/20 file:text-blue-400" />
             </div>
-          </div>
-          <button className={`p-3 rounded-xl ${res.locked ? 'bg-transparent text-zinc-600 cursor-not-allowed' : 'bg-white/5 hover:bg-white/10 text-white'} transition-all`}>
-            {res.locked ? <FileLock2 size={18} /> : <ChevronRight size={18} />}
-          </button>
+            <button type="submit" disabled={isUploading || !file || !selectedAssignId} className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold transition-all disabled:opacity-50">
+              {isUploading ? "Uploading..." : "Submit to Dropzone"}
+            </button>
+          </form>
         </div>
-      ))}
+
+        <div className="bg-[#0a0a0f]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-6">
+          <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2"><CheckCircle2 size={20} className="text-green-400" /> Submission Status</h3>
+          <div className="space-y-4">
+            {submissions.length === 0 && <p className="text-zinc-500 text-sm">No submissions yet.</p>}
+            {submissions.map((sub, i) => {
+              const assign = assignments.find(a => a.id === sub.assignment_id);
+              return (
+                <div key={i} className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/10">
+                  <div>
+                    <h4 className="font-bold text-white">{assign?.title || "Unknown Assignment"}</h4>
+                    <p className="text-xs text-zinc-500 uppercase mt-1">Status: <span className={sub.status === 'approved' ? 'text-green-400' : sub.status === 'rejected' ? 'text-red-400' : 'text-yellow-400'}>{sub.status}</span></p>
+                  </div>
+                  <a href={sub.file_url} target="_blank" rel="noopener noreferrer" className="p-2 bg-white/10 hover:bg-white/20 rounded-lg text-white transition-colors">
+                    <FileText size={16} />
+                  </a>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const Leaderboard = () => (
   <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -650,15 +806,54 @@ export default function StudentDashboard() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAlumniMode, setIsAlumniMode] = useState(false);
   const { isLowEnd } = usePerformance();
+  const navigate = useNavigate();
 
-  // Scroll to top on mount
+  const [student, setStudent] = useState<StudentData | null>(null);
+  const [materials, setMaterials] = useState<Material[]>([]);
+  const [assignments, setAssignments] = useState<Assignment[]>([]);
+
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
+    const authData = sessionStorage.getItem("studentAuth");
+    if (!authData) {
+      navigate('/student-login');
+      return;
+    }
+    const parsed: StudentData = JSON.parse(authData);
+    setStudent(parsed);
+
+    const fetchMaterials = async () => {
+      try {
+        const q = query(collection(db, "materials"), where("cohort", "==", parsed.cohort));
+        const snap = await getDocs(q);
+        const data: Material[] = [];
+        snap.forEach(doc => data.push({ id: doc.id, ...doc.data() } as Material));
+        setMaterials(data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    const fetchAssignments = async () => {
+      try {
+        const q = query(collection(db, "assignments"), where("cohort", "==", parsed.cohort));
+        const snap = await getDocs(q);
+        const data: Assignment[] = [];
+        snap.forEach(doc => data.push({ id: doc.id, ...doc.data() } as Assignment));
+        setAssignments(data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    
+    fetchMaterials();
+    fetchAssignments();
+  }, [navigate]);
+
+  if (!student) return null;
 
   const STUDENT_TABS = [
     { id: 'mission', label: 'Mission Control', icon: LayoutDashboard },
     { id: 'vault', label: 'The Vault', icon: BookOpen },
+    { id: 'dropzone', label: 'Dropzone', icon: UploadCloud },
     { id: 'snippets', label: 'Snippet Vault', icon: CodeSquare },
     { id: 'focus', label: 'Focus Mode', icon: Focus },
     { id: 'collab', label: 'Peer Review', icon: Users },
@@ -705,16 +900,14 @@ export default function StudentDashboard() {
             </div>
           </div>
         </div>
-
-        {/* User Mini Profile */}
         <div className="p-6 mx-4 mt-6 bg-white/[0.02] border border-white/5 rounded-2xl flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center font-bold">
-            {STUDENT.name.charAt(0)}
+            {student.name.charAt(0)}
           </div>
-          <div className="overflow-hidden">
-            <p className="text-sm font-bold truncate">{STUDENT.name}</p>
-            <p className="text-xs text-zinc-500 truncate">{STUDENT.track}</p>
-          </div>
+            <div className="flex-1 mt-2 md:mt-0 max-w-[200px] md:max-w-none truncate">
+              <h1 className="text-lg md:text-xl font-bold text-white truncate">{student.name}</h1>
+              <p className="text-xs text-purple-400 font-mono truncate">{student.track} • {student.registration_id}</p>
+            </div>
         </div>
 
         {/* Navigation Tabs */}
@@ -747,7 +940,10 @@ export default function StudentDashboard() {
             <GraduationCap size={18} /> {isAlumniMode ? 'Exit Alumni Mode' : 'Simulate Alumni Mode'}
           </button>
           <button 
-            onClick={() => window.location.href = '/'}
+            onClick={() => {
+              sessionStorage.removeItem("studentAuth");
+              navigate('/student-login');
+            }}
             className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-400 hover:bg-red-500/10 rounded-xl transition-colors"
           >
             <LogOut size={18} /> Exit Portal
@@ -780,44 +976,75 @@ export default function StudentDashboard() {
 
         <div className="max-w-5xl mx-auto h-full">
           {/* Header */}
-          <header className="mb-10 hidden md:block">
+          <header className="mb-8">
             <div className="flex items-center gap-2 text-sm text-zinc-500 mb-2 font-mono uppercase tracking-widest">
               <span>Portal</span> <ChevronRight size={12} /> <span className={isAlumniMode ? 'text-yellow-500' : 'text-purple-400'}>{TABS.find(t => t.id === activeTab)?.label}</span>
             </div>
-            <h1 className="text-3xl font-black text-white">
-              {isAlumniMode ? `Welcome to the Alumni Network, ${STUDENT.name.split(' ')[0]}.` : `Welcome back, ${STUDENT.name.split(' ')[0]}.`}
-            </h1>
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
+              <h1 className="text-3xl font-black text-white">
+                {isAlumniMode ? `Welcome to the Alumni Network, ${student.name.split(' ')[0]}.` : `Welcome back, ${student.name.split(' ')[0]}.`}
+              </h1>
+              <div className="flex items-center gap-3 w-full mt-2 md:mt-0 md:w-auto">
+                <button className="flex-1 md:flex-none p-3 md:px-4 md:py-2 bg-white/5 border border-white/10 rounded-xl md:rounded-full hover:bg-white/10 transition-colors flex items-center justify-center gap-2 group whitespace-nowrap">
+                  <div className="w-5 h-5 rounded flex items-center justify-center bg-yellow-500/20 group-hover:bg-yellow-500/30 transition-colors">
+                    <Star size={12} className="text-yellow-500" />
+                  </div>
+                  <span className="text-sm font-bold text-white">{student.xp || 0} <span className="text-zinc-500">XP</span></span>
+                </button>
+                <button 
+                  onClick={() => {
+                    sessionStorage.removeItem("studentAuth");
+                    navigate('/student-login');
+                  }}
+                  className="p-3 w-12 md:w-auto md:px-4 md:py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl md:rounded-full font-bold flex items-center justify-center gap-2 transition-colors border border-red-500/20 flex-shrink-0"
+                  title="Logout"
+                >
+                  <LogOut size={16} /> <span className="hidden md:inline">Logout</span>
+                </button>
+              </div>
+            </div>
           </header>
 
           {/* Dynamic Content */}
-          <div className="pb-20 md:pb-0">
-            {activeTab === 'mission' && <MissionControl />}
-            {activeTab === 'vault' && <Vault />}
-            {activeTab === 'snippets' && <SnippetVault />}
-            {activeTab === 'focus' && <FocusMode />}
-            {activeTab === 'collab' && <PeerReview />}
-            {activeTab === 'portfolio' && <LivePortfolio />}
-            {activeTab === 'leaderboard' && <Leaderboard />}
-            {activeTab === 'mentor' && <AIMentor />}
-            {activeTab === 'career' && <CareerPrep />}
-            {activeTab === 'profile' && <ProfileCustomization />}
-            
-            {/* Mock Alumni Views */}
-            {activeTab === 'alumni_jobs' && (
-              <div className="bg-[#0C0C12]/80 border border-white/10 rounded-3xl p-12 text-center">
-                <Briefcase size={48} className="text-yellow-500 mx-auto mb-4" />
-                <h2 className="text-2xl font-bold text-white mb-2">Exclusive Partner Jobs</h2>
-                <p className="text-zinc-400">As a certified Buildicy Alumni, you have priority access to full-time roles and freelance overflow gigs from our agency.</p>
-                <button className="mt-6 px-6 py-3 bg-yellow-600 hover:bg-yellow-500 text-white font-bold rounded-xl shadow-[0_0_20px_rgba(202,138,4,0.3)]">Browse 14 Open Roles</button>
-              </div>
-            )}
-            {activeTab === 'alumni_network' && (
-              <div className="bg-[#0C0C12]/80 border border-white/10 rounded-3xl p-12 text-center">
-                <Users size={48} className="text-yellow-500 mx-auto mb-4" />
-                <h2 className="text-2xl font-bold text-white mb-2">The Directory</h2>
-                <p className="text-zinc-400">Network with 4,200+ other alumni. Find co-founders, hire talent, or join an open-source project.</p>
-              </div>
-            )}
+          <div className="pb-24">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+              >
+                {activeTab === 'mission' && <MissionControl />}
+                {activeTab === 'vault' && <Vault materials={materials} />}
+                {activeTab === 'dropzone' && <Dropzone assignments={assignments} student={student} />}
+                {activeTab === 'snippets' && <SnippetVault />}
+                {activeTab === 'focus' && <FocusMode />}
+                {activeTab === 'collab' && <PeerReview />}
+                {activeTab === 'portfolio' && <LivePortfolio />}
+                {activeTab === 'leaderboard' && <Leaderboard />}
+                {activeTab === 'mentor' && <AIMentor />}
+                {activeTab === 'career' && <CareerPrep />}
+                {activeTab === 'profile' && <ProfileCustomization />}
+                
+                {/* Mock Alumni Views */}
+                {activeTab === 'alumni_jobs' && (
+                  <div className="bg-[#0C0C12]/80 border border-white/10 rounded-3xl p-12 text-center">
+                    <Briefcase size={48} className="text-yellow-500 mx-auto mb-4" />
+                    <h2 className="text-2xl font-bold text-white mb-2">Exclusive Partner Jobs</h2>
+                    <p className="text-zinc-400">As a certified Buildicy Alumni, you have priority access to full-time roles and freelance overflow gigs from our agency.</p>
+                    <button className="mt-6 px-6 py-3 bg-yellow-600 hover:bg-yellow-500 text-white font-bold rounded-xl shadow-[0_0_20px_rgba(202,138,4,0.3)]">Browse 14 Open Roles</button>
+                  </div>
+                )}
+                {activeTab === 'alumni_network' && (
+                  <div className="bg-[#0C0C12]/80 border border-white/10 rounded-3xl p-12 text-center">
+                    <Users size={48} className="text-yellow-500 mx-auto mb-4" />
+                    <h2 className="text-2xl font-bold text-white mb-2">The Directory</h2>
+                    <p className="text-zinc-400">Network with 4,200+ other alumni. Find co-founders, hire talent, or join an open-source project.</p>
+                  </div>
+                )}
+              </motion.div>
+            </AnimatePresence>
           </div>
         </div>
       </main>

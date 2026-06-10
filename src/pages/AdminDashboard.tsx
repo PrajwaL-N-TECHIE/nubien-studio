@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Lock, ShieldAlert, ArrowRight, Eye, EyeOff, Search, LogOut, Trash2, Info, X, Edit2 } from "lucide-react";
+import { Lock, ShieldAlert, ArrowRight, Eye, EyeOff, Search, LogOut, Trash2, Info, X, Edit2, BookOpen, UploadCloud, CheckCircle2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-import { db } from "@/lib/firebase";
-import { collection, getDocs, deleteDoc, doc, query, orderBy, updateDoc } from "firebase/firestore";
+import { db, storage } from "@/lib/firebase";
+import { collection, getDocs, deleteDoc, doc, query, orderBy, updateDoc, addDoc, serverTimestamp } from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 interface InternshipRecord {
   id: string;
@@ -20,6 +21,42 @@ interface InternshipRecord {
   referral_code: string | null;
   cohort: string;
   created_at: string;
+}
+
+interface Material {
+  id: string;
+  title: string;
+  type: 'pdf' | 'link' | 'video';
+  url: string;
+  cohort: string;
+  created_at: string;
+}
+
+interface AccessLog {
+  id: string;
+  material_title: string;
+  student_name: string;
+  accessed_at: any;
+}
+
+interface Assignment {
+  id: string;
+  title: string;
+  description: string;
+  due_date: string;
+  cohort: string;
+  created_at: any;
+}
+
+interface Submission {
+  id: string;
+  assignment_id: string;
+  student_id: string;
+  student_name: string;
+  cohort: string;
+  file_url: string;
+  status: 'pending' | 'approved' | 'rejected';
+  submitted_at: any;
 }
 
 const trackNames: Record<string, string> = {
@@ -40,6 +77,29 @@ const AdminDashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [viewReceiptUrl, setViewReceiptUrl] = useState<string | null>(null);
   const [selectedStudent, setSelectedStudent] = useState<InternshipRecord | null>(null);
+  
+  // Materials State
+  const [materials, setMaterials] = useState<Material[]>([]);
+  const [newMatTitle, setNewMatTitle] = useState("");
+  const [newMatType, setNewMatType] = useState<'pdf' | 'link' | 'video'>('pdf');
+  const [newMatCohort, setNewMatCohort] = useState("batch-1");
+  const [newMatFile, setNewMatFile] = useState<File | null>(null);
+  const [newMatUrl, setNewMatUrl] = useState("");
+  const [isUploadingMat, setIsUploadingMat] = useState(false);
+  const [accessLogs, setAccessLogs] = useState<AccessLog[]>([]);
+
+  // Assignments State
+  const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [newAssignTitle, setNewAssignTitle] = useState("");
+  const [newAssignDesc, setNewAssignDesc] = useState("");
+  const [newAssignDueDate, setNewAssignDueDate] = useState("");
+  const [newAssignCohort, setNewAssignCohort] = useState("batch-1");
+  const [isCreatingAssign, setIsCreatingAssign] = useState(false);
+  
+  // Submissions State
+  const [submissions, setSubmissions] = useState<Submission[]>([]);
+
+  const [activeTab, setActiveTab] = useState<'registrations' | 'materials' | 'assignments' | 'submissions'>('registrations');
   
   const navigate = useNavigate();
 
@@ -104,6 +164,161 @@ const AdminDashboard = () => {
       setRecords(data);
     } catch (error) {
       console.error("Failed to fetch records:", error);
+    }
+  };
+
+  const fetchMaterials = async () => {
+    try {
+      const q = query(collection(db, "materials"), orderBy("created_at", "desc"));
+      const snap = await getDocs(q);
+      const data: Material[] = [];
+      snap.forEach(doc => data.push({ id: doc.id, ...doc.data() } as Material));
+      setMaterials(data);
+    } catch (error) {
+      console.error("Failed to fetch materials:", error);
+    }
+  };
+
+  const fetchAccessLogs = async () => {
+    try {
+      const q = query(collection(db, "access_logs"), orderBy("accessed_at", "desc"));
+      const snap = await getDocs(q);
+      const data: AccessLog[] = [];
+      snap.forEach(doc => data.push({ id: doc.id, ...doc.data() } as AccessLog));
+      setAccessLogs(data);
+    } catch (error) {
+      console.error("Failed to fetch access logs:", error);
+    }
+  };
+
+  const fetchAssignments = async () => {
+    try {
+      const q = query(collection(db, "assignments"), orderBy("created_at", "desc"));
+      const snap = await getDocs(q);
+      const data: Assignment[] = [];
+      snap.forEach(doc => data.push({ id: doc.id, ...doc.data() } as Assignment));
+      setAssignments(data);
+    } catch (error) {
+      console.error("Failed to fetch assignments:", error);
+    }
+  };
+
+  const fetchSubmissions = async () => {
+    try {
+      const q = query(collection(db, "submissions"), orderBy("submitted_at", "desc"));
+      const snap = await getDocs(q);
+      const data: Submission[] = [];
+      snap.forEach(doc => data.push({ id: doc.id, ...doc.data() } as Submission));
+      setSubmissions(data);
+    } catch (error) {
+      console.error("Failed to fetch submissions:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'materials') {
+      fetchMaterials();
+      fetchAccessLogs();
+    } else if (activeTab === 'assignments') {
+      fetchAssignments();
+    } else if (activeTab === 'submissions') {
+      fetchSubmissions();
+    }
+  }, [activeTab]);
+
+  const handleCreateAssignment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newAssignTitle || !newAssignCohort || !newAssignDueDate) return;
+    setIsCreatingAssign(true);
+    try {
+      await addDoc(collection(db, "assignments"), {
+        title: newAssignTitle,
+        description: newAssignDesc,
+        due_date: newAssignDueDate,
+        cohort: newAssignCohort,
+        created_at: serverTimestamp()
+      });
+      setNewAssignTitle("");
+      setNewAssignDesc("");
+      setNewAssignDueDate("");
+      await fetchAssignments();
+      alert("Assignment created successfully!");
+    } catch (error) {
+      console.error("Error creating assignment:", error);
+      alert("Failed to create assignment.");
+    } finally {
+      setIsCreatingAssign(false);
+    }
+  };
+
+  const handleDeleteAssignment = async (id: string) => {
+    if(!window.confirm("Delete this assignment?")) return;
+    try {
+      await deleteDoc(doc(db, "assignments", id));
+      setAssignments(prev => prev.filter(a => a.id !== id));
+    } catch(err) {
+      console.error(err);
+    }
+  };
+
+  const handleUpdateSubmissionStatus = async (id: string, status: 'approved' | 'rejected') => {
+    try {
+      await updateDoc(doc(db, "submissions", id), { status });
+      setSubmissions(prev => prev.map(s => s.id === id ? { ...s, status } : s));
+    } catch (error) {
+      console.error("Error updating submission:", error);
+      alert("Failed to update status.");
+    }
+  };
+
+  const handleUploadMaterial = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newMatTitle || !newMatCohort) return;
+    setIsUploadingMat(true);
+
+    try {
+      let finalUrl = newMatUrl;
+
+      if (newMatType === 'pdf' && newMatFile) {
+        const storageRef = ref(storage, `materials/${Date.now()}_${newMatFile.name}`);
+        const uploadResult = await uploadBytes(storageRef, newMatFile);
+        finalUrl = await getDownloadURL(uploadResult.ref);
+      }
+
+      if (!finalUrl && newMatType !== 'pdf') {
+        alert("Please provide a valid URL.");
+        setIsUploadingMat(false);
+        return;
+      }
+
+      await addDoc(collection(db, "materials"), {
+        title: newMatTitle,
+        type: newMatType,
+        url: finalUrl,
+        cohort: newMatCohort,
+        created_at: serverTimestamp()
+      });
+
+      setNewMatTitle("");
+      setNewMatFile(null);
+      setNewMatUrl("");
+      await fetchMaterials();
+      alert("Material uploaded successfully!");
+    } catch (error) {
+      console.error("Error uploading material:", error);
+      alert("Failed to upload material.");
+    } finally {
+      setIsUploadingMat(false);
+    }
+  };
+
+  const handleDeleteMaterial = async (id: string) => {
+    if(!window.confirm("Delete this material?")) return;
+    try {
+      await deleteDoc(doc(db, "materials", id));
+      setMaterials(prev => prev.filter(m => m.id !== id));
+    } catch(err) {
+      console.error(err);
     }
   };
 
@@ -223,31 +438,13 @@ const AdminDashboard = () => {
       <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-purple-600/5 rounded-full blur-[150px] pointer-events-none" />
       
       <div className="max-w-7xl mx-auto relative z-10">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
           <div>
             <h1 className="text-3xl font-extrabold text-white mb-2 tracking-tight">Internship Portal</h1>
             <p className="text-white/60">Manage all registered applicants and payments.</p>
           </div>
           
           <div className="flex items-center gap-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" size={18} />
-              <input 
-                type="text"
-                placeholder="Search applicants..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full md:w-64 bg-white/5 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-white placeholder-white/40 focus:outline-none focus:border-purple-500/50 transition-colors text-sm"
-              />
-            </div>
-            
-            <button 
-              onClick={handleDeleteDatabase}
-              className="px-4 py-2 bg-red-900/30 hover:bg-red-600 text-red-400 hover:text-white rounded-xl border border-red-500/20 text-sm font-bold flex items-center gap-2 transition-colors shadow-[0_0_15px_rgba(220,38,38,0)] hover:shadow-[0_0_20px_rgba(220,38,38,0.4)]"
-            >
-              <Trash2 size={16} /> Purge Database
-            </button>
-
             <button 
               onClick={handleLogout}
               className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white/70 rounded-xl border border-white/10 text-sm font-bold flex items-center gap-2 transition-colors"
@@ -256,6 +453,49 @@ const AdminDashboard = () => {
             </button>
           </div>
         </div>
+
+        {/* Tab Navigation */}
+        <div className="flex gap-2 p-1 bg-white/5 rounded-2xl mb-8 border border-white/10 w-fit">
+          {[
+            { id: 'registrations', label: 'Registrations', icon: ShieldAlert },
+            { id: 'materials', label: 'Vault Materials', icon: BookOpen },
+            { id: 'assignments', label: 'Assignments', icon: Edit2 },
+            { id: 'submissions', label: 'Submissions', icon: CheckCircle2 }
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all ${
+                activeTab === tab.id 
+                  ? 'bg-purple-600 text-white shadow-lg' 
+                  : 'text-white/50 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              <tab.icon size={16} /> {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {activeTab === 'registrations' && (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="flex justify-between items-center mb-6">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" size={18} />
+                <input 
+                  type="text"
+                  placeholder="Search applicants..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full md:w-64 bg-white/5 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-white placeholder-white/40 focus:outline-none focus:border-purple-500/50 transition-colors text-sm"
+                />
+              </div>
+              <button 
+                onClick={handleDeleteDatabase}
+                className="px-4 py-2 bg-red-900/30 hover:bg-red-600 text-red-400 hover:text-white rounded-xl border border-red-500/20 text-sm font-bold flex items-center gap-2 transition-colors shadow-[0_0_15px_rgba(220,38,38,0)] hover:shadow-[0_0_20px_rgba(220,38,38,0.4)]"
+              >
+                <Trash2 size={16} /> Purge Database
+              </button>
+            </div>
 
         {/* Analytics Section */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
@@ -387,6 +627,236 @@ const AdminDashboard = () => {
             </table>
           </div>
         </motion.div>
+        </div>
+        )}
+
+        {activeTab === 'materials' && (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 mb-8">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center">
+                  <UploadCloud className="text-blue-400" size={24} />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-white">Upload Material to Vault</h2>
+                  <p className="text-sm text-white/50">Upload PDFs, Links, or Video URLs for student access.</p>
+                </div>
+              </div>
+
+              <form onSubmit={handleUploadMaterial} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-xs font-bold text-white/40 uppercase mb-2">Material Title</label>
+                  <input type="text" required value={newMatTitle} onChange={e => setNewMatTitle(e.target.value)} className="w-full bg-[#050507] border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-blue-500/50" placeholder="e.g. Week 1 Slides" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-white/40 uppercase mb-2">Assign to Cohort</label>
+                  <input type="text" required value={newMatCohort} onChange={e => setNewMatCohort(e.target.value)} className="w-full bg-[#050507] border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-blue-500/50" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-white/40 uppercase mb-2">Type</label>
+                  <select value={newMatType} onChange={e => setNewMatType(e.target.value as any)} className="w-full bg-[#050507] border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-blue-500/50">
+                    <option value="pdf">PDF Document</option>
+                    <option value="link">External Link</option>
+                    <option value="video">Video URL</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-white/40 uppercase mb-2">Resource</label>
+                  {newMatType === 'pdf' ? (
+                    <input type="file" accept=".pdf" onChange={e => setNewMatFile(e.target.files?.[0] || null)} className="w-full bg-[#050507] border border-white/10 rounded-xl py-2 px-4 text-white file:mr-4 file:py-1 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-blue-500/20 file:text-blue-400" required />
+                  ) : (
+                    <input type="url" required value={newMatUrl} onChange={e => setNewMatUrl(e.target.value)} className="w-full bg-[#050507] border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-blue-500/50" placeholder="https://..." />
+                  )}
+                </div>
+                <div className="md:col-span-2 flex justify-end mt-2">
+                  <button type="submit" disabled={isUploadingMat} className="px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold transition-all disabled:opacity-50">
+                    {isUploadingMat ? "Uploading..." : "Publish Material"}
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <div className="bg-[#0a0a0f]/80 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden">
+              <table className="w-full text-left">
+                <thead className="bg-[#050507]">
+                  <tr>
+                    <th className="px-6 py-4 text-xs font-bold text-white/40 uppercase">Title</th>
+                    <th className="px-6 py-4 text-xs font-bold text-white/40 uppercase">Type</th>
+                    <th className="px-6 py-4 text-xs font-bold text-white/40 uppercase">Cohort</th>
+                    <th className="px-6 py-4 text-xs font-bold text-white/40 uppercase text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {materials.map(mat => (
+                    <tr key={mat.id} className="hover:bg-white/[0.02]">
+                      <td className="px-6 py-4 text-white font-medium">{mat.title}</td>
+                      <td className="px-6 py-4 text-white/60 text-sm uppercase tracking-wider">{mat.type}</td>
+                      <td className="px-6 py-4"><span className="px-2 py-1 bg-white/5 rounded text-xs font-mono text-white/70">{mat.cohort}</span></td>
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex justify-end gap-2">
+                          <a href={mat.url} target="_blank" rel="noopener noreferrer" className="p-2 bg-white/5 hover:bg-white/10 rounded-lg text-white/70 transition-colors"><Eye size={16} /></a>
+                          <button onClick={() => handleDeleteMaterial(mat.id)} className="p-2 bg-red-900/20 hover:bg-red-600 text-red-400 hover:text-white rounded-lg transition-colors"><Trash2 size={16} /></button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {materials.length === 0 && (
+                    <tr><td colSpan={4} className="px-6 py-12 text-center text-white/40">No materials uploaded yet.</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="mt-8 bg-[#0a0a0f]/80 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden">
+              <h3 className="px-6 py-4 font-bold text-white border-b border-white/5">Recent Student Access Logs</h3>
+              <table className="w-full text-left">
+                <thead className="bg-[#050507]">
+                  <tr>
+                    <th className="px-6 py-4 text-xs font-bold text-white/40 uppercase">Student Name</th>
+                    <th className="px-6 py-4 text-xs font-bold text-white/40 uppercase">Material Title</th>
+                    <th className="px-6 py-4 text-xs font-bold text-white/40 uppercase">Accessed At</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {accessLogs.slice(0, 20).map(log => (
+                    <tr key={log.id} className="hover:bg-white/[0.02]">
+                      <td className="px-6 py-4 text-white font-medium">{log.student_name}</td>
+                      <td className="px-6 py-4 text-white/60 text-sm tracking-wider">{log.material_title}</td>
+                      <td className="px-6 py-4 text-white/60 text-sm">{formatDate(log.accessed_at)}</td>
+                    </tr>
+                  ))}
+                  {accessLogs.length === 0 && (
+                    <tr><td colSpan={3} className="px-6 py-12 text-center text-white/40">No access logs found.</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'assignments' && (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 mb-8">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center">
+                  <Edit2 className="text-purple-400" size={24} />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-white">Create Assignment</h2>
+                  <p className="text-sm text-white/50">Push tasks and projects to specific cohorts.</p>
+                </div>
+              </div>
+
+              <form onSubmit={handleCreateAssignment} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-bold text-white/40 uppercase mb-2">Title</label>
+                  <input type="text" required value={newAssignTitle} onChange={e => setNewAssignTitle(e.target.value)} className="w-full bg-[#050507] border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-purple-500/50" placeholder="e.g. Frontend Clone Project" />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-bold text-white/40 uppercase mb-2">Description</label>
+                  <textarea required value={newAssignDesc} onChange={e => setNewAssignDesc(e.target.value)} rows={3} className="w-full bg-[#050507] border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-purple-500/50" placeholder="Provide instructions..."></textarea>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-white/40 uppercase mb-2">Due Date</label>
+                  <input type="date" required value={newAssignDueDate} onChange={e => setNewAssignDueDate(e.target.value)} className="w-full bg-[#050507] border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-purple-500/50" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-white/40 uppercase mb-2">Assign to Cohort</label>
+                  <input type="text" required value={newAssignCohort} onChange={e => setNewAssignCohort(e.target.value)} className="w-full bg-[#050507] border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-purple-500/50" />
+                </div>
+                <div className="md:col-span-2 flex justify-end mt-2">
+                  <button type="submit" disabled={isCreatingAssign} className="px-8 py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold transition-all disabled:opacity-50">
+                    {isCreatingAssign ? "Creating..." : "Dispatch Assignment"}
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <div className="bg-[#0a0a0f]/80 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden">
+              <table className="w-full text-left">
+                <thead className="bg-[#050507]">
+                  <tr>
+                    <th className="px-6 py-4 text-xs font-bold text-white/40 uppercase">Title</th>
+                    <th className="px-6 py-4 text-xs font-bold text-white/40 uppercase">Cohort</th>
+                    <th className="px-6 py-4 text-xs font-bold text-white/40 uppercase">Due Date</th>
+                    <th className="px-6 py-4 text-xs font-bold text-white/40 uppercase text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {assignments.map(a => (
+                    <tr key={a.id} className="hover:bg-white/[0.02]">
+                      <td className="px-6 py-4 text-white font-medium">{a.title}</td>
+                      <td className="px-6 py-4"><span className="px-2 py-1 bg-white/5 rounded text-xs font-mono text-white/70">{a.cohort}</span></td>
+                      <td className="px-6 py-4 text-white/60 text-sm">{a.due_date}</td>
+                      <td className="px-6 py-4 text-right">
+                        <button onClick={() => handleDeleteAssignment(a.id)} className="p-2 bg-red-900/20 hover:bg-red-600 text-red-400 hover:text-white rounded-lg transition-colors"><Trash2 size={16} /></button>
+                      </td>
+                    </tr>
+                  ))}
+                  {assignments.length === 0 && (
+                    <tr><td colSpan={4} className="px-6 py-12 text-center text-white/40">No assignments created yet.</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'submissions' && (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="bg-[#0a0a0f]/80 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden mb-8">
+              <div className="p-6 md:p-8 border-b border-white/10">
+                <h2 className="text-xl font-bold text-white mb-2 flex items-center gap-2"><CheckCircle2 className="text-green-400" size={24}/> Submissions Review</h2>
+                <p className="text-sm text-white/50">Approve or reject student submissions here. Students will see the status change immediately.</p>
+              </div>
+              <table className="w-full text-left">
+                <thead className="bg-[#050507]">
+                  <tr>
+                    <th className="px-6 py-4 text-xs font-bold text-white/40 uppercase">Student</th>
+                    <th className="px-6 py-4 text-xs font-bold text-white/40 uppercase">Cohort</th>
+                    <th className="px-6 py-4 text-xs font-bold text-white/40 uppercase">File</th>
+                    <th className="px-6 py-4 text-xs font-bold text-white/40 uppercase">Status</th>
+                    <th className="px-6 py-4 text-xs font-bold text-white/40 uppercase text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {submissions.map(sub => (
+                    <tr key={sub.id} className="hover:bg-white/[0.02]">
+                      <td className="px-6 py-4 text-white font-medium">{sub.student_name}</td>
+                      <td className="px-6 py-4"><span className="px-2 py-1 bg-white/5 rounded text-xs font-mono text-white/70">{sub.cohort}</span></td>
+                      <td className="px-6 py-4">
+                        <a href={sub.file_url} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 text-sm font-bold flex items-center gap-1">
+                          View Work <ArrowRight size={14} />
+                        </a>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`px-2 py-1 rounded text-xs font-bold uppercase ${
+                          sub.status === 'approved' ? 'bg-green-500/20 text-green-400' :
+                          sub.status === 'rejected' ? 'bg-red-500/20 text-red-400' :
+                          'bg-yellow-500/20 text-yellow-400'
+                        }`}>
+                          {sub.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        {sub.status === 'pending' && (
+                          <div className="flex justify-end gap-2">
+                            <button onClick={() => handleUpdateSubmissionStatus(sub.id, 'approved')} className="px-3 py-1 bg-green-600 hover:bg-green-500 text-white rounded font-bold text-xs transition-colors">Approve</button>
+                            <button onClick={() => handleUpdateSubmissionStatus(sub.id, 'rejected')} className="px-3 py-1 bg-red-600 hover:bg-red-500 text-white rounded font-bold text-xs transition-colors">Reject</button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                  {submissions.length === 0 && (
+                    <tr><td colSpan={5} className="px-6 py-12 text-center text-white/40">No submissions found.</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
       </div>
 
       {/* Receipt Image Modal */}

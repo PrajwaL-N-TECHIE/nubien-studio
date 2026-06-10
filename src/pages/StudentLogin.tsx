@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, Fingerprint, Lock, ShieldCheck, ArrowRight, ScanLine } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import PageTransition from "@/components/PageTransition";
+import { db } from "@/lib/firebase";
+import { collection, query, where, getDocs } from "firebase/firestore";
 
 export default function StudentLogin() {
   const [studentId, setStudentId] = useState("");
@@ -10,19 +12,47 @@ export default function StudentLogin() {
   const [statusText, setStatusText] = useState("");
   const navigate = useNavigate();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!studentId.trim()) return;
 
     setIsAuthenticating(true);
     setStatusText("Verifying Buildicy Identity...");
 
-    // Simulated Authentication Flow
-    setTimeout(() => setStatusText("Decrypting clearance level..."), 1000);
-    setTimeout(() => setStatusText("Access Granted."), 2000);
-    setTimeout(() => {
-      navigate('/student-dashboard');
-    }, 2800);
+    try {
+      const q = query(collection(db, "internships"), where("registration_id", "==", studentId.trim().toUpperCase()));
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        setStatusText("Access Denied: Invalid ID");
+        setTimeout(() => {
+          setIsAuthenticating(false);
+          setStatusText("");
+        }, 2000);
+        return;
+      }
+
+      const studentDoc = querySnapshot.docs[0];
+      const studentData = { id: studentDoc.id, ...studentDoc.data() };
+
+      setStatusText("Decrypting clearance level...");
+      
+      setTimeout(() => {
+        setStatusText("Access Granted.");
+        sessionStorage.setItem("studentAuth", JSON.stringify(studentData));
+        setTimeout(() => {
+          navigate('/student-dashboard');
+        }, 800);
+      }, 1000);
+      
+    } catch (error) {
+      console.error("Login Error:", error);
+      setStatusText("System Error: Connection Failed");
+      setTimeout(() => {
+        setIsAuthenticating(false);
+        setStatusText("");
+      }, 2000);
+    }
   };
 
   return (
