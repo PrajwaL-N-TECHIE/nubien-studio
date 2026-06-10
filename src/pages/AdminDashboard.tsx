@@ -75,6 +75,7 @@ const AdminDashboard = () => {
   const [records, setRecords] = useState<InternshipRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [cohortFilter, setCohortFilter] = useState("all");
   const [viewReceiptUrl, setViewReceiptUrl] = useState<string | null>(null);
   const [selectedStudent, setSelectedStudent] = useState<InternshipRecord | null>(null);
   
@@ -384,6 +385,36 @@ const AdminDashboard = () => {
     setPassword("");
   };
 
+  const handleClearLogs = async () => {
+    if(!window.confirm("Are you sure you want to delete ALL access logs? This action cannot be undone.")) return;
+    try {
+      const q = query(collection(db, "access_logs"));
+      const snap = await getDocs(q);
+      const deletePromises = snap.docs.map(docSnap => deleteDoc(doc(db, "access_logs", docSnap.id)));
+      await Promise.all(deletePromises);
+      setAccessLogs([]);
+      alert("All access logs cleared.");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to clear logs.");
+    }
+  };
+
+  const handleClearSubmissions = async () => {
+    if(!window.confirm("Are you sure you want to delete ALL student submissions? This action cannot be undone.")) return;
+    try {
+      const q = query(collection(db, "submissions"));
+      const snap = await getDocs(q);
+      const deletePromises = snap.docs.map(docSnap => deleteDoc(doc(db, "submissions", docSnap.id)));
+      await Promise.all(deletePromises);
+      setSubmissions([]);
+      alert("All submissions cleared.");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to clear submissions.");
+    }
+  };
+
   const handleDeleteDatabase = async () => {
     if (!window.confirm("CRITICAL WARNING: Are you sure you want to delete ALL internship registrations? This action cannot be undone.")) {
       return;
@@ -417,10 +448,11 @@ const AdminDashboard = () => {
   };
 
   const filteredRecords = records.filter(record => 
-    record.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (cohortFilter === "all" || (record.cohort || "batch-1") === cohortFilter) &&
+    (record.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     record.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
     record.registration_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    record.track.toLowerCase().includes(searchTerm.toLowerCase())
+    record.track.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   const formatDate = (timestamp: any) => {
@@ -544,12 +576,23 @@ const AdminDashboard = () => {
                   className="w-full md:w-64 bg-white/5 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-white placeholder-white/40 focus:outline-none focus:border-purple-500/50 transition-colors text-sm"
                 />
               </div>
-              <button 
-                onClick={handleDeleteDatabase}
-                className="px-4 py-2 bg-red-900/30 hover:bg-red-600 text-red-400 hover:text-white rounded-xl border border-red-500/20 text-sm font-bold flex items-center gap-2 transition-colors shadow-[0_0_15px_rgba(220,38,38,0)] hover:shadow-[0_0_20px_rgba(220,38,38,0.4)]"
-              >
-                <Trash2 size={16} /> Purge Database
-              </button>
+              <div className="flex items-center gap-4">
+                <select 
+                  value={cohortFilter} 
+                  onChange={(e) => setCohortFilter(e.target.value)}
+                  className="bg-[#050507] border border-white/10 rounded-xl py-2 px-4 text-white focus:outline-none focus:border-purple-500/50 transition-colors text-sm font-bold"
+                >
+                  <option value="all">All Cohorts</option>
+                  <option value="batch-1">Batch 1</option>
+                  <option value="batch-2">Batch 2</option>
+                </select>
+                <button 
+                  onClick={handleDeleteDatabase}
+                  className="px-4 py-2 bg-red-900/30 hover:bg-red-600 text-red-400 hover:text-white rounded-xl border border-red-500/20 text-sm font-bold flex items-center gap-2 transition-colors shadow-[0_0_15px_rgba(220,38,38,0)] hover:shadow-[0_0_20px_rgba(220,38,38,0.4)]"
+                >
+                  <Trash2 size={16} /> Purge Database
+                </button>
+              </div>
             </div>
 
         {/* Analytics Section */}
@@ -762,7 +805,12 @@ const AdminDashboard = () => {
             </div>
 
             <div className="mt-8 bg-[#0a0a0f]/80 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden">
-              <h3 className="px-6 py-4 font-bold text-white border-b border-white/5">Recent Student Access Logs</h3>
+              <div className="flex justify-between items-center px-6 py-4 border-b border-white/5">
+                <h3 className="font-bold text-white">Recent Student Access Logs</h3>
+                <button onClick={handleClearLogs} className="px-3 py-1.5 bg-red-900/20 hover:bg-red-600/30 text-red-400 hover:text-red-300 rounded border border-red-500/20 text-xs font-bold transition-colors flex items-center gap-1">
+                  <Trash2 size={12}/> Clear Logs
+                </button>
+              </div>
               <table className="w-full text-left">
                 <thead className="bg-[#050507]">
                   <tr>
@@ -864,9 +912,14 @@ const AdminDashboard = () => {
         {activeTab === 'submissions' && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="bg-[#0a0a0f]/80 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden mb-8">
-              <div className="p-6 md:p-8 border-b border-white/10">
-                <h2 className="text-xl font-bold text-white mb-2 flex items-center gap-2"><CheckCircle2 className="text-green-400" size={24}/> Submissions Review</h2>
-                <p className="text-sm text-white/50">Approve or reject student submissions here. Students will see the status change immediately.</p>
+              <div className="p-6 md:p-8 border-b border-white/10 flex justify-between items-start">
+                <div>
+                  <h2 className="text-xl font-bold text-white mb-2 flex items-center gap-2"><CheckCircle2 className="text-green-400" size={24}/> Submissions Review</h2>
+                  <p className="text-sm text-white/50">Approve or reject student submissions here. Students will see the status change immediately.</p>
+                </div>
+                <button onClick={handleClearSubmissions} className="px-4 py-2 bg-red-900/20 hover:bg-red-600/30 text-red-400 hover:text-red-300 rounded-lg border border-red-500/20 text-sm font-bold transition-colors flex items-center gap-2">
+                  <Trash2 size={16}/> Clear All
+                </button>
               </div>
               <table className="w-full text-left">
                 <thead className="bg-[#050507]">
