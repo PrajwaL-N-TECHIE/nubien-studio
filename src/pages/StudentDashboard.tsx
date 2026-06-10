@@ -99,6 +99,22 @@ const MissionControl = ({ materials, assignments }: { materials: Material[], ass
   const recentMaterials = materials.slice(0, 3);
   const nextSessionString = getNextLiveSession();
   
+  const handleOpenMaterial = async (mat: Material) => {
+    try {
+      await addDoc(collection(db, "access_logs"), {
+        material_id: mat.id,
+        material_title: mat.title,
+        student_id: student.id,
+        student_name: student.name,
+        accessed_at: serverTimestamp()
+      });
+      window.open(mat.url, "_blank");
+    } catch(err) {
+      console.error("Failed to log access", err);
+      window.open(mat.url, "_blank");
+    }
+  };
+
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="bg-[#0C0C12]/80 border border-white/10 rounded-3xl p-8 md:p-12 relative overflow-hidden group">
@@ -193,7 +209,7 @@ const MissionControl = ({ materials, assignments }: { materials: Material[], ass
             {recentMaterials.length > 0 ? (
               <div className="space-y-3">
                 {recentMaterials.map(m => (
-                  <div key={m.id} className="p-4 bg-white/5 border border-white/5 rounded-2xl flex justify-between items-center group hover:border-blue-500/30 transition-colors">
+                  <div key={m.id} onClick={() => handleOpenMaterial(m)} className="p-4 bg-white/5 border border-white/5 rounded-2xl flex justify-between items-center cursor-pointer group hover:border-blue-500/30 transition-colors">
                     <div>
                       <p className="text-white font-medium text-sm">{m.title}</p>
                       <p className="text-xs text-zinc-500 mt-1">{m.type?.toUpperCase() || 'DOCUMENT'}</p>
