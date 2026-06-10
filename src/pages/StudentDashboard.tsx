@@ -461,14 +461,21 @@ const Dropzone = ({ assignments, student, submissions, setSubmissions }: { assig
               return (
                 <div key={i} className="flex flex-col p-5 bg-white/5 rounded-2xl border border-white/10 gap-3">
                   <div className="flex items-start justify-between gap-4">
-                    <h4 className="font-bold text-white text-sm">{assign?.title || "Unknown Assignment"}</h4>
-                    <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-widest whitespace-nowrap ${
-                      sub.status === 'approved' ? 'bg-green-500/20 text-green-400 border border-green-500/20' : 
-                      sub.status === 'rejected' ? 'bg-red-500/20 text-red-400 border border-red-500/20' : 
-                      'bg-yellow-500/20 text-yellow-400 border border-yellow-500/20'
-                    }`}>
-                      {sub.status}
-                    </span>
+                    <div>
+                      <h4 className="font-bold text-white text-sm">{assign?.title || "Unknown Assignment"}</h4>
+                      <div className="mt-2 flex items-center gap-2">
+                        <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-widest whitespace-nowrap ${
+                          sub.status === 'approved' ? 'bg-green-500/20 text-green-400 border border-green-500/20' : 
+                          sub.status === 'rejected' ? 'bg-red-500/20 text-red-400 border border-red-500/20' : 
+                          'bg-yellow-500/20 text-yellow-400 border border-yellow-500/20'
+                        }`}>
+                          {sub.status}
+                        </span>
+                      </div>
+                    </div>
+                    <a href={sub.file_url} target="_blank" rel="noopener noreferrer" className="p-2 bg-white/10 hover:bg-white/20 rounded-lg text-white transition-colors flex-shrink-0" title="View Submitted File">
+                      <FileText size={16} />
+                    </a>
                   </div>
                   {sub.feedback && (
                     <div className="bg-[#050507] rounded-xl p-3 border border-white/5 relative mt-1">
@@ -477,13 +484,10 @@ const Dropzone = ({ assignments, student, submissions, setSubmissions }: { assig
                     </div>
                   )}
                 </div>
-                  <a href={sub.file_url} target="_blank" rel="noopener noreferrer" className="p-2 bg-white/10 hover:bg-white/20 rounded-lg text-white transition-colors">
-                    <FileText size={16} />
-                  </a>
-                </div>
               );
             })}
           </div>
+        </div>
         </div>
       </div>
     </div>
