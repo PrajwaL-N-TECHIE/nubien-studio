@@ -46,6 +46,8 @@ const FAQs = [
   }
 ];
 
+const CURRENT_COHORT = "Summer 2026"; // Change this for next batches instead of deleting DB
+
 const InternshipRegistration = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -248,6 +250,7 @@ const InternshipRegistration = () => {
         receipt: compressedBase64Receipt,
         registration_id: registrationId,
         referral_code: referralStatus === 'valid' && referralCode ? referralCode : null,
+        cohort: CURRENT_COHORT,
         created_at: serverTimestamp()
       });
 
