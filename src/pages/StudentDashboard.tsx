@@ -61,7 +61,7 @@ const getNextLiveSession = () => {
   const currentHour = now.getHours();
   const currentMinute = now.getMinutes();
   
-  const targetDays = [1, 2, 3]; // Mon, Tue, Wed
+  const targetDays = [5]; // Friday
   let daysToAdd = 0;
   
   const isPastTimeToday = currentHour > 19 || (currentHour === 19 && currentMinute >= 45);
@@ -113,8 +113,8 @@ const MissionControl = ({ materials, assignments }: { materials: Material[], ass
             <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
               <LayoutDashboard className="text-purple-400" size={24} /> Dashboard Overview
             </h3>
-            <p className="text-zinc-400 leading-relaxed text-lg">
-              You are currently enrolled in <strong className="text-white bg-white/5 px-2 py-1 rounded font-mono">{student.cohort}</strong>. 
+            <p className="text-zinc-400 leading-relaxed text-lg flex flex-col sm:flex-row sm:items-center gap-2">
+              System Access Granted: <strong className="text-purple-300 bg-purple-500/20 border border-purple-500/30 px-3 py-1 rounded-md font-mono uppercase tracking-widest text-sm inline-block w-fit">{student.cohort}</strong>
             </p>
             <div className="mt-6 space-y-3 text-zinc-500">
               <p className="flex items-center gap-2"><BookOpen size={16} className="text-blue-400"/> Navigate to <strong>The Vault</strong> to access your exclusive learning materials.</p>
