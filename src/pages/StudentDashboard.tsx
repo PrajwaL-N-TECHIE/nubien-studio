@@ -55,8 +55,48 @@ const getStudentSession = (): StudentData => {
   return { id: "demo", name: "Guest User", track: "Unknown", cohort: "batch-1", registration_id: "DEMO-000", xp: 0, progress: 0 };
 };
 
-const MissionControl = () => {
+const getNextLiveSession = () => {
+  const now = new Date();
+  const currentDay = now.getDay(); // 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat
+  const currentHour = now.getHours();
+  const currentMinute = now.getMinutes();
+  
+  const targetDays = [1, 2, 3]; // Mon, Tue, Wed
+  let daysToAdd = 0;
+  
+  const isPastTimeToday = currentHour > 19 || (currentHour === 19 && currentMinute >= 45);
+
+  if (targetDays.includes(currentDay) && !isPastTimeToday) {
+    daysToAdd = 0;
+  } else {
+    for (let i = 1; i <= 7; i++) {
+      const nextDay = (currentDay + i) % 7;
+      if (targetDays.includes(nextDay)) {
+        daysToAdd = i;
+        break;
+      }
+    }
+  }
+
+  const nextSession = new Date(now);
+  nextSession.setDate(now.getDate() + daysToAdd);
+  nextSession.setHours(19, 45, 0, 0);
+
+  const isToday = daysToAdd === 0;
+  const isTomorrow = daysToAdd === 1;
+
+  let dayString = nextSession.toLocaleDateString('en-US', { weekday: 'long' });
+  if (isToday) dayString = 'Today';
+  else if (isTomorrow) dayString = 'Tomorrow';
+
+  return `${dayString} at 7:45 PM`;
+};
+
+const MissionControl = ({ materials, assignments }: { materials: Material[], assignments: Assignment[] }) => {
   const student = getStudentSession();
+  const pendingAssignments = assignments.slice(0, 3);
+  const recentMaterials = materials.slice(0, 3);
+  const nextSessionString = getNextLiveSession();
   
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -66,18 +106,98 @@ const MissionControl = () => {
         <h2 className="text-3xl md:text-5xl font-black text-white mb-4">Welcome back, {student.name}!</h2>
         <p className="text-purple-400 font-mono text-sm md:text-base">Buildicy Internship Portal • {student.track}</p>
         
-        <div className="mt-12 p-8 bg-white/[0.02] border border-white/10 rounded-3xl max-w-3xl">
-          <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-            <LayoutDashboard className="text-purple-400" size={24} /> Dashboard Overview
-          </h3>
-          <p className="text-zinc-400 leading-relaxed text-lg">
-            You are currently enrolled in <strong className="text-white bg-white/5 px-2 py-1 rounded font-mono">{student.cohort}</strong>. 
-          </p>
-          <div className="mt-6 space-y-3 text-zinc-500">
-            <p className="flex items-center gap-2"><BookOpen size={16} className="text-blue-400"/> Navigate to <strong>The Vault</strong> to access your exclusive learning materials.</p>
-            <p className="flex items-center gap-2"><UploadCloud size={16} className="text-green-400"/> Use the <strong>Dropzone</strong> to view active tasks and submit your completed assignments.</p>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-12">
+          
+          {/* Dashboard Overview */}
+          <div className="lg:col-span-2 p-8 bg-white/[0.02] border border-white/10 rounded-3xl">
+            <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+              <LayoutDashboard className="text-purple-400" size={24} /> Dashboard Overview
+            </h3>
+            <p className="text-zinc-400 leading-relaxed text-lg">
+              You are currently enrolled in <strong className="text-white bg-white/5 px-2 py-1 rounded font-mono">{student.cohort}</strong>. 
+            </p>
+            <div className="mt-6 space-y-3 text-zinc-500">
+              <p className="flex items-center gap-2"><BookOpen size={16} className="text-blue-400"/> Navigate to <strong>The Vault</strong> to access your exclusive learning materials.</p>
+              <p className="flex items-center gap-2"><UploadCloud size={16} className="text-green-400"/> Use the <strong>Dropzone</strong> to view active tasks and submit your completed assignments.</p>
+            </div>
           </div>
+
+          {/* Next Live Session */}
+          <div className="p-8 bg-gradient-to-br from-indigo-900/40 to-purple-900/20 border border-indigo-500/30 rounded-3xl flex flex-col justify-center items-center text-center relative overflow-hidden">
+             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-50" />
+             <div className="w-16 h-16 bg-indigo-500/20 rounded-2xl flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(99,102,241,0.2)]">
+                <PlayCircle className="text-indigo-400" size={32} />
+             </div>
+             <h3 className="text-zinc-300 font-medium mb-2">Next Live Session</h3>
+             <p className="text-xl font-bold text-white mb-8 bg-clip-text text-transparent bg-gradient-to-r from-white to-purple-200">
+                {nextSessionString}
+             </p>
+             <button 
+                onClick={() => {
+                  navigator.clipboard.writeText("https://meet.google.com/zkw-xntf-ydh");
+                  alert("Meet Link copied to clipboard!");
+                }}
+                className="w-full py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl font-bold transition-all text-sm border border-white/5 flex items-center justify-center gap-2"
+             >
+                <Copy size={16} /> Copy Meet Link
+             </button>
+          </div>
+
         </div>
+
+        {/* Dynamic Data Lists */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 relative z-10">
+          
+          {/* Pending Assignments */}
+          <div className="p-6 bg-[#050507]/50 border border-white/5 rounded-3xl">
+            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+              <FileText className="text-purple-400" size={20} /> Pending Assignments
+            </h3>
+            {pendingAssignments.length > 0 ? (
+              <div className="space-y-3">
+                {pendingAssignments.map(a => (
+                  <div key={a.id} className="p-4 bg-white/5 border border-white/5 rounded-2xl flex justify-between items-center group hover:border-purple-500/30 transition-colors">
+                    <div>
+                      <p className="text-white font-medium text-sm">{a.title}</p>
+                      <p className="text-xs text-zinc-500 mt-1 flex items-center gap-1"><Clock size={12}/> Due: {a.deadline ? new Date(a.deadline).toLocaleDateString() : "No deadline"}</p>
+                    </div>
+                    <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-zinc-400 group-hover:text-purple-400 transition-colors">
+                      <ChevronRight size={16} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-zinc-500 py-4">No pending assignments.</p>
+            )}
+          </div>
+
+          {/* Recent Materials */}
+          <div className="p-6 bg-[#050507]/50 border border-white/5 rounded-3xl">
+            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+              <BookOpen className="text-blue-400" size={20} /> Recent Materials
+            </h3>
+            {recentMaterials.length > 0 ? (
+              <div className="space-y-3">
+                {recentMaterials.map(m => (
+                  <div key={m.id} className="p-4 bg-white/5 border border-white/5 rounded-2xl flex justify-between items-center group hover:border-blue-500/30 transition-colors">
+                    <div>
+                      <p className="text-white font-medium text-sm">{m.title}</p>
+                      <p className="text-xs text-zinc-500 mt-1">{m.type?.toUpperCase() || 'DOCUMENT'}</p>
+                    </div>
+                    <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-zinc-400 group-hover:text-blue-400 transition-colors">
+                      <ChevronRight size={16} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-zinc-500 py-4">No materials updated recently.</p>
+            )}
+          </div>
+
+        </div>
+
       </div>
     </div>
   );
@@ -906,7 +1026,7 @@ export default function StudentDashboard() {
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.3 }}
               >
-                {activeTab === 'mission' && <MissionControl />}
+                {activeTab === 'mission' && <MissionControl materials={materials} assignments={assignments} />}
                 {activeTab === 'vault' && <Vault materials={materials} />}
                 {activeTab === 'dropzone' && <Dropzone assignments={assignments} student={student} />}
               </motion.div>
