@@ -753,63 +753,97 @@ export default function StudentDashboard() {
       <div className="min-h-screen bg-[#050507] text-white flex flex-col md:flex-row relative z-10 pt-20 md:pt-0">
       
       {/* Sidebar Navigation */}
-      <aside className={`fixed md:sticky top-0 left-0 h-screen w-72 bg-[#0C0C12] border-r border-white/5 flex flex-col transition-transform duration-300 z-50 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
+      <aside className={`fixed md:sticky top-0 left-0 h-screen w-72 bg-[#050507]/90 backdrop-blur-3xl border-r border-white/5 flex flex-col transition-transform duration-500 ease-out z-50 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
         
-        {/* Brand */}
-        <div className="p-8 border-b border-white/5 relative overflow-hidden">
-          <div className="flex items-center gap-3 relative z-10">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(168,85,247,0.4)] bg-purple-600">
-              <Sparkles size={20} className="text-white" />
+        {/* Premium Brand Header */}
+        <div className="p-8 relative overflow-hidden">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-purple-500/50 to-transparent" />
+          <div className="absolute inset-0 bg-purple-500/5 pointer-events-none" />
+          <div className="flex items-center gap-4 relative z-10">
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-[0_0_30px_rgba(168,85,247,0.3)] bg-gradient-to-br from-purple-500 to-indigo-600 border border-white/10">
+              <Sparkles size={22} className="text-white" />
             </div>
             <div>
-              <h1 className="font-bold tracking-tight">Buildicy OS</h1>
-              <p className="text-[10px] uppercase tracking-widest font-mono text-purple-400">
+              <h1 className="font-black tracking-tight text-xl text-white bg-clip-text text-transparent bg-gradient-to-br from-white to-white/60">Buildicy<span className="text-purple-400">OS</span></h1>
+              <p className="text-[10px] uppercase tracking-[0.2em] font-mono text-zinc-400">
                 Student Portal
               </p>
             </div>
           </div>
         </div>
-        <div className="p-6 mx-4 mt-6 bg-white/[0.02] border border-white/5 rounded-2xl flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center font-bold">
-            {student.name.charAt(0)}
-          </div>
-            <div className="flex-1 mt-2 md:mt-0 max-w-[200px] md:max-w-none truncate">
-              <h1 className="text-lg md:text-xl font-bold text-white truncate">{student.name}</h1>
-              <p className="text-xs text-purple-400 font-mono truncate">{student.track} • {student.registration_id}</p>
+
+        {/* Premium Student ID Card */}
+        <div className="px-6 pb-6">
+          <div className="p-4 bg-white/[0.02] border border-white/5 rounded-3xl flex items-center gap-4 relative overflow-hidden group hover:border-purple-500/30 transition-colors cursor-default">
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center font-black text-lg border-2 border-[#050507] shadow-lg relative z-10">
+              {student.name.charAt(0)}
             </div>
+            <div className="flex-1 truncate relative z-10">
+              <h1 className="text-base font-bold text-white truncate group-hover:text-purple-300 transition-colors">{student.name}</h1>
+              <div className="flex items-center gap-2 mt-0.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                <p className="text-xs text-zinc-400 font-mono truncate">{student.track}</p>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Navigation Tabs */}
-        <nav className="flex-1 px-4 py-8 space-y-2">
-          {STUDENT_TABS.map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => {
-                setActiveTab(tab.id);
-                setIsMobileMenuOpen(false);
-              }}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-medium ${
-                activeTab === tab.id 
-                  ? 'bg-purple-600 text-white shadow-[0_0_15px_rgba(168,85,247,0.3)]' 
-                  : 'text-zinc-400 hover:bg-white/5 hover:text-white'
-              }`}
-            >
-              <tab.icon size={18} className={activeTab === tab.id ? "text-white" : "text-zinc-500"} />
-              {tab.label}
-            </button>
-          ))}
+        {/* Dynamic Navigation Tabs */}
+        <nav className="flex-1 px-4 py-4 space-y-2 overflow-y-auto">
+          <p className="px-4 text-[10px] font-bold text-zinc-600 uppercase tracking-widest mb-4">Main Menu</p>
+          {STUDENT_TABS.map(tab => {
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => {
+                  setActiveTab(tab.id);
+                  setIsMobileMenuOpen(false);
+                }}
+                className={`relative w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-300 overflow-hidden group ${
+                  isActive 
+                    ? 'bg-white/[0.04] border border-white/10 shadow-[0_0_20px_rgba(168,85,247,0.1)]' 
+                    : 'border border-transparent hover:bg-white/[0.02]'
+                }`}
+              >
+                {/* Active Indicator Line */}
+                {isActive && (
+                  <motion.div 
+                    layoutId="activeTabIndicator"
+                    className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-purple-500 rounded-r-full shadow-[0_0_10px_rgba(168,85,247,0.8)]" 
+                  />
+                )}
+                
+                {/* Icon Container */}
+                <div className={`flex items-center justify-center transition-colors duration-300 ${isActive ? 'text-purple-400' : 'text-zinc-500 group-hover:text-zinc-300'}`}>
+                  <tab.icon size={20} className={isActive ? 'drop-shadow-[0_0_8px_rgba(168,85,247,0.5)]' : ''} />
+                </div>
+                
+                {/* Label */}
+                <span className={`text-sm font-bold tracking-wide transition-colors duration-300 ${isActive ? 'text-white' : 'text-zinc-400 group-hover:text-zinc-200'}`}>
+                  {tab.label}
+                </span>
+
+                {/* Subtle Hover Gradient */}
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-500/0 via-purple-500/0 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </button>
+            );
+          })}
         </nav>
 
-        {/* Logout */}
-        <div className="p-4 mt-auto border-t border-white/5 space-y-2">
+        {/* Premium Logout Footer */}
+        <div className="p-6 mt-auto border-t border-white/5">
           <button 
             onClick={() => {
               sessionStorage.removeItem("studentAuth");
               navigate('/student-login');
             }}
-            className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-400 hover:bg-red-500/10 rounded-xl transition-colors"
+            className="w-full flex items-center gap-3 px-4 py-4 text-sm font-bold text-zinc-400 hover:text-red-400 bg-[#0C0C12] hover:bg-red-500/10 border border-white/5 hover:border-red-500/20 rounded-2xl transition-all group overflow-hidden relative"
           >
-            <LogOut size={18} /> Exit Portal
+            <div className="absolute inset-0 bg-gradient-to-r from-red-500/0 to-red-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <LogOut size={18} className="relative z-10 group-hover:-translate-x-1 transition-transform" /> 
+            <span className="relative z-10">Secure Logout</span>
           </button>
         </div>
       </aside>
