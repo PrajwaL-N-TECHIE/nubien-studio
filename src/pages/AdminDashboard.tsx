@@ -25,7 +25,7 @@ interface InternshipRecord {
 interface Material {
   id: string;
   title: string;
-  type: 'pdf' | 'link' | 'video';
+  type: string;
   url: string;
   cohort: string;
   created_at: string;
@@ -81,7 +81,7 @@ const AdminDashboard = () => {
   // Materials State
   const [materials, setMaterials] = useState<Material[]>([]);
   const [newMatTitle, setNewMatTitle] = useState("");
-  const [newMatType, setNewMatType] = useState<'pdf' | 'link' | 'video'>('pdf');
+  const [newMatType, setNewMatType] = useState<'file' | 'link'>('file');
   const [newMatCohort, setNewMatCohort] = useState("batch-1");
   const [newMatFile, setNewMatFile] = useState<File | null>(null);
   const [newMatUrl, setNewMatUrl] = useState("");
@@ -306,8 +306,9 @@ const AdminDashboard = () => {
 
     try {
       let finalUrl = newMatUrl;
+      let detectedType = "link";
 
-      if (newMatType === 'pdf' && newMatFile) {
+      if (newMatType === 'file' && newMatFile) {
         const formData = new FormData();
         formData.append('file', newMatFile);
         formData.append('upload_preset', 'lms_unsigned');
@@ -322,9 +323,24 @@ const AdminDashboard = () => {
         if (!res.ok) throw new Error(data.error?.message || "Cloudinary upload failed");
         
         finalUrl = data.secure_url;
+
+        // Auto-detect type
+        const mime = newMatFile.type.toLowerCase();
+        if (mime.includes('image')) detectedType = "image";
+        else if (mime.includes('video')) detectedType = "video";
+        else if (mime.includes('audio')) detectedType = "audio";
+        else if (mime.includes('zip') || mime.includes('rar') || mime.includes('tar') || mime.includes('7z') || mime.includes('compressed')) detectedType = "archive";
+        else if (mime.includes('pdf')) detectedType = "pdf";
+        else detectedType = "document";
+      } else if (newMatType === 'link') {
+        if (finalUrl.includes('youtube.com') || finalUrl.includes('youtu.be') || finalUrl.includes('vimeo.com')) {
+          detectedType = "video";
+        } else {
+          detectedType = "link";
+        }
       }
 
-      if (!finalUrl && newMatType !== 'pdf') {
+      if (!finalUrl && newMatType !== 'file') {
         alert("Please provide a valid URL.");
         setIsUploadingMat(false);
         return;
@@ -332,7 +348,7 @@ const AdminDashboard = () => {
 
       await addDoc(collection(db, "materials"), {
         title: newMatTitle,
-        type: newMatType,
+        type: detectedType,
         url: finalUrl,
         cohort: newMatCohort,
         created_at: serverTimestamp()
@@ -694,15 +710,14 @@ const AdminDashboard = () => {
                 <div>
                   <label className="block text-xs font-bold text-white/40 uppercase mb-2">Type</label>
                   <select value={newMatType} onChange={e => setNewMatType(e.target.value as any)} className="w-full bg-[#050507] border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-blue-500/50">
-                    <option value="pdf">PDF Document</option>
+                    <option value="file">File Upload</option>
                     <option value="link">External Link</option>
-                    <option value="video">Video URL</option>
                   </select>
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-white/40 uppercase mb-2">Resource</label>
-                  {newMatType === 'pdf' ? (
-                    <input type="file" accept=".pdf" onChange={e => setNewMatFile(e.target.files?.[0] || null)} className="w-full bg-[#050507] border border-white/10 rounded-xl py-2 px-4 text-white file:mr-4 file:py-1 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-blue-500/20 file:text-blue-400" required />
+                  {newMatType === 'file' ? (
+                    <input type="file" onChange={e => setNewMatFile(e.target.files?.[0] || null)} className="w-full bg-[#050507] border border-white/10 rounded-xl py-2 px-4 text-white file:mr-4 file:py-1 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-blue-500/20 file:text-blue-400" required />
                   ) : (
                     <input type="url" required value={newMatUrl} onChange={e => setNewMatUrl(e.target.value)} className="w-full bg-[#050507] border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-blue-500/50" placeholder="https://..." />
                   )}

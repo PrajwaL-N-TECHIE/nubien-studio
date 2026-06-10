@@ -6,7 +6,8 @@ import {
   Send, Sparkles, AlertCircle, FileLock2, Code2, 
   ChevronRight, Activity, Terminal, Users, Globe,
   GitBranch, GraduationCap, Star, ShieldCheck,
-  UserCircle, Focus, CodeSquare, Target, Clock, Copy
+  UserCircle, Focus, CodeSquare, Target, Clock, Copy,
+  Image, Archive, Music
 } from "lucide-react";
 import { usePerformance } from "@/context/PerformanceContext";
 import PageTransition from "@/components/PageTransition";
@@ -208,17 +209,31 @@ const MissionControl = ({ materials, assignments }: { materials: Material[], ass
             </h3>
             {recentMaterials.length > 0 ? (
               <div className="space-y-3">
-                {recentMaterials.map(m => (
+                {recentMaterials.map((m) => {
+                  let Icon = FileText;
+                  if(m.type === 'video') Icon = PlayCircle;
+                  if(m.type === 'link') Icon = Code2;
+                  if(m.type === 'image') Icon = Image;
+                  if(m.type === 'archive') Icon = Archive;
+                  if(m.type === 'audio') Icon = Music;
+
+                  return (
                   <div key={m.id} onClick={() => handleOpenMaterial(m)} className="p-4 bg-white/5 border border-white/5 rounded-2xl flex justify-between items-center cursor-pointer group hover:border-blue-500/30 transition-colors">
-                    <div>
-                      <p className="text-white font-medium text-sm">{m.title}</p>
-                      <p className="text-xs text-zinc-500 mt-1">{m.type?.toUpperCase() || 'DOCUMENT'}</p>
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center group-hover:bg-blue-500/10 transition-colors">
+                        <Icon size={18} className="text-zinc-400 group-hover:text-blue-400 transition-colors" />
+                      </div>
+                      <div>
+                        <p className="text-white font-medium text-sm">{m.title}</p>
+                        <p className="text-xs text-zinc-500 mt-1">{m.type?.toUpperCase() || 'DOCUMENT'}</p>
+                      </div>
                     </div>
                     <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-zinc-400 group-hover:text-blue-400 transition-colors">
                       <ChevronRight size={16} />
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               <p className="text-sm text-zinc-500 py-4">No materials updated recently.</p>
@@ -267,6 +282,9 @@ const Vault = ({ materials }: { materials: Material[] }) => {
           let Icon = FileText;
           if(res.type === 'video') Icon = PlayCircle;
           if(res.type === 'link') Icon = Code2;
+          if(res.type === 'image') Icon = Image;
+          if(res.type === 'archive') Icon = Archive;
+          if(res.type === 'audio') Icon = Music;
 
           return (
             <div key={res.id} className="flex items-center justify-between p-5 rounded-2xl border bg-[#0C0C12]/80 border-white/10 hover:border-purple-500/30 transition-all cursor-pointer group" onClick={() => handleOpenMaterial(res)}>
