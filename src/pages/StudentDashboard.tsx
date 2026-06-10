@@ -9,6 +9,7 @@ import {
   UserCircle, Focus, CodeSquare, Target, Clock, Copy
 } from "lucide-react";
 import { usePerformance } from "@/context/PerformanceContext";
+import PageTransition from "@/components/PageTransition";
 import { useNavigate } from "react-router-dom";
 import { db, storage } from "@/lib/firebase";
 import { collection, query, where, getDocs, addDoc, serverTimestamp, orderBy } from "firebase/firestore";
