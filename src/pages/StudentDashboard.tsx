@@ -821,9 +821,11 @@ export default function StudentDashboard() {
     const parsed: StudentData = JSON.parse(authData);
     setStudent(parsed);
 
+    const studentCohort = parsed.cohort || "batch-1";
+
     const fetchMaterials = async () => {
       try {
-        const q = query(collection(db, "materials"), where("cohort", "==", parsed.cohort));
+        const q = query(collection(db, "materials"), where("cohort", "==", studentCohort));
         const snap = await getDocs(q);
         const data: Material[] = [];
         snap.forEach(doc => data.push({ id: doc.id, ...doc.data() } as Material));
@@ -834,7 +836,7 @@ export default function StudentDashboard() {
     };
     const fetchAssignments = async () => {
       try {
-        const q = query(collection(db, "assignments"), where("cohort", "==", parsed.cohort));
+        const q = query(collection(db, "assignments"), where("cohort", "==", studentCohort));
         const snap = await getDocs(q);
         const data: Assignment[] = [];
         snap.forEach(doc => data.push({ id: doc.id, ...doc.data() } as Assignment));
