@@ -94,11 +94,15 @@ const getNextLiveSession = () => {
   return `${dayString} at 7:45 PM`;
 };
 
-const MissionControl = ({ materials, assignments }: { materials: Material[], assignments: Assignment[] }) => {
+const MissionControl = ({ materials, assignments, submissions }: { materials: Material[], assignments: Assignment[], submissions: Submission[] }) => {
   const student = getStudentSession();
   const pendingAssignments = assignments.slice(0, 3);
   const recentMaterials = materials.slice(0, 3);
   const nextSessionString = getNextLiveSession();
+  
+  const totalTasks = assignments.length;
+  const completedTasks = submissions.length;
+  const completionRatio = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
   
   const handleOpenMaterial = async (mat: Material) => {
     try {
@@ -134,6 +138,17 @@ const MissionControl = ({ materials, assignments }: { materials: Material[], ass
             <p className="text-zinc-400 leading-relaxed text-lg flex flex-col sm:flex-row sm:items-center gap-2">
               System Access Granted: <strong className="text-purple-300 bg-purple-500/20 border border-purple-500/30 px-3 py-1 rounded-md font-mono uppercase tracking-widest text-sm inline-block w-fit">{student.cohort}</strong>
             </p>
+            <div className="mt-4 flex items-center gap-4 bg-black/20 p-4 rounded-2xl border border-white/5">
+              <div className="flex-1">
+                <div className="flex justify-between text-xs font-bold text-white/50 mb-2 uppercase tracking-widest">
+                  <span>Task Completion</span>
+                  <span className="text-purple-400">{completedTasks}/{totalTasks} ({completionRatio}%)</span>
+                </div>
+                <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-purple-600 to-blue-500 rounded-full transition-all duration-1000" style={{ width: `${completionRatio}%` }} />
+                </div>
+              </div>
+            </div>
             <div className="mt-6 space-y-3 text-zinc-500">
               <p className="flex items-center gap-2"><BookOpen size={16} className="text-blue-400"/> Navigate to <strong>The Vault</strong> to access your exclusive learning materials.</p>
               <p className="flex items-center gap-2"><UploadCloud size={16} className="text-green-400"/> Use the <strong>Dropzone</strong> to view active tasks and submit your completed assignments.</p>
@@ -310,22 +325,10 @@ const Vault = ({ materials }: { materials: Material[] }) => {
   );
 };
 
-const Dropzone = ({ assignments, student }: { assignments: Assignment[], student: StudentData }) => {
-  const [submissions, setSubmissions] = useState<Submission[]>([]);
+const Dropzone = ({ assignments, student, submissions, setSubmissions }: { assignments: Assignment[], student: StudentData, submissions: Submission[], setSubmissions: React.Dispatch<React.SetStateAction<Submission[]>> }) => {
   const [selectedAssignId, setSelectedAssignId] = useState<string>("");
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
-
-  useEffect(() => {
-    const fetchSubmissions = async () => {
-      const q = query(collection(db, "submissions"), where("student_id", "==", student.id));
-      const snap = await getDocs(q);
-      const data: Submission[] = [];
-      snap.forEach(doc => data.push({ id: doc.id, ...doc.data() } as Submission));
-      setSubmissions(data);
-    };
-    fetchSubmissions();
-  }, [student.id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -381,7 +384,37 @@ const Dropzone = ({ assignments, student }: { assignments: Assignment[], student
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="bg-[#0a0a0f]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-6">
+        <div className="space-y-6">
+          <h3 className="text-lg font-bold text-white flex items-center gap-2"><Target size={20} className="text-purple-400" /> Active Tasks</h3>
+          <div className="space-y-4">
+            {assignments.length === 0 ? (
+              <p className="text-zinc-500 text-sm">No active tasks available right now.</p>
+            ) : (
+              assignments.map(a => {
+                const isSubmitted = submissions.some(s => s.assignment_id === a.id);
+                return (
+                  <div key={a.id} className={`p-5 border rounded-2xl transition-all ${isSubmitted ? 'bg-green-500/5 border-green-500/20' : 'bg-white/5 border-white/10 hover:border-purple-500/30'}`}>
+                    <div className="flex justify-between items-start mb-2">
+                      <h4 className="font-bold text-white">{a.title}</h4>
+                      {isSubmitted && <span className="px-2 py-1 bg-green-500/20 text-green-400 text-[10px] uppercase font-bold tracking-widest rounded">Submitted</span>}
+                    </div>
+                    <p className="text-sm text-zinc-400 mb-3">{a.description}</p>
+                    <div className="flex items-center gap-4 text-xs font-mono">
+                      <span className="text-purple-400 flex items-center gap-1"><Clock size={12}/> Due: {a.due_date}</span>
+                      {a.attachment_url && (
+                        <a href={a.attachment_url} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline flex items-center gap-1">
+                          <FileText size={12}/> Resource
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+
+        <div className="bg-[#0a0a0f]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-6 h-fit sticky top-24">
           <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2"><UploadCloud size={20} className="text-blue-400" /> Submit Work</h3>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -879,6 +912,7 @@ export default function StudentDashboard() {
   const [student, setStudent] = useState<StudentData | null>(null);
   const [materials, setMaterials] = useState<Material[]>([]);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [submissions, setSubmissions] = useState<Submission[]>([]);
 
   useEffect(() => {
     const authData = sessionStorage.getItem("studentAuth");
@@ -913,9 +947,21 @@ export default function StudentDashboard() {
         console.error(err);
       }
     };
+    const fetchSubmissions = async () => {
+      try {
+        const q = query(collection(db, "submissions"), where("student_id", "==", parsed.id));
+        const snap = await getDocs(q);
+        const data: Submission[] = [];
+        snap.forEach(doc => data.push({ id: doc.id, ...doc.data() } as Submission));
+        setSubmissions(data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
     
     fetchMaterials();
     fetchAssignments();
+    fetchSubmissions();
   }, [navigate]);
 
   const STUDENT_TABS = [
@@ -1071,9 +1117,9 @@ export default function StudentDashboard() {
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.3 }}
               >
-                {activeTab === 'mission' && <MissionControl materials={materials} assignments={assignments} />}
+                {activeTab === 'mission' && <MissionControl materials={materials} assignments={assignments} submissions={submissions} />}
                 {activeTab === 'vault' && <Vault materials={materials} />}
-                {activeTab === 'dropzone' && <Dropzone assignments={assignments} student={student} />}
+                {activeTab === 'dropzone' && <Dropzone assignments={assignments} student={student} submissions={submissions} setSubmissions={setSubmissions} />}
               </motion.div>
             </AnimatePresence>
           </div>
