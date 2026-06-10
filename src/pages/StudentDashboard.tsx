@@ -55,143 +55,33 @@ const getStudentSession = (): StudentData => {
   return { id: "demo", name: "Guest User", track: "Unknown", cohort: "batch-1", registration_id: "DEMO-000", xp: 0, progress: 0 };
 };
 
-const LEADERBOARD = [
-  { id: 1, name: "Sarah Chen", track: "AI Architect", xp: 5100, rank: 1 },
-  { id: 2, name: "Marcus Johnson", track: "UI/UX Designer", xp: 4850, rank: 2 },
-  { id: 3, name: "Alex Developer", track: "Full Stack Engineer", xp: 4250, rank: 3 },
-  { id: 4, name: "Priya Patel", track: "Blockchain Engineer", xp: 3900, rank: 4 },
-  { id: 5, name: "David Kim", track: "Full Stack Engineer", xp: 3750, rank: 5 },
-];
-
-// --- SUB-COMPONENTS ---
-
-const MissionControl = () => (
-  <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      
-      {/* Progress Card */}
-      <div className="col-span-1 lg:col-span-2 bg-[#0C0C12]/80 border border-white/10 rounded-3xl p-8 relative overflow-hidden group">
+const MissionControl = () => {
+  const student = getStudentSession();
+  
+  return (
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="bg-[#0C0C12]/80 border border-white/10 rounded-3xl p-8 md:p-12 relative overflow-hidden group">
         <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/10 rounded-full blur-[80px] -mr-32 -mt-32 transition-all group-hover:bg-purple-500/20" />
-        <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-          <Activity className="text-purple-400" /> Current Trajectory
-        </h2>
         
-        <div className="flex items-center gap-8">
-          <div className="relative w-32 h-32 flex items-center justify-center">
-            <svg className="w-full h-full transform -rotate-90">
-              <circle cx="64" cy="64" r="58" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-white/5" />
-              <circle 
-                cx="64" cy="64" r="58" stroke="currentColor" strokeWidth="8" fill="transparent" 
-                strokeDasharray="364" strokeDashoffset={364 - (364 * (getStudentSession().progress || 0)) / 100}
-                className="text-purple-500 transition-all duration-1000 ease-out" 
-                strokeLinecap="round" 
-              />
-            </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-3xl font-black text-white">{getStudentSession().progress || 0}%</span>
-              <span className="text-[10px] text-zinc-400 uppercase tracking-widest">Completed</span>
-            </div>
-          </div>
-          <div className="space-y-4 flex-1">
-            <div>
-              <div className="flex justify-between text-sm mb-2">
-                <span className="text-zinc-400">Week 3 Assignment: API Integration</span>
-                <span className="text-purple-400 font-bold">Due in 2 Days</span>
-              </div>
-              <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-purple-600 to-indigo-500 w-[60%]" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Next Session Card */}
-      <div className="col-span-1 bg-gradient-to-br from-indigo-900/40 to-purple-900/20 border border-indigo-500/30 rounded-3xl p-8 flex flex-col justify-center items-center text-center">
-        <div className="w-12 h-12 bg-indigo-500/20 rounded-full flex items-center justify-center mb-4">
-          <PlayCircle className="text-indigo-400" size={24} />
-        </div>
-        <h3 className="text-zinc-300 font-medium mb-1">Next Live Session</h3>
-        <p className="text-xl font-bold text-white mb-6">Upcoming</p>
-        <button className="w-full py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl font-medium transition-all text-sm border border-white/5">
-          Copy Meet Link
-        </button>
-      </div>
-
-    </div>
-
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      {/* Dropzone */}
-      <div className="col-span-1 lg:col-span-2 bg-[#0C0C12]/80 border border-white/10 rounded-3xl p-8">
-        <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-          <UploadCloud className="text-purple-400" /> Assignment Dropzone
-        </h2>
-        <div className="w-full border-2 border-dashed border-white/10 hover:border-purple-500/50 rounded-2xl p-10 flex flex-col items-center justify-center gap-4 transition-all cursor-pointer group bg-white/[0.02]">
-          <div className="w-16 h-16 rounded-full bg-purple-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-            <UploadCloud size={28} className="text-purple-400" />
-          </div>
-          <div className="text-center">
-            <p className="text-white font-medium mb-1">Drag and drop your project ZIP or PDF</p>
-            <p className="text-sm text-zinc-500">Maximum file size: 50MB</p>
-          </div>
-          <button className="mt-2 px-6 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-full text-sm font-bold transition-all shadow-[0_0_20px_rgba(168,85,247,0.3)]">
-            Browse Files
-          </button>
-        </div>
-      </div>
-
-      {/* Daily Quests */}
-      <div className="col-span-1 bg-[#0C0C12]/80 border border-white/10 rounded-3xl p-8 group overflow-hidden relative">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/10 rounded-full blur-[40px] -mr-16 -mt-16" />
-        <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-          <Target className="text-yellow-500" /> Daily Quests
-        </h2>
-        <div className="space-y-4 relative z-10">
-          {[
-            { task: "Submit W3 Assignment", xp: 150, done: false },
-            { task: "Review 1 Peer Project", xp: 50, done: true },
-            { task: "Attend Live Session", xp: 100, done: false },
-          ].map((quest, i) => (
-            <div key={i} className={`flex items-center justify-between p-3 rounded-xl border ${quest.done ? 'bg-white/5 border-white/5 opacity-50' : 'bg-yellow-500/10 border-yellow-500/20'} transition-colors`}>
-              <div className="flex items-center gap-3">
-                <div className={`w-5 h-5 rounded flex items-center justify-center ${quest.done ? 'bg-white/20' : 'border border-yellow-500/50'}`}>
-                  {quest.done && <CheckCircle2 size={12} />}
-                </div>
-                <span className={`text-sm ${quest.done ? 'line-through text-zinc-500' : 'text-white'}`}>{quest.task}</span>
-              </div>
-              <span className={`text-xs font-bold font-mono ${quest.done ? 'text-zinc-600' : 'text-yellow-500'}`}>+{quest.xp} XP</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-
-    {/* Gamified Skill Tree */}
-    <div className="bg-[#0C0C12]/80 border border-white/10 rounded-3xl p-8">
-      <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-        <GitBranch className="text-purple-400" /> Skill Tree
-      </h2>
-      <div className="relative flex justify-between items-center px-4">
-        <div className="absolute top-1/2 left-8 right-8 h-1 bg-white/5 -translate-y-1/2 z-0" />
-        <div className="absolute top-1/2 left-8 w-[40%] h-1 bg-purple-500 shadow-[0_0_10px_rgba(168,85,247,0.5)] -translate-y-1/2 z-0" />
+        <h2 className="text-3xl md:text-5xl font-black text-white mb-4">Welcome back, {student.name}!</h2>
+        <p className="text-purple-400 font-mono text-sm md:text-base">Buildicy Internship Portal • {student.track}</p>
         
-        {[
-          { label: "W1: Core", unlocked: true },
-          { label: "W2: Logic", unlocked: true },
-          { label: "W3: Build", unlocked: false },
-          { label: "W4: Career", unlocked: false }
-        ].map((node, i) => (
-          <div key={i} className="relative z-10 flex flex-col items-center gap-3">
-            <div className={`w-12 h-12 rounded-full flex items-center justify-center border-4 ${node.unlocked ? 'bg-purple-900 border-purple-500 shadow-[0_0_20px_rgba(168,85,247,0.4)]' : 'bg-[#12121A] border-white/10'}`}>
-              {node.unlocked ? <CheckCircle2 size={20} className="text-white" /> : <FileLock2 size={20} className="text-zinc-600" />}
-            </div>
-            <span className={`text-xs font-bold font-mono tracking-widest uppercase ${node.unlocked ? 'text-purple-400' : 'text-zinc-600'}`}>{node.label}</span>
+        <div className="mt-12 p-8 bg-white/[0.02] border border-white/10 rounded-3xl max-w-3xl">
+          <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+            <LayoutDashboard className="text-purple-400" size={24} /> Dashboard Overview
+          </h3>
+          <p className="text-zinc-400 leading-relaxed text-lg">
+            You are currently enrolled in <strong className="text-white bg-white/5 px-2 py-1 rounded font-mono">{student.cohort}</strong>. 
+          </p>
+          <div className="mt-6 space-y-3 text-zinc-500">
+            <p className="flex items-center gap-2"><BookOpen size={16} className="text-blue-400"/> Navigate to <strong>The Vault</strong> to access your exclusive learning materials.</p>
+            <p className="flex items-center gap-2"><UploadCloud size={16} className="text-green-400"/> Use the <strong>Dropzone</strong> to view active tasks and submit your completed assignments.</p>
           </div>
-        ))}
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 const Vault = ({ materials }: { materials: Material[] }) => {
   const student = getStudentSession();
@@ -805,7 +695,6 @@ const ProfileCustomization = () => (
 export default function StudentDashboard() {
   const [activeTab, setActiveTab] = useState('mission');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isAlumniMode, setIsAlumniMode] = useState(false);
   const { isLowEnd } = usePerformance();
   const navigate = useNavigate();
 
@@ -857,23 +746,7 @@ export default function StudentDashboard() {
     { id: 'dropzone', label: 'Dropzone', icon: UploadCloud }
   ];
 
-  const ALUMNI_TABS = [
-    { id: 'alumni_jobs', label: 'Exclusive Jobs', icon: Briefcase },
-    { id: 'alumni_network', label: 'Alumni Directory', icon: Users },
-    { id: 'portfolio', label: 'My Portfolio', icon: Globe },
-  ];
-
-  // Auto-switch tab if current tab doesn't exist in new mode
-  useEffect(() => {
-    if (isAlumniMode && !ALUMNI_TABS.find(t => t.id === activeTab)) setActiveTab('alumni_jobs');
-    if (!isAlumniMode && !STUDENT_TABS.find(t => t.id === activeTab)) setActiveTab('mission');
-  }, [isAlumniMode]);
-
   if (!student) return null;
-
-  const TABS = isAlumniMode ? ALUMNI_TABS : STUDENT_TABS;
-
-
 
   return (
     <PageTransition>
@@ -884,15 +757,14 @@ export default function StudentDashboard() {
         
         {/* Brand */}
         <div className="p-8 border-b border-white/5 relative overflow-hidden">
-          {isAlumniMode && <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/20 to-amber-500/5 pointer-events-none" />}
           <div className="flex items-center gap-3 relative z-10">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(168,85,247,0.4)] ${isAlumniMode ? 'bg-yellow-600 shadow-yellow-500/40' : 'bg-purple-600'}`}>
-              {isAlumniMode ? <GraduationCap size={20} className="text-white" /> : <Sparkles size={20} className="text-white" />}
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(168,85,247,0.4)] bg-purple-600">
+              <Sparkles size={20} className="text-white" />
             </div>
             <div>
               <h1 className="font-bold tracking-tight">Buildicy OS</h1>
-              <p className={`text-[10px] uppercase tracking-widest font-mono ${isAlumniMode ? 'text-yellow-500' : 'text-purple-400'}`}>
-                {isAlumniMode ? 'Alumni Network' : 'Student Portal'}
+              <p className="text-[10px] uppercase tracking-widest font-mono text-purple-400">
+                Student Portal
               </p>
             </div>
           </div>
@@ -909,7 +781,7 @@ export default function StudentDashboard() {
 
         {/* Navigation Tabs */}
         <nav className="flex-1 px-4 py-8 space-y-2">
-          {TABS.map(tab => (
+          {STUDENT_TABS.map(tab => (
             <button
               key={tab.id}
               onClick={() => {
@@ -918,7 +790,7 @@ export default function StudentDashboard() {
               }}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-medium ${
                 activeTab === tab.id 
-                  ? (isAlumniMode ? 'bg-yellow-600 text-white shadow-[0_0_15px_rgba(202,138,4,0.3)]' : 'bg-purple-600 text-white shadow-[0_0_15px_rgba(168,85,247,0.3)]') 
+                  ? 'bg-purple-600 text-white shadow-[0_0_15px_rgba(168,85,247,0.3)]' 
                   : 'text-zinc-400 hover:bg-white/5 hover:text-white'
               }`}
             >
@@ -928,14 +800,8 @@ export default function StudentDashboard() {
           ))}
         </nav>
 
-        {/* Alumni Toggle & Logout */}
+        {/* Logout */}
         <div className="p-4 mt-auto border-t border-white/5 space-y-2">
-          <button 
-            onClick={() => setIsAlumniMode(!isAlumniMode)}
-            className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-colors ${isAlumniMode ? 'bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20' : 'bg-white/5 text-zinc-300 hover:bg-white/10'}`}
-          >
-            <GraduationCap size={18} /> {isAlumniMode ? 'Exit Alumni Mode' : 'Simulate Alumni Mode'}
-          </button>
           <button 
             onClick={() => {
               sessionStorage.removeItem("studentAuth");
@@ -968,26 +834,20 @@ export default function StudentDashboard() {
       <main className="flex-1 p-6 md:p-12 overflow-hidden relative">
         {/* Subtle background glow based on tab/mode */}
         {!isLowEnd && (
-          <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] rounded-full blur-[120px] pointer-events-none -z-10 ${isAlumniMode ? 'bg-yellow-900/10' : 'bg-purple-900/10'}`} />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] rounded-full blur-[120px] pointer-events-none -z-10 bg-purple-900/10" />
         )}
 
         <div className="max-w-5xl mx-auto h-full">
           {/* Header */}
           <header className="mb-8">
             <div className="flex items-center gap-2 text-sm text-zinc-500 mb-2 font-mono uppercase tracking-widest">
-              <span>Portal</span> <ChevronRight size={12} /> <span className={isAlumniMode ? 'text-yellow-500' : 'text-purple-400'}>{TABS.find(t => t.id === activeTab)?.label}</span>
+              <span>Portal</span> <ChevronRight size={12} /> <span className="text-purple-400">{STUDENT_TABS.find(t => t.id === activeTab)?.label}</span>
             </div>
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
               <h1 className="text-3xl font-black text-white">
-                {isAlumniMode ? `Welcome to the Alumni Network, ${student.name.split(' ')[0]}.` : `Welcome back, ${student.name.split(' ')[0]}.`}
+                Welcome back, {student.name.split(' ')[0]}.
               </h1>
               <div className="flex items-center gap-3 w-full mt-2 md:mt-0 md:w-auto">
-                <button className="flex-1 md:flex-none p-3 md:px-4 md:py-2 bg-white/5 border border-white/10 rounded-xl md:rounded-full hover:bg-white/10 transition-colors flex items-center justify-center gap-2 group whitespace-nowrap">
-                  <div className="w-5 h-5 rounded flex items-center justify-center bg-yellow-500/20 group-hover:bg-yellow-500/30 transition-colors">
-                    <Star size={12} className="text-yellow-500" />
-                  </div>
-                  <span className="text-sm font-bold text-white">{student.xp || 0} <span className="text-zinc-500">XP</span></span>
-                </button>
                 <button 
                   onClick={() => {
                     sessionStorage.removeItem("studentAuth");
@@ -1015,23 +875,6 @@ export default function StudentDashboard() {
                 {activeTab === 'mission' && <MissionControl />}
                 {activeTab === 'vault' && <Vault materials={materials} />}
                 {activeTab === 'dropzone' && <Dropzone assignments={assignments} student={student} />}
-                
-                {/* Mock Alumni Views */}
-                {activeTab === 'alumni_jobs' && (
-                  <div className="bg-[#0C0C12]/80 border border-white/10 rounded-3xl p-12 text-center">
-                    <Briefcase size={48} className="text-yellow-500 mx-auto mb-4" />
-                    <h2 className="text-2xl font-bold text-white mb-2">Exclusive Partner Jobs</h2>
-                    <p className="text-zinc-400">As a certified Buildicy Alumni, you have priority access to full-time roles and freelance overflow gigs from our agency.</p>
-                    <button className="mt-6 px-6 py-3 bg-yellow-600 hover:bg-yellow-500 text-white font-bold rounded-xl shadow-[0_0_20px_rgba(202,138,4,0.3)]">Browse 14 Open Roles</button>
-                  </div>
-                )}
-                {activeTab === 'alumni_network' && (
-                  <div className="bg-[#0C0C12]/80 border border-white/10 rounded-3xl p-12 text-center">
-                    <Users size={48} className="text-yellow-500 mx-auto mb-4" />
-                    <h2 className="text-2xl font-bold text-white mb-2">The Directory</h2>
-                    <p className="text-zinc-400">Network with 4,200+ other alumni. Find co-founders, hire talent, or join an open-source project.</p>
-                  </div>
-                )}
               </motion.div>
             </AnimatePresence>
           </div>
