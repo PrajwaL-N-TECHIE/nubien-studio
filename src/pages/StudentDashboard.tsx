@@ -11,9 +11,9 @@ import {
 import { usePerformance } from "@/context/PerformanceContext";
 import PageTransition from "@/components/PageTransition";
 import { useNavigate } from "react-router-dom";
-import { db, storage } from "@/lib/firebase";
+import { db } from "@/lib/firebase";
 import { collection, query, where, getDocs, addDoc, serverTimestamp, orderBy } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+
 
 interface StudentData {
   id: string;
@@ -286,9 +286,20 @@ const Dropzone = ({ assignments, student }: { assignments: Assignment[], student
     setIsUploading(true);
 
     try {
-      const storageRef = ref(storage, `submissions/${student.id}_${Date.now()}_${file.name}`);
-      const uploadResult = await uploadBytes(storageRef, file);
-      const url = await getDownloadURL(uploadResult.ref);
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', 'lms_unsigned');
+      formData.append('cloud_name', 'dqts6umdd');
+
+      const res = await fetch('https://api.cloudinary.com/v1_1/dqts6umdd/auto/upload', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error?.message || "Cloudinary upload failed");
+      
+      const url = data.secure_url;
 
       const newSub = {
         assignment_id: selectedAssignId,

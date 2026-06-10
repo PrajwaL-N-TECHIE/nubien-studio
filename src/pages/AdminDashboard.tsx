@@ -3,9 +3,8 @@ import { motion } from "framer-motion";
 import { Lock, ShieldAlert, ArrowRight, Eye, EyeOff, Search, LogOut, Trash2, Info, X, Edit2, BookOpen, UploadCloud, CheckCircle2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-import { db, storage } from "@/lib/firebase";
+import { db } from "@/lib/firebase";
 import { collection, getDocs, deleteDoc, doc, query, orderBy, updateDoc, addDoc, serverTimestamp } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 interface InternshipRecord {
   id: string;
@@ -280,9 +279,20 @@ const AdminDashboard = () => {
       let finalUrl = newMatUrl;
 
       if (newMatType === 'pdf' && newMatFile) {
-        const storageRef = ref(storage, `materials/${Date.now()}_${newMatFile.name}`);
-        const uploadResult = await uploadBytes(storageRef, newMatFile);
-        finalUrl = await getDownloadURL(uploadResult.ref);
+        const formData = new FormData();
+        formData.append('file', newMatFile);
+        formData.append('upload_preset', 'lms_unsigned');
+        formData.append('cloud_name', 'dqts6umdd');
+
+        const res = await fetch('https://api.cloudinary.com/v1_1/dqts6umdd/auto/upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error?.message || "Cloudinary upload failed");
+        
+        finalUrl = data.secure_url;
       }
 
       if (!finalUrl && newMatType !== 'pdf') {
