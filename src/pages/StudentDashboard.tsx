@@ -49,6 +49,7 @@ interface Submission {
   student_id: string;
   file_url: string;
   status: 'pending' | 'approved' | 'rejected';
+  feedback?: string;
 }
 
 const getStudentSession = (): StudentData => {
@@ -149,9 +150,21 @@ const MissionControl = ({ materials, assignments, submissions }: { materials: Ma
                 </div>
               </div>
             </div>
-            <div className="mt-6 space-y-3 text-zinc-500">
-              <p className="flex items-center gap-2"><BookOpen size={16} className="text-blue-400"/> Navigate to <strong>The Vault</strong> to access your exclusive learning materials.</p>
-              <p className="flex items-center gap-2"><UploadCloud size={16} className="text-green-400"/> Use the <strong>Dropzone</strong> to view active tasks and submit your completed assignments.</p>
+            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="p-4 bg-white/5 border border-white/10 rounded-2xl flex items-start gap-4 hover:bg-white/10 transition-colors group">
+                <div className="p-2 bg-blue-500/20 text-blue-400 rounded-xl group-hover:scale-110 transition-transform"><BookOpen size={20}/></div>
+                <div>
+                  <h4 className="text-white font-bold text-sm mb-1">The Vault</h4>
+                  <p className="text-xs text-zinc-400 leading-relaxed">Access your exclusive learning materials and premium resources.</p>
+                </div>
+              </div>
+              <div className="p-4 bg-white/5 border border-white/10 rounded-2xl flex items-start gap-4 hover:bg-white/10 transition-colors group">
+                <div className="p-2 bg-green-500/20 text-green-400 rounded-xl group-hover:scale-110 transition-transform"><UploadCloud size={20}/></div>
+                <div>
+                  <h4 className="text-white font-bold text-sm mb-1">The Dropzone</h4>
+                  <p className="text-xs text-zinc-400 leading-relaxed">View active tasks and submit your completed assignments for review.</p>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -414,40 +427,56 @@ const Dropzone = ({ assignments, student, submissions, setSubmissions }: { assig
           </div>
         </div>
 
-        <div className="bg-[#0a0a0f]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-6 h-fit sticky top-24">
-          <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2"><UploadCloud size={20} className="text-blue-400" /> Submit Work</h3>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-xs font-bold text-white/40 uppercase mb-2">Select Assignment</label>
-              <select required value={selectedAssignId} onChange={e => setSelectedAssignId(e.target.value)} className="w-full bg-[#050507] border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-blue-500/50">
-                <option value="">-- Choose Assignment --</option>
-                {assignments.map(a => (
-                  <option key={a.id} value={a.id}>{a.title} (Due: {a.due_date})</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-white/40 uppercase mb-2">Upload File (PDF/ZIP)</label>
-              <input type="file" required onChange={e => setFile(e.target.files?.[0] || null)} className="w-full bg-[#050507] border border-white/10 rounded-xl py-2 px-4 text-white file:mr-4 file:py-1 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-blue-500/20 file:text-blue-400" />
-            </div>
-            <button type="submit" disabled={isUploading || !file || !selectedAssignId} className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold transition-all disabled:opacity-50">
-              {isUploading ? "Uploading..." : "Submit to Dropzone"}
-            </button>
-          </form>
-        </div>
+        <div className="space-y-8 lg:col-span-1">
+          <div className="bg-[#0a0a0f]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-[60px] -mr-16 -mt-16 pointer-events-none" />
+            <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2 relative z-10"><UploadCloud size={20} className="text-blue-400" /> Submit Work</h3>
+            <form onSubmit={handleSubmit} className="space-y-5 relative z-10">
+              <div>
+                <label className="block text-[10px] font-bold text-white/40 uppercase mb-2 tracking-widest">Select Assignment</label>
+                <select required value={selectedAssignId} onChange={e => setSelectedAssignId(e.target.value)} className="w-full bg-[#050507] border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-blue-500/50 text-sm">
+                  <option value="">-- Choose Assignment --</option>
+                  {assignments.map(a => (
+                    <option key={a.id} value={a.id}>{a.title}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-white/40 uppercase mb-2 tracking-widest">Upload File (PDF/ZIP)</label>
+                <input type="file" required onChange={e => setFile(e.target.files?.[0] || null)} className="w-full bg-[#050507] border border-white/10 rounded-xl py-2 px-4 text-white file:mr-4 file:py-1.5 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-blue-500/20 file:text-blue-400 text-sm" />
+              </div>
+              <button type="submit" disabled={isUploading || !file || !selectedAssignId} className="w-full py-3.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold transition-all shadow-[0_0_20px_rgba(37,99,235,0.2)] disabled:opacity-50 disabled:shadow-none mt-2">
+                {isUploading ? "Uploading..." : "Submit to Dropzone"}
+              </button>
+            </form>
+          </div>
 
-        <div className="bg-[#0a0a0f]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-6">
-          <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2"><CheckCircle2 size={20} className="text-green-400" /> Submission Status</h3>
-          <div className="space-y-4">
+        <div className="bg-[#0a0a0f]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/10 rounded-full blur-[60px] -mr-16 -mt-16 pointer-events-none" />
+          <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2 relative z-10"><CheckCircle2 size={20} className="text-green-400" /> Submission Status</h3>
+          <div className="space-y-4 relative z-10">
             {submissions.length === 0 && <p className="text-zinc-500 text-sm">No submissions yet.</p>}
             {submissions.map((sub, i) => {
               const assign = assignments.find(a => a.id === sub.assignment_id);
               return (
-                <div key={i} className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/10">
-                  <div>
-                    <h4 className="font-bold text-white">{assign?.title || "Unknown Assignment"}</h4>
-                    <p className="text-xs text-zinc-500 uppercase mt-1">Status: <span className={sub.status === 'approved' ? 'text-green-400' : sub.status === 'rejected' ? 'text-red-400' : 'text-yellow-400'}>{sub.status}</span></p>
+                <div key={i} className="flex flex-col p-5 bg-white/5 rounded-2xl border border-white/10 gap-3">
+                  <div className="flex items-start justify-between gap-4">
+                    <h4 className="font-bold text-white text-sm">{assign?.title || "Unknown Assignment"}</h4>
+                    <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-widest whitespace-nowrap ${
+                      sub.status === 'approved' ? 'bg-green-500/20 text-green-400 border border-green-500/20' : 
+                      sub.status === 'rejected' ? 'bg-red-500/20 text-red-400 border border-red-500/20' : 
+                      'bg-yellow-500/20 text-yellow-400 border border-yellow-500/20'
+                    }`}>
+                      {sub.status}
+                    </span>
                   </div>
+                  {sub.feedback && (
+                    <div className="bg-[#050507] rounded-xl p-3 border border-white/5 relative mt-1">
+                      <div className="absolute -left-[1px] top-1/2 -translate-y-1/2 w-[3px] h-3/4 bg-purple-500 rounded-r-md"></div>
+                      <p className="text-xs text-zinc-300 leading-relaxed"><span className="text-purple-400 font-bold uppercase text-[10px] tracking-widest mb-1 block">Admin Note</span>"{sub.feedback}"</p>
+                    </div>
+                  )}
+                </div>
                   <a href={sub.file_url} target="_blank" rel="noopener noreferrer" className="p-2 bg-white/10 hover:bg-white/20 rounded-lg text-white transition-colors">
                     <FileText size={16} />
                   </a>

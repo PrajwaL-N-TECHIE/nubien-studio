@@ -57,6 +57,7 @@ interface Submission {
   file_url: string;
   status: 'pending' | 'approved' | 'rejected';
   submitted_at: any;
+  feedback?: string;
 }
 
 const trackNames: Record<string, string> = {
@@ -291,9 +292,12 @@ const AdminDashboard = () => {
   };
 
   const handleUpdateSubmissionStatus = async (id: string, status: 'approved' | 'rejected') => {
+    const feedback = window.prompt(`Enter feedback for this student (optional):`, "");
+    if (feedback === null) return; // User cancelled
+
     try {
-      await updateDoc(doc(db, "submissions", id), { status });
-      setSubmissions(prev => prev.map(s => s.id === id ? { ...s, status } : s));
+      await updateDoc(doc(db, "submissions", id), { status, feedback });
+      setSubmissions(prev => prev.map(s => s.id === id ? { ...s, status, feedback } : s));
     } catch (error) {
       console.error("Error updating submission:", error);
       alert("Failed to update status.");

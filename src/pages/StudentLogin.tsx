@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, Fingerprint, Lock, ShieldCheck, ArrowRight, ScanLine } from "lucide-react";
+import { User, Lock, ArrowRight, CheckCircle2, Loader2, ShieldCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import PageTransition from "@/components/PageTransition";
 import { db } from "@/lib/firebase";
@@ -17,14 +17,14 @@ export default function StudentLogin() {
     if (!studentId.trim()) return;
 
     setIsAuthenticating(true);
-    setStatusText("Verifying Buildicy Identity...");
+    setStatusText("Verifying credentials...");
 
     try {
       const q = query(collection(db, "internships"), where("registration_id", "==", studentId.trim().toUpperCase()));
       const querySnapshot = await getDocs(q);
 
       if (querySnapshot.empty) {
-        setStatusText("Access Denied: Invalid ID");
+        setStatusText("Invalid Registration ID.");
         setTimeout(() => {
           setIsAuthenticating(false);
           setStatusText("");
@@ -35,7 +35,7 @@ export default function StudentLogin() {
       const studentDoc = querySnapshot.docs[0];
       const studentData = { id: studentDoc.id, ...studentDoc.data() };
 
-      setStatusText("Decrypting clearance level...");
+      setStatusText("Loading student profile...");
       
       setTimeout(() => {
         setStatusText("Access Granted.");
@@ -47,7 +47,7 @@ export default function StudentLogin() {
       
     } catch (error) {
       console.error("Login Error:", error);
-      setStatusText("System Error: Connection Failed");
+      setStatusText("Connection Failed. Please try again.");
       setTimeout(() => {
         setIsAuthenticating(false);
         setStatusText("");
@@ -58,35 +58,38 @@ export default function StudentLogin() {
   return (
     <PageTransition>
       <div className="min-h-screen bg-[#050507] flex items-center justify-center relative overflow-hidden text-white selection:bg-purple-500/30">
-        {/* Background Grid & Glow */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-purple-900/10 rounded-full blur-[150px] pointer-events-none" />
+        {/* Subtle Background Elements */}
+        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-purple-600/5 rounded-full blur-[150px] pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-blue-600/5 rounded-full blur-[150px] pointer-events-none" />
 
         <div className="relative z-10 w-full max-w-md p-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className="bg-[#0C0C12]/80 backdrop-blur-xl border border-white/10 p-8 rounded-3xl shadow-2xl relative overflow-hidden"
+            className="bg-[#0C0C12]/80 backdrop-blur-2xl border border-white/10 p-8 md:p-10 rounded-3xl shadow-2xl relative overflow-hidden"
           >
-            {/* Decrypting Overlay */}
+            {/* Loading Overlay */}
             <AnimatePresence>
               {isAuthenticating && (
                 <motion.div 
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="absolute inset-0 z-50 bg-[#0C0C12]/95 backdrop-blur-md flex flex-col items-center justify-center border border-purple-500/30 rounded-3xl"
+                  className="absolute inset-0 z-50 bg-[#0C0C12]/95 backdrop-blur-xl flex flex-col items-center justify-center border border-white/10 rounded-3xl"
                 >
-                  <div className="relative mb-6">
-                    <ScanLine size={48} className="text-purple-500 animate-pulse" />
-                    <motion.div 
-                      animate={{ top: ['0%', '100%', '0%'] }}
-                      transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                      className="absolute left-0 right-0 h-0.5 bg-purple-400 shadow-[0_0_10px_rgba(168,85,247,0.8)]"
-                    />
-                  </div>
-                  <p className="text-sm font-mono text-purple-400 uppercase tracking-widest font-bold">
+                  {statusText === "Access Granted." ? (
+                    <CheckCircle2 size={48} className="text-green-500 mb-6" />
+                  ) : statusText.includes("Invalid") || statusText.includes("Failed") ? (
+                    <ShieldCheck size={48} className="text-red-500 mb-6" />
+                  ) : (
+                    <Loader2 size={48} className="text-purple-500 animate-spin mb-6" />
+                  )}
+                  <p className={`text-sm font-bold tracking-wide ${
+                    statusText === "Access Granted." ? "text-green-400" :
+                    statusText.includes("Invalid") || statusText.includes("Failed") ? "text-red-400" :
+                    "text-purple-400"
+                  }`}>
                     {statusText}
                   </p>
                 </motion.div>
@@ -94,29 +97,28 @@ export default function StudentLogin() {
             </AnimatePresence>
 
             <div className="flex flex-col items-center text-center mb-10">
-              <div className="w-16 h-16 bg-purple-600/10 border border-purple-500/20 rounded-2xl flex items-center justify-center mb-6 relative">
-                <Sparkles className="text-purple-400" size={32} />
-                <div className="absolute inset-0 bg-purple-500/20 blur-xl rounded-full" />
+              <div className="w-16 h-16 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center mb-6 relative group">
+                <User className="text-white/80 group-hover:text-white transition-colors" size={32} />
               </div>
-              <h1 className="text-2xl font-black text-white mb-2 tracking-tight">Buildicy OS Gateway</h1>
-              <p className="text-zinc-400 text-sm">Enter your secure registration ID to access the Student Command Center.</p>
+              <h1 className="text-2xl font-bold text-white mb-2 tracking-tight">Internship Portal</h1>
+              <p className="text-zinc-400 text-sm">Sign in with your Buildicy Registration ID</p>
             </div>
 
             <form onSubmit={handleLogin} className="space-y-6">
               <div className="space-y-2">
-                <label className="text-xs font-mono uppercase tracking-widest text-zinc-500 font-bold ml-1">
-                  Unique Buildicy ID
+                <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 ml-1">
+                  Registration ID
                 </label>
                 <div className="relative group">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <Fingerprint className="text-zinc-500 group-focus-within:text-purple-400 transition-colors" size={20} />
+                    <User className="text-zinc-500 group-focus-within:text-purple-400 transition-colors" size={18} />
                   </div>
                   <input
                     type="text"
                     value={studentId}
                     onChange={(e) => setStudentId(e.target.value.toUpperCase())}
                     placeholder="e.g. BLD-8492X"
-                    className="w-full bg-[#1A1A24]/60 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white placeholder-zinc-600 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all font-mono tracking-wider"
+                    className="w-full bg-[#050507] border border-white/10 rounded-xl py-3.5 pl-12 pr-10 text-white placeholder-zinc-600 focus:outline-none focus:border-purple-500/50 transition-all font-mono text-sm"
                     required
                   />
                   <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
@@ -128,16 +130,17 @@ export default function StudentLogin() {
               <button
                 type="submit"
                 disabled={!studentId.trim() || isAuthenticating}
-                className="w-full py-4 bg-purple-600 hover:bg-purple-500 text-white rounded-2xl font-bold flex items-center justify-center gap-2 transition-all shadow-[0_0_30px_rgba(168,85,247,0.3)] disabled:opacity-50 disabled:cursor-not-allowed group"
+                className="w-full py-3.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
               >
-                Initialize Uplink
+                Sign In
                 <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
               </button>
             </form>
 
-            <div className="mt-8 flex items-center justify-center gap-2 text-xs text-zinc-500 font-mono">
-              <ShieldCheck size={14} className="text-green-500" />
-              <span>AES-256 Encrypted Connection</span>
+            <div className="mt-8 text-center">
+              <p className="text-xs text-zinc-500">
+                Having trouble? Contact your program coordinator.
+              </p>
             </div>
           </motion.div>
         </div>
