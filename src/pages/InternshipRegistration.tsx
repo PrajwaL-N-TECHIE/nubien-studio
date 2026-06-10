@@ -8,7 +8,7 @@ import jsPDF from 'jspdf';
 import { useNavigate } from "react-router-dom";
 
 import { db } from "@/lib/firebase";
-import { collection, query, where, getDocs, addDoc, serverTimestamp, doc, getDoc } from "firebase/firestore";
+import { collection, query, where, getDocs, addDoc, serverTimestamp } from "firebase/firestore";
 import { audio } from "@/utils/audio";
 
 const FAQs = [
@@ -58,7 +58,6 @@ const InternshipRegistration = () => {
   const [referralStatus, setReferralStatus] = useState<'idle' | 'verifying' | 'valid' | 'invalid'>('idle');
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [countryCode, setCountryCode] = useState("+91");
-  const [currentCohort, setCurrentCohort] = useState("Summer 2026");
   const navigate = useNavigate();
 
   const trackPricing: Record<string, string> = {
@@ -92,20 +91,7 @@ const InternshipRegistration = () => {
       }
     };
 
-    const fetchCohortSetting = async () => {
-      try {
-        const docRef = doc(db, "settings", "global");
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists() && docSnap.data().current_cohort) {
-          setCurrentCohort(docSnap.data().current_cohort);
-        }
-      } catch (err) {
-        console.error("Failed to fetch cohort setting", err);
-      }
-    };
-
     fetchStats();
-    fetchCohortSetting();
   }, []);
 
   const handleVerifyReferral = async (code: string) => {
@@ -263,7 +249,7 @@ const InternshipRegistration = () => {
         receipt: compressedBase64Receipt,
         registration_id: registrationId,
         referral_code: referralStatus === 'valid' && referralCode ? referralCode : null,
-        cohort: currentCohort,
+        cohort: "batch-1",
         created_at: serverTimestamp()
       });
 
