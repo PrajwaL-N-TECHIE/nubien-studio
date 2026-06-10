@@ -850,8 +850,6 @@ export default function StudentDashboard() {
     fetchAssignments();
   }, [navigate]);
 
-  if (!student) return null;
-
   const STUDENT_TABS = [
     { id: 'mission', label: 'Mission Control', icon: LayoutDashboard },
     { id: 'vault', label: 'The Vault', icon: BookOpen },
@@ -864,13 +862,17 @@ export default function StudentDashboard() {
     { id: 'portfolio', label: 'My Portfolio', icon: Globe },
   ];
 
-  const TABS = isAlumniMode ? ALUMNI_TABS : STUDENT_TABS;
-
   // Auto-switch tab if current tab doesn't exist in new mode
   useEffect(() => {
     if (isAlumniMode && !ALUMNI_TABS.find(t => t.id === activeTab)) setActiveTab('alumni_jobs');
     if (!isAlumniMode && !STUDENT_TABS.find(t => t.id === activeTab)) setActiveTab('mission');
   }, [isAlumniMode]);
+
+  if (!student) return null;
+
+  const TABS = isAlumniMode ? ALUMNI_TABS : STUDENT_TABS;
+
+
 
   return (
     <PageTransition>
