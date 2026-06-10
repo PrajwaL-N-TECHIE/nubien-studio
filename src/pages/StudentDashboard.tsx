@@ -39,6 +39,7 @@ interface Assignment {
   description: string;
   due_date: string;
   cohort: string;
+  attachment_url?: string;
 }
 
 interface Submission {
@@ -159,10 +160,22 @@ const MissionControl = ({ materials, assignments }: { materials: Material[], ass
                   <div key={a.id} className="p-4 bg-white/5 border border-white/5 rounded-2xl flex justify-between items-center group hover:border-purple-500/30 transition-colors">
                     <div>
                       <p className="text-white font-medium text-sm">{a.title}</p>
-                      <p className="text-xs text-zinc-500 mt-1 flex items-center gap-1"><Clock size={12}/> Due: {a.deadline ? new Date(a.deadline).toLocaleDateString() : "No deadline"}</p>
+                      <p className="text-xs text-zinc-500 mt-1 flex items-center gap-1"><Clock size={12}/> Due: {a.due_date ? new Date(a.due_date).toLocaleDateString() : "No deadline"}</p>
                     </div>
-                    <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-zinc-400 group-hover:text-purple-400 transition-colors">
-                      <ChevronRight size={16} />
+                    <div className="flex items-center gap-2">
+                      {a.attachment_url && (
+                        <a 
+                          href={a.attachment_url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="px-3 py-1.5 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border border-purple-500/20 rounded-lg text-xs font-bold transition-colors flex items-center gap-1"
+                        >
+                          <FileText size={12} /> Attachment
+                        </a>
+                      )}
+                      <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-zinc-400 group-hover:text-purple-400 transition-colors">
+                        <ChevronRight size={16} />
+                      </div>
                     </div>
                   </div>
                 ))}

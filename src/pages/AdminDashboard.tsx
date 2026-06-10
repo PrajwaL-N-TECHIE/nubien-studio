@@ -44,6 +44,7 @@ interface Assignment {
   description: string;
   due_date: string;
   cohort: string;
+  attachment_url?: string;
   created_at: any;
 }
 
@@ -93,6 +94,7 @@ const AdminDashboard = () => {
   const [newAssignDesc, setNewAssignDesc] = useState("");
   const [newAssignDueDate, setNewAssignDueDate] = useState("");
   const [newAssignCohort, setNewAssignCohort] = useState("batch-1");
+  const [newAssignFile, setNewAssignFile] = useState<File | null>(null);
   const [isCreatingAssign, setIsCreatingAssign] = useState(false);
   
   // Submissions State
@@ -230,16 +232,43 @@ const AdminDashboard = () => {
     if (!newAssignTitle || !newAssignCohort || !newAssignDueDate) return;
     setIsCreatingAssign(true);
     try {
-      await addDoc(collection(db, "assignments"), {
+      let attachment_url = "";
+      
+      if (newAssignFile) {
+        const formData = new FormData();
+        formData.append('file', newAssignFile);
+        formData.append('upload_preset', 'lms_unsigned');
+        formData.append('cloud_name', 'dqts6umdd');
+
+        const res = await fetch('https://api.cloudinary.com/v1_1/dqts6umdd/auto/upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error?.message || "Cloudinary upload failed");
+        
+        attachment_url = data.secure_url;
+      }
+
+      const assignData: any = {
         title: newAssignTitle,
         description: newAssignDesc,
         due_date: newAssignDueDate,
         cohort: newAssignCohort,
         created_at: serverTimestamp()
-      });
+      };
+      
+      if (attachment_url) {
+        assignData.attachment_url = attachment_url;
+      }
+
+      await addDoc(collection(db, "assignments"), assignData);
+      
       setNewAssignTitle("");
       setNewAssignDesc("");
       setNewAssignDueDate("");
+      setNewAssignFile(null);
       await fetchAssignments();
       alert("Assignment created successfully!");
     } catch (error) {
@@ -773,6 +802,11 @@ const AdminDashboard = () => {
                 <div>
                   <label className="block text-xs font-bold text-white/40 uppercase mb-2">Assign to Cohort</label>
                   <input type="text" required value={newAssignCohort} onChange={e => setNewAssignCohort(e.target.value)} className="w-full bg-[#050507] border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-purple-500/50" />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-bold text-white/40 uppercase mb-2">Attachment (Optional)</label>
+                  <input type="file" onChange={e => setNewAssignFile(e.target.files?.[0] || null)} className="w-full bg-[#050507] border border-white/10 rounded-xl py-2 px-4 text-white file:mr-4 file:py-1 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-purple-500/20 file:text-purple-400" />
+                  <p className="text-[10px] text-white/30 mt-2">Attach PDF, image, or ZIP file to this assignment.</p>
                 </div>
                 <div className="md:col-span-2 flex justify-end mt-2">
                   <button type="submit" disabled={isCreatingAssign} className="px-8 py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold transition-all disabled:opacity-50">
