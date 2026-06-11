@@ -504,6 +504,7 @@ const AdminDashboard = () => {
         created_at: serverTimestamp()
       };
 
+      let existingAccount = false;
       // Create Firebase Auth account for student WITHOUT logging admin out
       try {
         const secondaryApp = initializeApp(firebaseConfig, `SecondaryApp-${Date.now()}`);
@@ -511,13 +512,21 @@ const AdminDashboard = () => {
         await createUserWithEmailAndPassword(secondaryAuth, newStudent.email, registrationId);
         await signOut(secondaryAuth);
       } catch (authError: any) {
-        throw new Error(authError.message || "Failed to create secure student account. The email might already be in use.");
+        if (authError.code === 'auth/email-already-in-use') {
+          existingAccount = true;
+        } else {
+          throw new Error(authError.message || "Failed to create secure student account.");
+        }
       }
 
       await addDoc(collection(db, "internships"), studentData);
       await addDoc(collection(db, "internships_temp"), studentData);
 
-      alert("Student added successfully! Their password is their Registration ID: " + registrationId);
+      if (existingAccount) {
+        alert("Student added to database! \n\nNOTE: A login account for this email already existed in the system (likely from when you first added them). Their password remains whatever Registration ID was used the VERY FIRST time they were created.");
+      } else {
+        alert("Student added successfully! Their password is their Registration ID: " + registrationId);
+      }
       setIsAddingStudent(false);
       setNewStudent({ name: "", email: "", phone: "", track: "uiux", college: "", degree: "", reason: "", cohort: "batch-1", referral_code: "", registration_id: "" });
       setNewStudentReceiptFile(null);
