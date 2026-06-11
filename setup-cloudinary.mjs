@@ -2,8 +2,8 @@ import { v2 as cloudinary } from 'cloudinary';
 
 cloudinary.config({ 
   cloud_name: 'dqts6umdd', 
-  api_key: '584213354861186', 
-  api_secret: 'F7-Re7e6PucfhqK46lre8Hceil4' 
+  api_key: 'YOUR_API_KEY_HERE', 
+  api_secret: 'YOUR_API_SECRET_HERE' 
 });
 
 async function setup() {
