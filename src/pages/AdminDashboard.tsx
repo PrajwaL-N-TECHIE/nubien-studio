@@ -88,7 +88,6 @@ const AdminDashboard = () => {
   });
   const [isSubmittingStudent, setIsSubmittingStudent] = useState(false);
   const [newStudentReceiptFile, setNewStudentReceiptFile] = useState<File | null>(null);
-  const [newAdminPassword, setNewAdminPassword] = useState("");
 
   // Materials State
   const [materials, setMaterials] = useState<Material[]>([]);
@@ -195,13 +194,8 @@ const AdminDashboard = () => {
     setIsSavingSettings(true);
     try {
       const updates: any = { currentBatch: globalBatch };
-      if (newAdminPassword.trim() !== "") {
-        updates.adminPassword = newAdminPassword.trim();
-        sessionStorage.setItem("adminAuth", newAdminPassword.trim());
-      }
       await setDoc(doc(db, "settings", "general"), updates, { merge: true });
       alert("Settings saved successfully!");
-      setNewAdminPassword("");
     } catch(err) {
       console.error(err);
       alert("Failed to save settings");
@@ -1296,11 +1290,6 @@ const AdminDashboard = () => {
                 <label className="block text-xs font-bold text-white/40 uppercase mb-2">Current Active Batch</label>
                 <input type="text" required value={globalBatch} onChange={e => setGlobalBatch(e.target.value)} className="w-full bg-[#050507] border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-purple-500/50" placeholder="e.g. batch-2" />
                 <p className="text-sm text-white/40 mt-2">New student registrations will automatically be tagged with this cohort name. This affects both databases.</p>
-              </div>
-              <div className="mt-6 pt-6 border-t border-white/10">
-                <label className="block text-xs font-bold text-white/40 uppercase mb-2">Change Admin Password</label>
-                <input type="text" value={newAdminPassword} onChange={e => setNewAdminPassword(e.target.value)} className="w-full bg-[#050507] border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-purple-500/50" placeholder="Enter new password (optional)" />
-                <p className="text-sm text-white/40 mt-2">Leave blank to keep the current password.</p>
               </div>
               <button type="submit" disabled={isSavingSettings} className="px-6 py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold transition-all disabled:opacity-50">
                 {isSavingSettings ? "Saving..." : "Save Settings"}
