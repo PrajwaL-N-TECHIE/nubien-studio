@@ -282,6 +282,7 @@ const AdminDashboard = () => {
       fetchAccessLogs();
     } else if (activeTab === 'assignments') {
       fetchAssignments();
+      fetchAccessLogs();
     } else if (activeTab === 'submissions') {
       fetchSubmissions();
     } else if (activeTab === 'temp_registrations') {
@@ -1070,6 +1071,37 @@ const AdminDashboard = () => {
                 </tbody>
               </table>
             </div>
+
+            <div className="mt-8 bg-[#0a0a0f]/80 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden">
+              <div className="flex justify-between items-center px-6 py-4 border-b border-white/5">
+                <h3 className="font-bold text-white">Recent Student Access Logs</h3>
+                <button onClick={handleClearLogs} className="px-3 py-1.5 bg-red-900/20 hover:bg-red-600/30 text-red-400 hover:text-red-300 rounded border border-red-500/20 text-xs font-bold transition-colors flex items-center gap-1">
+                  <Trash2 size={12} /> Clear Logs
+                </button>
+              </div>
+              <table className="w-full text-left">
+                <thead className="bg-[#050507]">
+                  <tr>
+                    <th className="px-6 py-4 text-xs font-bold text-white/40 uppercase">Student Name</th>
+                    <th className="px-6 py-4 text-xs font-bold text-white/40 uppercase">Material Title</th>
+                    <th className="px-6 py-4 text-xs font-bold text-white/40 uppercase">Accessed At</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {accessLogs.slice(0, 20).map(log => (
+                    <tr key={log.id} className="hover:bg-white/[0.02]">
+                      <td className="px-6 py-4 text-white font-medium">{log.student_name}</td>
+                      <td className="px-6 py-4 text-white/60 text-sm tracking-wider">{log.material_title}</td>
+                      <td className="px-6 py-4 text-white/60 text-sm">{formatDate(log.accessed_at)}</td>
+                    </tr>
+                  ))}
+                  {accessLogs.length === 0 && (
+                    <tr><td colSpan={3} className="px-6 py-12 text-center text-white/40">No access logs found.</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
           </div>
         )}
 
