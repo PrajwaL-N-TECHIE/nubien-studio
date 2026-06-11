@@ -84,6 +84,7 @@ const AdminDashboard = () => {
     name: "", email: "", phone: "", track: "uiux", college: "", degree: "", reason: "", cohort: "batch-1", referral_code: "", registration_id: ""
   });
   const [isSubmittingStudent, setIsSubmittingStudent] = useState(false);
+  const [newStudentReceiptFile, setNewStudentReceiptFile] = useState<File | null>(null);
   const [newAdminPassword, setNewAdminPassword] = useState("");
 
   // Materials State
@@ -486,6 +487,22 @@ const AdminDashboard = () => {
     e.preventDefault();
     setIsSubmittingStudent(true);
     try {
+      let attachment_url = "placeholder_receipt.png";
+
+      if (newStudentReceiptFile) {
+        const formData = new FormData();
+        formData.append('file', newStudentReceiptFile);
+        formData.append('upload_preset', 'lms_unsigned');
+        formData.append('cloud_name', 'dqts6umdd');
+
+        const res = await fetch('https://api.cloudinary.com/v1_1/dqts6umdd/auto/upload', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        attachment_url = data.secure_url;
+      }
+
       let registrationId = newStudent.registration_id?.trim();
       if (!registrationId) {
         const trackPrefix = newStudent.track.substring(0, 4).toUpperCase();
@@ -495,7 +512,7 @@ const AdminDashboard = () => {
 
       const studentData = {
         ...newStudent,
-        receipt: "placeholder_receipt.png", // admin added
+        receipt: attachment_url,
         registration_id: registrationId,
         cohort: globalBatch,
         created_at: serverTimestamp()
@@ -507,6 +524,7 @@ const AdminDashboard = () => {
       alert("Student added successfully!");
       setIsAddingStudent(false);
       setNewStudent({ name: "", email: "", phone: "", track: "uiux", college: "", degree: "", reason: "", cohort: "batch-1", referral_code: "", registration_id: "" });
+      setNewStudentReceiptFile(null);
       fetchRecords(activeTab === 'perm_registrations' ? 'perm' : 'temp');
     } catch (error) {
       console.error("Error adding student:", error);
@@ -1251,6 +1269,19 @@ const AdminDashboard = () => {
                 <div className="md:col-span-2">
                   <label className="block text-xs font-bold text-white/40 uppercase mb-1">Reason for Joining</label>
                   <textarea required value={newStudent.reason} onChange={e => setNewStudent({ ...newStudent, reason: e.target.value })} rows={3} className="w-full bg-[#050507] border border-white/10 rounded-xl py-2 px-4 text-white focus:outline-none focus:border-purple-500/50"></textarea>
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-bold text-white/40 uppercase mb-1">Receipt Image (Optional)</label>
+                  <div className="flex items-center gap-4">
+                    <label className="flex items-center gap-2 px-4 py-2 bg-[#050507] border border-white/10 rounded-xl cursor-pointer hover:border-purple-500/50 transition-colors">
+                      <UploadCloud size={18} className="text-purple-400" />
+                      <span className="text-sm text-white/70">{newStudentReceiptFile ? newStudentReceiptFile.name : "Upload Receipt"}</span>
+                      <input type="file" accept="image/*" className="hidden" onChange={e => setNewStudentReceiptFile(e.target.files?.[0] || null)} />
+                    </label>
+                    {newStudentReceiptFile && (
+                      <button type="button" onClick={() => setNewStudentReceiptFile(null)} className="text-red-400 hover:text-red-300 text-sm">Remove</button>
+                    )}
+                  </div>
                 </div>
               </div>
               <div className="flex justify-end pt-4">
