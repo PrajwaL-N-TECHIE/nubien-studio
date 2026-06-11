@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Lock, ShieldAlert, ArrowRight, Eye, EyeOff, Search, LogOut, Trash2, Info, X, Edit2, BookOpen, UploadCloud, CheckCircle2 } from "lucide-react";
+import { Lock, ShieldAlert, ArrowRight, Eye, EyeOff, Search, LogOut, Trash2, Info, X, Edit2, BookOpen, UploadCloud, CheckCircle2, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import { db } from "@/lib/firebase";
@@ -79,6 +79,11 @@ const AdminDashboard = () => {
   const [cohortFilter, setCohortFilter] = useState("all");
   const [viewReceiptUrl, setViewReceiptUrl] = useState<string | null>(null);
   const [selectedStudent, setSelectedStudent] = useState<InternshipRecord | null>(null);
+  const [isAddingStudent, setIsAddingStudent] = useState(false);
+  const [newStudent, setNewStudent] = useState({
+    name: "", email: "", phone: "", track: "uiux", college: "", degree: "", reason: "", cohort: "batch-1", referral_code: ""
+  });
+  const [isSubmittingStudent, setIsSubmittingStudent] = useState(false);
   
   // Materials State
   const [materials, setMaterials] = useState<Material[]>([]);
@@ -419,21 +424,30 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleDeleteDatabase = async () => {
-    if (!window.confirm("CRITICAL WARNING: Are you sure you want to delete ALL internship registrations? This action cannot be undone.")) {
-      return;
-    }
-
+  const handleAddStudent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmittingStudent(true);
     try {
-      const querySnapshot = await getDocs(collection(db, "internships"));
-      const deletePromises = querySnapshot.docs.map(document => deleteDoc(doc(db, "internships", document.id)));
-      await Promise.all(deletePromises);
+      const trackPrefix = newStudent.track.substring(0, 4).toUpperCase();
+      const randomNum = Math.floor(1000 + Math.random() * 9000);
+      const registrationId = `BLDCY-${trackPrefix}-${randomNum}`;
 
-      alert("Database has been successfully cleared.");
-      setRecords([]);
+      await addDoc(collection(db, "internships"), {
+        ...newStudent,
+        receipt: "placeholder_receipt.png", // admin added
+        registration_id: registrationId,
+        created_at: serverTimestamp()
+      });
+
+      alert("Student added successfully!");
+      setIsAddingStudent(false);
+      setNewStudent({ name: "", email: "", phone: "", track: "uiux", college: "", degree: "", reason: "", cohort: "batch-1", referral_code: "" });
+      fetchRecords();
     } catch (error) {
-      console.error("Error clearing database:", error);
-      alert("An error occurred while clearing the database.");
+      console.error("Error adding student:", error);
+      alert("Failed to add student.");
+    } finally {
+      setIsSubmittingStudent(false);
     }
   };
 
@@ -591,10 +605,10 @@ const AdminDashboard = () => {
                   <option value="batch-2">Batch 2</option>
                 </select>
                 <button 
-                  onClick={handleDeleteDatabase}
-                  className="px-4 py-2 bg-red-900/30 hover:bg-red-600 text-red-400 hover:text-white rounded-xl border border-red-500/20 text-sm font-bold flex items-center gap-2 transition-colors shadow-[0_0_15px_rgba(220,38,38,0)] hover:shadow-[0_0_20px_rgba(220,38,38,0.4)]"
+                  onClick={() => setIsAddingStudent(true)}
+                  className="px-4 py-2 bg-purple-600/20 hover:bg-purple-600 text-purple-400 hover:text-white rounded-xl border border-purple-500/30 text-sm font-bold flex items-center gap-2 transition-colors"
                 >
-                  <Trash2 size={16} /> Purge Database
+                  <Plus size={16} /> Add Student
                 </button>
               </div>
             </div>
@@ -1053,6 +1067,75 @@ const AdminDashboard = () => {
           </motion.div>
         </div>
       )}
+      {/* Add Student Modal */}
+      {isAddingStudent && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm" onClick={() => setIsAddingStudent(false)}>
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-[#0a0a0f] border border-white/10 rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 md:p-8 relative" 
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-2xl font-bold text-white">Add New Student</h3>
+              <button onClick={() => setIsAddingStudent(false)} className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors">
+                <X size={20} className="text-white/60" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddStudent} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-white/40 uppercase mb-1">Full Name</label>
+                  <input type="text" required value={newStudent.name} onChange={e => setNewStudent({...newStudent, name: e.target.value})} className="w-full bg-[#050507] border border-white/10 rounded-xl py-2 px-4 text-white focus:outline-none focus:border-purple-500/50" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-white/40 uppercase mb-1">Email</label>
+                  <input type="email" required value={newStudent.email} onChange={e => setNewStudent({...newStudent, email: e.target.value})} className="w-full bg-[#050507] border border-white/10 rounded-xl py-2 px-4 text-white focus:outline-none focus:border-purple-500/50" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-white/40 uppercase mb-1">Phone Number</label>
+                  <input type="text" required value={newStudent.phone} onChange={e => setNewStudent({...newStudent, phone: e.target.value})} className="w-full bg-[#050507] border border-white/10 rounded-xl py-2 px-4 text-white focus:outline-none focus:border-purple-500/50" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-white/40 uppercase mb-1">Track</label>
+                  <select required value={newStudent.track} onChange={e => setNewStudent({...newStudent, track: e.target.value})} className="w-full bg-[#050507] border border-white/10 rounded-xl py-2 px-4 text-white focus:outline-none focus:border-purple-500/50">
+                    {Object.entries(trackNames).map(([key, name]) => (
+                      <option key={key} value={key}>{name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-white/40 uppercase mb-1">College/University</label>
+                  <input type="text" required value={newStudent.college} onChange={e => setNewStudent({...newStudent, college: e.target.value})} className="w-full bg-[#050507] border border-white/10 rounded-xl py-2 px-4 text-white focus:outline-none focus:border-purple-500/50" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-white/40 uppercase mb-1">Degree</label>
+                  <input type="text" required value={newStudent.degree} onChange={e => setNewStudent({...newStudent, degree: e.target.value})} className="w-full bg-[#050507] border border-white/10 rounded-xl py-2 px-4 text-white focus:outline-none focus:border-purple-500/50" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-white/40 uppercase mb-1">Cohort</label>
+                  <input type="text" required value={newStudent.cohort} onChange={e => setNewStudent({...newStudent, cohort: e.target.value})} className="w-full bg-[#050507] border border-white/10 rounded-xl py-2 px-4 text-white focus:outline-none focus:border-purple-500/50" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-white/40 uppercase mb-1">Referral Code</label>
+                  <input type="text" value={newStudent.referral_code} onChange={e => setNewStudent({...newStudent, referral_code: e.target.value})} className="w-full bg-[#050507] border border-white/10 rounded-xl py-2 px-4 text-white focus:outline-none focus:border-purple-500/50" />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-bold text-white/40 uppercase mb-1">Reason for Joining</label>
+                  <textarea required value={newStudent.reason} onChange={e => setNewStudent({...newStudent, reason: e.target.value})} rows={3} className="w-full bg-[#050507] border border-white/10 rounded-xl py-2 px-4 text-white focus:outline-none focus:border-purple-500/50"></textarea>
+                </div>
+              </div>
+              <div className="flex justify-end pt-4">
+                <button type="submit" disabled={isSubmittingStudent} className="px-6 py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold transition-all disabled:opacity-50">
+                  {isSubmittingStudent ? "Adding..." : "Add Student to Database"}
+                </button>
+              </div>
+            </form>
+          </motion.div>
+        </div>
+      )}
+
     </div>
   );
 };
