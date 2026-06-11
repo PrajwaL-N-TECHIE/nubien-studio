@@ -522,9 +522,9 @@ const AdminDashboard = () => {
       setNewStudent({ name: "", email: "", phone: "", track: "uiux", college: "", degree: "", reason: "", cohort: "batch-1", referral_code: "", registration_id: "" });
       setNewStudentReceiptFile(null);
       fetchRecords(activeTab === 'perm_registrations' ? 'perm' : 'temp');
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error adding student:", error);
-      alert("Failed to add student.");
+      alert("Failed to add student. Reason: " + (error.message || error));
     } finally {
       setIsSubmittingStudent(false);
     }
