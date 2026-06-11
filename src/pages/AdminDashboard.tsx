@@ -71,7 +71,7 @@ const trackNames: Record<string, string> = {
 };
 
 const AdminDashboard = () => {
-  const [email, setEmail] = useState("admin@buildicy.com");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
