@@ -3,7 +3,7 @@ import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 
 
-const firebaseConfig = {
+export const firebaseConfig = {
   apiKey: "AIzaSyDgrnbifK4MfZCjeieBZmXRzerGTHSvh8o",
   authDomain: "buildicy-internships.firebaseapp.com",
   projectId: "buildicy-internships",

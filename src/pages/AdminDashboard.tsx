@@ -2,10 +2,11 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Lock, ShieldAlert, ArrowRight, Eye, EyeOff, Search, LogOut, Trash2, Info, X, Edit2, BookOpen, UploadCloud, CheckCircle2, Plus, Download, Settings, Mail } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { initializeApp } from "firebase/app";
 
-import { db, auth } from "@/lib/firebase";
+import { db, auth, firebaseConfig } from "@/lib/firebase";
 import { collection, getDocs, deleteDoc, doc, query, orderBy, updateDoc, addDoc, serverTimestamp, getDoc, setDoc } from "firebase/firestore";
-import { signInWithEmailAndPassword, onAuthStateChanged, signOut } from "firebase/auth";
+import { signInWithEmailAndPassword, onAuthStateChanged, signOut, createUserWithEmailAndPassword, getAuth } from "firebase/auth";
 
 interface InternshipRecord {
   id: string;
@@ -503,10 +504,20 @@ const AdminDashboard = () => {
         created_at: serverTimestamp()
       };
 
+      // Create Firebase Auth account for student WITHOUT logging admin out
+      try {
+        const secondaryApp = initializeApp(firebaseConfig, `SecondaryApp-${Date.now()}`);
+        const secondaryAuth = getAuth(secondaryApp);
+        await createUserWithEmailAndPassword(secondaryAuth, newStudent.email, registrationId);
+        await signOut(secondaryAuth);
+      } catch (authError: any) {
+        throw new Error(authError.message || "Failed to create secure student account. The email might already be in use.");
+      }
+
       await addDoc(collection(db, "internships"), studentData);
       await addDoc(collection(db, "internships_temp"), studentData);
 
-      alert("Student added successfully!");
+      alert("Student added successfully! Their password is their Registration ID: " + registrationId);
       setIsAddingStudent(false);
       setNewStudent({ name: "", email: "", phone: "", track: "uiux", college: "", degree: "", reason: "", cohort: "batch-1", referral_code: "", registration_id: "" });
       setNewStudentReceiptFile(null);
