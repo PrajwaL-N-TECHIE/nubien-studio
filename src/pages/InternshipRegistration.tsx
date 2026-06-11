@@ -8,7 +8,7 @@ import jsPDF from 'jspdf';
 import { useNavigate } from "react-router-dom";
 
 import { db } from "@/lib/firebase";
-import { collection, query, where, getDocs, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, query, where, getDocs, getDoc, doc, addDoc, serverTimestamp } from "firebase/firestore";
 import { audio } from "@/utils/audio";
 
 const FAQs = [
@@ -237,8 +237,18 @@ const InternshipRegistration = () => {
 
       const compressedBase64Receipt = await compressImage(file);
 
-      // Save to Firestore directly
-      const docRef = await addDoc(collection(db, "internships"), {
+      // Fetch current batch from settings
+      let activeBatch = "batch-1";
+      try {
+        const settingsSnap = await getDoc(doc(db, "settings", "general"));
+        if (settingsSnap.exists() && settingsSnap.data().currentBatch) {
+          activeBatch = settingsSnap.data().currentBatch;
+        }
+      } catch(err) {
+        console.error("Failed to fetch settings", err);
+      }
+
+      const studentData = {
         name: formData.get('name'),
         email: formData.get('email'),
         phone: formData.get('phone'),
@@ -249,9 +259,15 @@ const InternshipRegistration = () => {
         receipt: compressedBase64Receipt,
         registration_id: registrationId,
         referral_code: referralStatus === 'valid' && referralCode ? referralCode : null,
-        cohort: "batch-1",
+        cohort: activeBatch,
         created_at: serverTimestamp()
-      });
+      };
+
+      // Save to Permanent Database
+      const docRef = await addDoc(collection(db, "internships"), studentData);
+      
+      // Save to Temp Database
+      await addDoc(collection(db, "internships_temp"), studentData);
 
       const resultData = { id: docRef.id, registration_id: registrationId };
 
