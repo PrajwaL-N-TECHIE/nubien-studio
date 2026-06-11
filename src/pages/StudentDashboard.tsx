@@ -12,8 +12,9 @@ import {
 import { usePerformance } from "@/context/PerformanceContext";
 import PageTransition from "@/components/PageTransition";
 import { useNavigate } from "react-router-dom";
-import { db } from "@/lib/firebase";
+import { db, auth } from "@/lib/firebase";
 import { collection, query, where, getDocs, addDoc, serverTimestamp, orderBy } from "firebase/firestore";
+import { onAuthStateChanged, signOut } from "firebase/auth";
 
 
 interface StudentData {
@@ -52,11 +53,7 @@ interface Submission {
   feedback?: string;
 }
 
-const getStudentSession = (): StudentData => {
-  const data = sessionStorage.getItem("studentAuth");
-  if(data) return JSON.parse(data);
-  return { id: "demo", name: "Guest User", track: "Unknown", cohort: "batch-1", registration_id: "DEMO-000", xp: 0, progress: 0 };
-};
+
 
 const getNextLiveSession = () => {
   const now = new Date();
@@ -95,8 +92,7 @@ const getNextLiveSession = () => {
   return `${dayString} at 7:45 PM`;
 };
 
-const MissionControl = ({ materials, assignments, submissions }: { materials: Material[], assignments: Assignment[], submissions: Submission[] }) => {
-  const student = getStudentSession();
+const MissionControl = ({ materials, assignments, submissions, student }: { materials: Material[], assignments: Assignment[], submissions: Submission[], student: StudentData }) => {
   const pendingAssignments = assignments.slice(0, 3);
   const recentMaterials = materials.slice(0, 3);
   const nextSessionString = getNextLiveSession();
@@ -275,8 +271,7 @@ const MissionControl = ({ materials, assignments, submissions }: { materials: Ma
   );
 };
 
-const Vault = ({ materials }: { materials: Material[] }) => {
-  const student = getStudentSession();
+const Vault = ({ materials, student }: { materials: Material[], student: StudentData }) => {
 
   const handleOpenMaterial = async (mat: Material) => {
     try {
@@ -947,16 +942,38 @@ export default function StudentDashboard() {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
 
-  useEffect(() => {
-    const authData = sessionStorage.getItem("studentAuth");
-    if (!authData) {
-      navigate('/student-login');
-      return;
-    }
-    const parsed: StudentData = JSON.parse(authData);
-    setStudent(parsed);
+  const [loadingAuth, setLoadingAuth] = useState(true);
 
-    const studentCohort = parsed.cohort || "batch-1";
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        navigate('/student-login');
+        return;
+      }
+      
+      try {
+        const q = query(collection(db, "internships"), where("email", "==", user.email));
+        const snap = await getDocs(q);
+        if (!snap.empty) {
+          const doc = snap.docs[0];
+          setStudent({ id: doc.id, ...doc.data() } as StudentData);
+        } else {
+          await signOut(auth);
+          navigate('/student-login');
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoadingAuth(false);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [navigate]);
+
+  useEffect(() => {
+    if (!student) return;
+    const studentCohort = student.cohort || "batch-1";
 
     const fetchMaterials = async () => {
       try {
@@ -982,7 +999,7 @@ export default function StudentDashboard() {
     };
     const fetchSubmissions = async () => {
       try {
-        const q = query(collection(db, "submissions"), where("student_id", "==", parsed.id));
+        const q = query(collection(db, "submissions"), where("student_id", "==", student.id));
         const snap = await getDocs(q);
         const data: Submission[] = [];
         snap.forEach(doc => data.push({ id: doc.id, ...doc.data() } as Submission));
@@ -995,7 +1012,7 @@ export default function StudentDashboard() {
     fetchMaterials();
     fetchAssignments();
     fetchSubmissions();
-  }, [navigate]);
+  }, [student]);
 
   const STUDENT_TABS = [
     { id: 'mission', label: 'Mission Control', icon: LayoutDashboard },
@@ -1003,7 +1020,13 @@ export default function StudentDashboard() {
     { id: 'dropzone', label: 'Dropzone', icon: UploadCloud }
   ];
 
-  if (!student) return null;
+  if (loadingAuth || !student) {
+    return (
+      <div className="min-h-screen bg-[#050507] flex items-center justify-center text-white">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
+      </div>
+    );
+  }
 
   return (
     <PageTransition>
@@ -1096,8 +1119,8 @@ export default function StudentDashboard() {
         {/* Premium Logout Footer */}
         <div className="p-6 mt-auto border-t border-white/5">
           <button 
-            onClick={() => {
-              sessionStorage.removeItem("studentAuth");
+            onClick={async () => {
+              await signOut(auth);
               navigate('/student-login');
             }}
             className="w-full flex items-center gap-3 px-4 py-4 text-sm font-bold text-zinc-400 hover:text-red-400 bg-[#0C0C12] hover:bg-red-500/10 border border-white/5 hover:border-red-500/20 rounded-2xl transition-all group overflow-hidden relative"
@@ -1150,8 +1173,8 @@ export default function StudentDashboard() {
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.3 }}
               >
-                {activeTab === 'mission' && <MissionControl materials={materials} assignments={assignments} submissions={submissions} />}
-                {activeTab === 'vault' && <Vault materials={materials} />}
+                {activeTab === 'mission' && <MissionControl materials={materials} assignments={assignments} submissions={submissions} student={student} />}
+                {activeTab === 'vault' && <Vault materials={materials} student={student} />}
                 {activeTab === 'dropzone' && <Dropzone assignments={assignments} student={student} submissions={submissions} setSubmissions={setSubmissions} />}
               </motion.div>
             </AnimatePresence>

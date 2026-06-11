@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Lock, ShieldAlert, ArrowRight, Eye, EyeOff, Search, LogOut, Trash2, Info, X, Edit2, BookOpen, UploadCloud, CheckCircle2 } from "lucide-react";
+import { Lock, ShieldAlert, ArrowRight, Eye, EyeOff, Search, LogOut, Trash2, Info, X, Edit2, BookOpen, UploadCloud, CheckCircle2, Mail } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-import { db } from "@/lib/firebase";
+import { db, auth } from "@/lib/firebase";
 import { collection, getDocs, deleteDoc, doc, query, orderBy, updateDoc, addDoc, serverTimestamp } from "firebase/firestore";
+import { signInWithEmailAndPassword, onAuthStateChanged, signOut } from "firebase/auth";
 
 interface InternshipRecord {
   id: string;
@@ -69,6 +70,7 @@ const trackNames: Record<string, string> = {
 };
 
 const AdminDashboard = () => {
+  const [email, setEmail] = useState("admin@buildicy.com");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -106,18 +108,18 @@ const AdminDashboard = () => {
   
   const navigate = useNavigate();
 
-  // Load auth state from session storage to prevent re-login on refresh
+  // Listen for Firebase Auth state changes
   useEffect(() => {
-    const sessionAuth = sessionStorage.getItem("adminAuth");
-    if (sessionAuth === "admin@123") {
-      setIsAuthenticated(true);
-      fetchRecords();
-    }
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setIsAuthenticated(true);
+        fetchRecords();
+      } else {
+        setIsAuthenticated(false);
+      }
+    });
 
-    // Auto-logout when navigating away from the admin dashboard
-    return () => {
-      sessionStorage.removeItem("adminAuth");
-    };
+    return () => unsubscribe();
   }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -126,14 +128,9 @@ const AdminDashboard = () => {
     setError("");
 
     try {
-      if (password !== "admin@123") {
-        throw new Error("Invalid password");
-      }
-      
-      await fetchRecords();
-      setIsAuthenticated(true);
-      sessionStorage.setItem("adminAuth", password);
-    } catch (err) {
+      await signInWithEmailAndPassword(auth, email, password);
+      // fetchRecords and setIsAuthenticated are handled by onAuthStateChanged
+    } catch (err: any) {
       setError("Unauthorized access. Invalid credentials.");
     } finally {
       setLoading(false);
@@ -382,11 +379,14 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleLogout = () => {
-    sessionStorage.removeItem("adminAuth");
-    setIsAuthenticated(false);
-    setRecords([]);
-    setPassword("");
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      setRecords([]);
+      setPassword("");
+    } catch (error) {
+      console.error("Error signing out", error);
+    }
   };
 
   const handleClearLogs = async () => {
@@ -486,6 +486,18 @@ const AdminDashboard = () => {
           <p className="text-white/50 text-center mb-8 text-sm">Buildicy Internal Admin Portal</p>
 
           <form onSubmit={handleLogin} className="space-y-6">
+            <div className="relative">
+              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40" size={20} />
+              <input 
+                type="email"
+                placeholder="Admin Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full bg-white/5 border border-white/10 rounded-xl py-4 pl-12 pr-4 text-white placeholder-white/40 focus:outline-none focus:border-red-500/50 transition-colors"
+                required
+              />
+            </div>
+            
             <div className="relative">
               <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40" size={20} />
               <input 

@@ -7,8 +7,9 @@ import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { useNavigate } from "react-router-dom";
 
-import { db } from "@/lib/firebase";
+import { db, auth } from "@/lib/firebase";
 import { collection, query, where, getDocs, addDoc, serverTimestamp } from "firebase/firestore";
+import { createUserWithEmailAndPassword } from "firebase/auth";
 import { audio } from "@/utils/audio";
 
 const FAQs = [
@@ -161,6 +162,7 @@ const InternshipRegistration = () => {
       const formData = new FormData(form);
       
       const email = formData.get('email') as string;
+      const password = formData.get('password') as string;
       const localPhone = formData.get('phone') as string;
       const phone = `${countryCode} ${localPhone}`;
 
@@ -236,6 +238,13 @@ const InternshipRegistration = () => {
       };
 
       const compressedBase64Receipt = await compressImage(file);
+
+      // Create Firebase Auth account for the student
+      try {
+        await createUserWithEmailAndPassword(auth, email, password);
+      } catch (authError: any) {
+        throw new Error(authError.message || "Failed to create secure student account. Please try again.");
+      }
 
       // Save to Firestore directly
       const docRef = await addDoc(collection(db, "internships"), {
@@ -639,6 +648,24 @@ const InternshipRegistration = () => {
                     <option value="ai_automation">AI Automation Engineer</option>
                     <option value="blockchain">Blockchain engineer</option>
                   </select>
+                </div>
+              </div>
+
+              {/* Portal Password */}
+              <div className="md:col-span-2 space-y-2">
+                <label className="text-sm font-medium text-white/80 ml-1">Student Portal Password</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <User size={18} className="text-white/40" />
+                  </div>
+                  <input
+                    name="password"
+                    required
+                    type="password"
+                    minLength={6}
+                    placeholder="Create a secure password (min 6 characters)"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-11 pr-4 text-white placeholder:text-white/20 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all"
+                  />
                 </div>
               </div>
             </div>
