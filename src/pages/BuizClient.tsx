@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Trophy, Target, Clock, Zap, CheckCircle2, XCircle } from 'lucide-react';
 import { db } from '@/lib/firebase';
 import { doc, setDoc, onSnapshot, updateDoc, getDoc } from 'firebase/firestore';
+import { playTickSound, playCorrectSound, playIncorrectSound } from '@/utils/audio';
 
 interface Question {
   id: number | string;
@@ -59,6 +60,9 @@ const BuizClient = () => {
     setTimeLeft(20);
     const timer = setInterval(() => {
       setTimeLeft(prev => {
+        if (prev <= 6 && prev > 1) {
+          playTickSound(); // tick sound for last 5 seconds
+        }
         if (prev <= 1) {
           clearInterval(timer);
           handleTimeUp();
@@ -134,6 +138,7 @@ const BuizClient = () => {
     
     if (isCorrect) {
       setShowFeedback('correct');
+      playCorrectSound();
       // Base points 1000, max time bonus 1000 based on timeLeft/20, streak multiplier
       const timeBonus = Math.floor((timeLeft / 20) * 1000);
       newStreak += 1;
@@ -142,6 +147,7 @@ const BuizClient = () => {
       newScore += earned;
     } else {
       setShowFeedback('incorrect');
+      playIncorrectSound();
       newStreak = 0;
     }
     
@@ -347,23 +353,25 @@ const BuizClient = () => {
               }
             }
 
-            // A Quizizz style distinct color per option if no feedback
+            // Sleek premium colors instead of basic primary colors
             if (!showFeedback) {
-              bgClass = idx === 0 ? "bg-blue-600 hover:bg-blue-500 border-blue-400" :
-                        idx === 1 ? "bg-red-600 hover:bg-red-500 border-red-400" :
-                        idx === 2 ? "bg-yellow-600 hover:bg-yellow-500 border-yellow-400" :
-                        "bg-green-600 hover:bg-green-500 border-green-400";
+              bgClass = idx === 0 ? "bg-gradient-to-br from-indigo-900 to-indigo-600 border-indigo-400/50 hover:shadow-[0_0_30px_rgba(79,70,229,0.3)]" :
+                        idx === 1 ? "bg-gradient-to-br from-rose-900 to-rose-600 border-rose-400/50 hover:shadow-[0_0_30px_rgba(225,29,72,0.3)]" :
+                        idx === 2 ? "bg-gradient-to-br from-amber-900 to-amber-600 border-amber-400/50 hover:shadow-[0_0_30px_rgba(217,119,6,0.3)]" :
+                        "bg-gradient-to-br from-emerald-900 to-emerald-600 border-emerald-400/50 hover:shadow-[0_0_30px_rgba(5,150,105,0.3)]";
             }
 
             return (
-              <button
+              <motion.button
                 key={idx}
+                whileHover={!showFeedback ? { scale: 1.02 } : {}}
+                whileTap={!showFeedback ? { scale: 0.95 } : {}}
                 disabled={!!showFeedback}
                 onClick={() => handleAnswer(idx)}
-                className={`p-6 rounded-2xl border-b-4 font-bold text-lg md:text-xl transition-all active:translate-y-1 active:border-b-0 flex items-center justify-center text-center ${bgClass} disabled:transform-none disabled:cursor-not-allowed`}
+                className={`p-6 rounded-2xl border font-bold text-lg md:text-xl transition-all flex items-center justify-center text-center shadow-lg ${bgClass} disabled:cursor-not-allowed`}
               >
                 {opt}
-              </button>
+              </motion.button>
             );
           })}
         </div>

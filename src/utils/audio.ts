@@ -90,3 +90,16 @@ class BuildicyAudio {
 }
 
 export const audio = new BuildicyAudio();
+
+// Procedural Web Audio API Sound Effects for Buiz Arena
+export const playTickSound = () => {
+    audio.playTone(800, 'sine', 0.05, 0.1);
+};
+
+export const playCorrectSound = () => {
+    audio.playSuccess();
+};
+
+export const playIncorrectSound = () => {
+    audio.playTone(150, 'sawtooth', 0.3, 0.3);
+};

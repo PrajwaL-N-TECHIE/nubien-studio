@@ -15,9 +15,13 @@ interface Player {
 
 const BuizHost = () => {
   const [pin, setPin] = useState<string | null>(null);
-  const [status, setStatus] = useState<'setup' | 'waiting' | 'playing' | 'finished'>('setup');
+  const [status, setStatus] = useState<'setup' | 'configure' | 'waiting' | 'playing' | 'finished'>('setup');
   const [players, setPlayers] = useState<Player[]>([]);
   const [copied, setCopied] = useState(false);
+  
+  // Host config state
+  const [selectedQuestions, setSelectedQuestions] = useState<Set<number | string>>(new Set());
+  const [podiumPhase, setPodiumPhase] = useState<0 | 1 | 2 | 3>(0); // 0=none, 1=3rd, 2=2nd, 3=1st
 
   useEffect(() => {
     if (!pin) return;
@@ -37,13 +41,17 @@ const BuizHost = () => {
   }, [pin]);
 
   const generateRoom = async () => {
+    if (selectedQuestions.size === 0) {
+      alert("Please select at least one question!");
+      return;
+    }
+
     // Generate a random 6 digit pin
     const newPin = Math.floor(100000 + Math.random() * 900000).toString();
     
     try {
-      // Pick 10 random questions from the pool
-      const shuffled = [...QUESTIONS].sort(() => 0.5 - Math.random());
-      const selectedQs = shuffled.slice(0, 10);
+      // Map selected IDs back to full question objects
+      const selectedQs = QUESTIONS.filter(q => selectedQuestions.has(q.id));
 
       await setDoc(doc(db, "buiz_rooms", newPin), {
         pin: newPin,
@@ -61,6 +69,19 @@ const BuizHost = () => {
     }
   };
 
+  const handleQuickPick = () => {
+    const shuffled = [...QUESTIONS].sort(() => 0.5 - Math.random());
+    const selectedIds = new Set(shuffled.slice(0, 10).map(q => q.id));
+    setSelectedQuestions(selectedIds);
+  };
+
+  const toggleQuestion = (id: number | string) => {
+    const newSet = new Set(selectedQuestions);
+    if (newSet.has(id)) newSet.delete(id);
+    else newSet.add(id);
+    setSelectedQuestions(newSet);
+  };
+
   const startGame = async () => {
     if (!pin) return;
     await updateDoc(doc(db, "buiz_rooms", pin), {
@@ -76,6 +97,11 @@ const BuizHost = () => {
       status: 'finished'
     });
     setStatus('finished');
+    
+    // Start dramatic podium sequence
+    setTimeout(() => setPodiumPhase(1), 1000);
+    setTimeout(() => setPodiumPhase(2), 4000);
+    setTimeout(() => setPodiumPhase(3), 8000);
   };
 
   const copyPin = () => {
@@ -103,12 +129,149 @@ const BuizHost = () => {
           <p className="text-zinc-400 mb-8 text-lg">Create a live multiplayer session. Students will join via a game PIN.</p>
           
           <button 
-            onClick={generateRoom}
+            onClick={() => setStatus('configure')}
             className="w-full py-5 bg-purple-600 hover:bg-purple-500 text-white rounded-2xl font-bold text-xl transition-all shadow-[0_0_30px_rgba(168,85,247,0.4)] flex items-center justify-center gap-3"
           >
-            <Play fill="currentColor" size={24} /> Generate Game PIN
+            <Play fill="currentColor" size={24} /> Configure Game
           </button>
         </motion.div>
+      </div>
+    );
+  }
+
+  if (status === 'configure') {
+    return (
+      <div className="min-h-screen bg-[#050507] flex flex-col p-6">
+        <div className="max-w-4xl mx-auto w-full relative z-10 flex flex-col h-full bg-[#0C0C12]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h1 className="text-3xl font-black text-white">Select Questions</h1>
+              <p className="text-zinc-400 mt-1">Choose the questions for this arena ({selectedQuestions.size} selected)</p>
+            </div>
+            <div className="flex items-center gap-4">
+              <button onClick={handleQuickPick} className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-xl font-bold transition-all text-sm border border-white/10">
+                Quick Pick 10
+              </button>
+              <button 
+                onClick={generateRoom}
+                className="px-6 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold transition-all shadow-[0_0_20px_rgba(168,85,247,0.3)] flex items-center gap-2"
+              >
+                Launch Arena <Target size={16} />
+              </button>
+            </div>
+          </div>
+          
+          <div className="flex-1 overflow-y-auto pr-4 space-y-2 h-[60vh]">
+            {QUESTIONS.map((q) => (
+              <div 
+                key={q.id} 
+                onClick={() => toggleQuestion(q.id)}
+                className={`p-4 rounded-xl border transition-all cursor-pointer flex items-start gap-4 ${selectedQuestions.has(q.id) ? 'bg-purple-600/20 border-purple-500/50' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}
+              >
+                <div className={`w-6 h-6 rounded-md border flex items-center justify-center shrink-0 mt-0.5 ${selectedQuestions.has(q.id) ? 'bg-purple-500 border-purple-500 text-white' : 'border-zinc-500 text-transparent'}`}>
+                  <CheckCircle2 size={16} />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${q.difficulty === 'Easy' ? 'bg-green-500/20 text-green-400' : q.difficulty === 'Medium' ? 'bg-yellow-500/20 text-yellow-400' : 'bg-red-500/20 text-red-400'}`}>
+                      {q.difficulty}
+                    </span>
+                    <span className="text-xs text-zinc-500 font-mono">{q.topic}</span>
+                  </div>
+                  <p className="text-white font-medium">{q.question}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Finished State - Dramatic Podium
+  if (status === 'finished') {
+    const top3 = players.slice(0, 3);
+    
+    return (
+      <div className="min-h-screen bg-[#050507] flex flex-col items-center justify-center p-6 relative overflow-hidden">
+        {podiumPhase === 3 && <div className="absolute inset-0 bg-[url('https://cdn.pixabay.com/photo/2018/01/29/13/03/confetti-3116032_1280.png')] opacity-30 animate-pulse mix-blend-screen pointer-events-none z-20" />}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] bg-yellow-500/10 rounded-full blur-[200px] pointer-events-none" />
+        
+        <h1 className="text-5xl font-black text-white mb-20 relative z-30 uppercase tracking-[0.2em]">Final Results</h1>
+
+        <div className="flex items-end justify-center gap-4 md:gap-8 h-96 relative z-30">
+          {/* 2nd Place */}
+          <div className="flex flex-col items-center w-32 md:w-48">
+            <AnimatePresence>
+              {podiumPhase >= 2 && top3[1] && (
+                <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-4">
+                  <p className="text-xl font-bold text-white">{top3[1].name}</p>
+                  <p className="text-sm text-zinc-400 font-mono">{top3[1].score}</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+            <motion.div 
+              initial={{ height: 0 }} 
+              animate={{ height: podiumPhase >= 2 ? 160 : 0 }} 
+              transition={{ duration: 1, type: "spring" }}
+              className="w-full bg-gradient-to-t from-zinc-800 to-zinc-400/50 rounded-t-lg flex items-start justify-center pt-4 border-t-2 border-zinc-400 shadow-[0_0_30px_rgba(161,161,170,0.2)]"
+            >
+              {podiumPhase >= 2 && <span className="text-3xl font-black text-zinc-300">2</span>}
+            </motion.div>
+          </div>
+
+          {/* 1st Place */}
+          <div className="flex flex-col items-center w-40 md:w-56 z-10">
+            <AnimatePresence>
+              {podiumPhase >= 3 && top3[0] && (
+                <motion.div initial={{ opacity: 0, scale: 0.5, y: 50 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: "spring", bounce: 0.6 }} className="text-center mb-4">
+                  <Trophy className="text-yellow-400 mx-auto mb-2" size={40} />
+                  <p className="text-3xl font-black text-yellow-400">{top3[0].name}</p>
+                  <p className="text-lg text-yellow-500/70 font-mono font-bold">{top3[0].score}</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+            <motion.div 
+              initial={{ height: 0 }} 
+              animate={{ height: podiumPhase >= 3 ? 240 : 0 }} 
+              transition={{ duration: 1, type: "spring", delay: 0.2 }}
+              className="w-full bg-gradient-to-t from-yellow-900/50 to-yellow-500/50 rounded-t-lg flex items-start justify-center pt-4 border-t-4 border-yellow-400 shadow-[0_0_50px_rgba(250,204,21,0.4)] relative overflow-hidden"
+            >
+              <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent" />
+              {podiumPhase >= 3 && <span className="text-5xl font-black text-yellow-300 relative z-10 drop-shadow-md">1</span>}
+            </motion.div>
+          </div>
+
+          {/* 3rd Place */}
+          <div className="flex flex-col items-center w-32 md:w-48">
+            <AnimatePresence>
+              {podiumPhase >= 1 && top3[2] && (
+                <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-4">
+                  <p className="text-lg font-bold text-white">{top3[2].name}</p>
+                  <p className="text-sm text-zinc-400 font-mono">{top3[2].score}</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+            <motion.div 
+              initial={{ height: 0 }} 
+              animate={{ height: podiumPhase >= 1 ? 120 : 0 }} 
+              transition={{ duration: 1, type: "spring" }}
+              className="w-full bg-gradient-to-t from-orange-900/50 to-orange-500/30 rounded-t-lg flex items-start justify-center pt-4 border-t-2 border-orange-500 shadow-[0_0_30px_rgba(249,115,22,0.2)]"
+            >
+              {podiumPhase >= 1 && <span className="text-2xl font-black text-orange-400">3</span>}
+            </motion.div>
+          </div>
+        </div>
+        
+        {podiumPhase >= 3 && (
+          <motion.button 
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2 }}
+            onClick={() => window.location.reload()}
+            className="mt-20 px-8 py-4 bg-white/10 hover:bg-white/20 text-white rounded-xl font-bold transition-all relative z-30 backdrop-blur-md"
+          >
+            Start New Game
+          </motion.button>
+        )}
       </div>
     );
   }
