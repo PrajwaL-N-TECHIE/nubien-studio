@@ -945,11 +945,18 @@ export default function StudentDashboard() {
   const [loadingAuth, setLoadingAuth] = useState(true);
 
   useEffect(() => {
+    let redirectTimeout: NodeJS.Timeout;
+
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (!user) {
-        navigate('/student-login');
+        // Debounce the redirect to prevent race conditions on mobile browsers
+        redirectTimeout = setTimeout(() => {
+          navigate('/student-login');
+        }, 1500);
         return;
       }
+      
+      if (redirectTimeout) clearTimeout(redirectTimeout);
       
       try {
         const q = query(collection(db, "internships"), where("email", "==", user.email));
@@ -970,7 +977,10 @@ export default function StudentDashboard() {
       }
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+      if (redirectTimeout) clearTimeout(redirectTimeout);
+    };
   }, [navigate]);
 
   useEffect(() => {
