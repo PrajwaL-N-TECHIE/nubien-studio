@@ -43,6 +43,10 @@ export default function StudentLogin() {
         // Standard Login
         await signInWithEmailAndPassword(auth, email.trim(), newPassword.trim());
         setStatusText("Access Granted.");
+      } else {
+        // Standard Login
+        await signInWithEmailAndPassword(auth, email.trim(), password.trim());
+        setStatusText("Access Granted.");
       }
 
       setTimeout(() => {
