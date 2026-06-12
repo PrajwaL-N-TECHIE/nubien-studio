@@ -315,6 +315,7 @@ const Footer = () => {
       { name: "Apply for Internship", path: "/internship-registration" },
       { name: "Verify Certificate", path: "/verify" },
       { name: "Student Dashboard", path: "/student-login" },
+      { name: "Buiz Arena", path: "/buiz" },
       { name: "API Reference", path: "#" },
       { name: "Community", path: "#" }
     ],
