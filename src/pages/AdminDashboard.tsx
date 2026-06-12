@@ -490,8 +490,11 @@ const AdminDashboard = () => {
         registrationId = `BLDCY-${trackPrefix}-${randomNum}`;
       }
 
+      const cleanEmail = newStudent.email.trim().toLowerCase();
+
       const studentData = {
         ...newStudent,
+        email: cleanEmail,
         receipt: attachment_url,
         registration_id: registrationId,
         cohort: globalBatch,
@@ -503,7 +506,7 @@ const AdminDashboard = () => {
       try {
         const secondaryApp = initializeApp(firebaseConfig, `SecondaryApp-${Date.now()}`);
         const secondaryAuth = getAuth(secondaryApp);
-        await createUserWithEmailAndPassword(secondaryAuth, newStudent.email, registrationId);
+        await createUserWithEmailAndPassword(secondaryAuth, cleanEmail, registrationId);
         await signOut(secondaryAuth);
       } catch (authError: any) {
         if (authError.code === 'auth/email-already-in-use') {

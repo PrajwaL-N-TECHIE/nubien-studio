@@ -161,7 +161,7 @@ const InternshipRegistration = () => {
       const form = e.currentTarget;
       const formData = new FormData(form);
       
-      const email = formData.get('email') as string;
+      const email = (formData.get('email') as string).trim().toLowerCase();
       const localPhone = formData.get('phone') as string;
       const phone = `${countryCode} ${localPhone}`;
 
