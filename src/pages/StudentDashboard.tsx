@@ -551,7 +551,7 @@ const GlobalLeaderboard = ({ currentStudent }: { currentStudent: StudentData }) 
           <h2 className="text-2xl font-bold text-white mb-2 flex items-center gap-2">
             <Trophy className="text-yellow-500" /> Global Leaderboard
           </h2>
-          <p className="text-zinc-400 text-sm">Rank up by earning B-Cores in The Crucible. The top 5 interns receive guaranteed placement interviews.</p>
+          <p className="text-zinc-400 text-sm">Rank up by earning B-Cores in The Crucible. The ultimate winner will receive a special prize during the certificate distribution ceremony.</p>
         </div>
         <div className="bg-[#0C0C12]/80 border border-white/10 p-6 rounded-2xl flex items-center gap-6">
           <div>
