@@ -516,23 +516,23 @@ const BuizHost = () => {
                       animate={{ opacity: 1, scale: 1, x: 0 }}
                       transition={{ type: "spring", stiffness: 300, damping: 20 }}
                       className={`flex items-center justify-between p-4 rounded-2xl border ${
-                        index === 0 ? 'bg-yellow-500/10 border-yellow-500/30' :
-                        index === 1 ? 'bg-zinc-300/10 border-zinc-300/30' :
-                        index === 2 ? 'bg-orange-500/10 border-orange-500/30' :
+                        status !== 'waiting' && index === 0 ? 'bg-yellow-500/10 border-yellow-500/30' :
+                        status !== 'waiting' && index === 1 ? 'bg-zinc-300/10 border-zinc-300/30' :
+                        status !== 'waiting' && index === 2 ? 'bg-orange-500/10 border-orange-500/30' :
                         'bg-white/5 border-white/10'
                       }`}
                     >
                       <div className="flex items-center gap-4">
                         <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black text-lg ${
-                          index === 0 ? 'bg-yellow-500 text-black' :
-                          index === 1 ? 'bg-zinc-300 text-black' :
-                          index === 2 ? 'bg-orange-500 text-black' :
+                          status !== 'waiting' && index === 0 ? 'bg-yellow-500 text-black' :
+                          status !== 'waiting' && index === 1 ? 'bg-zinc-300 text-black' :
+                          status !== 'waiting' && index === 2 ? 'bg-orange-500 text-black' :
                           'bg-white/10 text-white/50'
                         }`}>
                           {index + 1}
                         </div>
                         <div>
-                          <p className={`font-bold text-lg ${index < 3 ? 'text-white' : 'text-zinc-300'}`}>{p.name}</p>
+                          <p className={`font-bold text-lg ${status !== 'waiting' && index < 3 ? 'text-white' : 'text-zinc-300'}`}>{p.name}</p>
                           <div className="flex items-center gap-2 mt-1">
                             {p.streak >= 3 && (
                               <span className="text-[10px] font-black uppercase tracking-wider bg-orange-500/20 text-orange-400 px-2 py-0.5 rounded flex items-center gap-1">
@@ -545,9 +545,9 @@ const BuizHost = () => {
                       </div>
                       <div className="text-right">
                         <p className={`font-black text-2xl font-mono ${
-                          index === 0 ? 'text-yellow-400' :
-                          index === 1 ? 'text-zinc-300' :
-                          index === 2 ? 'text-orange-400' :
+                          status !== 'waiting' && index === 0 ? 'text-yellow-400' :
+                          status !== 'waiting' && index === 1 ? 'text-zinc-300' :
+                          status !== 'waiting' && index === 2 ? 'text-orange-400' :
                           'text-white'
                         }`}>
                           {p.score.toLocaleString()}

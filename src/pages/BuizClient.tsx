@@ -243,6 +243,7 @@ const BuizClient = () => {
   if (roomStatus === 'finished') {
     return (
       <div className="min-h-screen bg-[#050507] flex flex-col items-center justify-center p-6 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[url('https://cdn.pixabay.com/photo/2018/01/29/13/03/confetti-3116032_1280.png')] opacity-30 animate-pulse mix-blend-screen pointer-events-none z-0" />
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-yellow-500/10 rounded-full blur-[100px] pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[100px] pointer-events-none" />
         
@@ -337,40 +338,39 @@ const BuizClient = () => {
           <h2 className="text-2xl md:text-4xl font-black text-white leading-tight mt-4">{q.question}</h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1">
+        <div className="flex flex-col gap-4 flex-1">
           {q.options.map((opt, idx) => {
             
             // Determine button colors based on state
-            let bgClass = "bg-white/5 hover:bg-white/10 border-white/10 text-white";
+            let bgClass = "bg-[#1A1A24]/60 hover:bg-[#1A1A24] border-white/10 text-white";
+            let letterBg = "bg-white/10";
             
             if (showFeedback) {
               if (idx === q.answer) {
                 bgClass = "bg-green-500 text-white border-green-400 shadow-[0_0_30px_rgba(34,197,94,0.3)]";
+                letterBg = "bg-green-600 border border-green-400";
               } else if (idx === selectedOption) {
                 bgClass = "bg-red-500 text-white border-red-400";
+                letterBg = "bg-red-600 border border-red-400";
               } else {
                 bgClass = "bg-white/5 border-white/10 text-white/30 opacity-50";
+                letterBg = "bg-white/5 border border-white/10";
               }
-            }
-
-            // Sleek premium colors instead of basic primary colors
-            if (!showFeedback) {
-              bgClass = idx === 0 ? "bg-gradient-to-br from-indigo-900 to-indigo-600 border-indigo-400/50 hover:shadow-[0_0_30px_rgba(79,70,229,0.3)]" :
-                        idx === 1 ? "bg-gradient-to-br from-rose-900 to-rose-600 border-rose-400/50 hover:shadow-[0_0_30px_rgba(225,29,72,0.3)]" :
-                        idx === 2 ? "bg-gradient-to-br from-amber-900 to-amber-600 border-amber-400/50 hover:shadow-[0_0_30px_rgba(217,119,6,0.3)]" :
-                        "bg-gradient-to-br from-emerald-900 to-emerald-600 border-emerald-400/50 hover:shadow-[0_0_30px_rgba(5,150,105,0.3)]";
             }
 
             return (
               <motion.button
                 key={idx}
-                whileHover={!showFeedback ? { scale: 1.02 } : {}}
-                whileTap={!showFeedback ? { scale: 0.95 } : {}}
+                whileHover={!showFeedback ? { scale: 1.01, x: 5 } : {}}
+                whileTap={!showFeedback ? { scale: 0.98 } : {}}
                 disabled={!!showFeedback}
                 onClick={() => handleAnswer(idx)}
-                className={`p-6 rounded-2xl border font-bold text-lg md:text-xl transition-all flex items-center justify-center text-center shadow-lg ${bgClass} disabled:cursor-not-allowed`}
+                className={`p-5 md:p-6 rounded-2xl border font-bold text-lg md:text-xl transition-all flex items-center text-left shadow-lg ${bgClass} disabled:cursor-not-allowed w-full`}
               >
-                {opt}
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm md:text-base mr-4 shrink-0 transition-colors ${letterBg}`}>
+                  {String.fromCharCode(65 + idx)}
+                </div>
+                <span className="flex-1 leading-snug">{opt}</span>
               </motion.button>
             );
           })}
