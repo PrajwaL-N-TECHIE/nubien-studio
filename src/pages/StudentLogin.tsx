@@ -41,7 +41,7 @@ export default function StudentLogin() {
         setStatusText("Password Changed Successfully!");
         
         // Standard Login
-        await signInWithEmailAndPassword(auth, email.trim(), password.trim());
+        await signInWithEmailAndPassword(auth, email.trim(), newPassword.trim());
         setStatusText("Access Granted.");
       }
 
