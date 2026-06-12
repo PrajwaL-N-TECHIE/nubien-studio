@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Lock, ShieldAlert, ArrowRight, Eye, EyeOff, Search, LogOut, Trash2, Info, X, Edit2, BookOpen, UploadCloud, CheckCircle2, Plus, Download, Settings, Mail, FileText, Link, Calendar, Building, Loader2, Target, Trophy } from "lucide-react";
-import AdminCrucible from "@/components/AdminCrucible";
 import { useNavigate } from "react-router-dom";
 import { initializeApp } from "firebase/app";
 
@@ -176,6 +175,13 @@ const AdminDashboard = () => {
   const [editMatCohort, setEditMatCohort] = useState("");
   const [isUpdatingMat, setIsUpdatingMat] = useState(false);
 
+  // Edit Assignment State
+  const [editingAssign, setEditingAssign] = useState<Assignment | null>(null);
+  const [editAssignTitle, setEditAssignTitle] = useState("");
+  const [editAssignDesc, setEditAssignDesc] = useState("");
+  const [editAssignDueDate, setEditAssignDueDate] = useState("");
+  const [isUpdatingAssign, setIsUpdatingAssign] = useState(false);
+
   // Assignments State
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [newAssignTitle, setNewAssignTitle] = useState("");
@@ -188,7 +194,7 @@ const AdminDashboard = () => {
   // Submissions State
   const [submissions, setSubmissions] = useState<Submission[]>([]);
 
-  const [activeTab, setActiveTab] = useState<'temp_registrations' | 'perm_registrations' | 'materials' | 'assignments' | 'submissions' | 'settings' | 'leaderboard' | 'crucible'>('temp_registrations');
+  const [activeTab, setActiveTab] = useState<'temp_registrations' | 'perm_registrations' | 'materials' | 'assignments' | 'submissions' | 'settings' | 'leaderboard'>('temp_registrations');
   const [globalBatch, setGlobalBatch] = useState("batch-1");
   const [isSavingSettings, setIsSavingSettings] = useState(false);
 
@@ -816,7 +822,7 @@ const AdminDashboard = () => {
           <div className="w-full lg:w-72 shrink-0 bg-[#0C0C12]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-4 sticky top-24 z-20 shadow-[0_0_40px_rgba(0,0,0,0.5)]">
             <div className="space-y-6">
               <div>
-                <h3 className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 px-3">People</h3>
+                <h3 className="text-xs font-black text-white uppercase tracking-[0.2em] mb-3 px-3">People</h3>
                 <div className="space-y-1">
                   <button onClick={() => setActiveTab('temp_registrations')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all ${activeTab === 'temp_registrations' ? 'bg-purple-600 text-white shadow-lg' : 'text-white/50 hover:text-white hover:bg-white/5'}`}><ShieldAlert size={16} /> Temporary Registrations</button>
                   <button onClick={() => setActiveTab('perm_registrations')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all ${activeTab === 'perm_registrations' ? 'bg-purple-600 text-white shadow-lg' : 'text-white/50 hover:text-white hover:bg-white/5'}`}><Lock size={16} /> Permanent Interns</button>
@@ -824,7 +830,7 @@ const AdminDashboard = () => {
               </div>
 
               <div>
-                <h3 className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 px-3">Content</h3>
+                <h3 className="text-xs font-black text-white uppercase tracking-[0.2em] mb-3 px-3">Content</h3>
                 <div className="space-y-1">
                   <button onClick={() => setActiveTab('materials')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all ${activeTab === 'materials' ? 'bg-purple-600 text-white shadow-lg' : 'text-white/50 hover:text-white hover:bg-white/5'}`}><BookOpen size={16} /> Vault Materials</button>
                   <button onClick={() => setActiveTab('assignments')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all ${activeTab === 'assignments' ? 'bg-purple-600 text-white shadow-lg' : 'text-white/50 hover:text-white hover:bg-white/5'}`}><Edit2 size={16} /> Assignments</button>
@@ -833,15 +839,14 @@ const AdminDashboard = () => {
               </div>
 
               <div>
-                <h3 className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 px-3">Gamification</h3>
+                <h3 className="text-xs font-black text-white uppercase tracking-[0.2em] mb-3 px-3">Gamification</h3>
                 <div className="space-y-1">
                   <button onClick={() => setActiveTab('leaderboard')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all ${activeTab === 'leaderboard' ? 'bg-purple-600 text-white shadow-lg' : 'text-white/50 hover:text-white hover:bg-white/5'}`}><Trophy size={16} /> Leaderboard</button>
-                  <button onClick={() => setActiveTab('crucible')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all ${activeTab === 'crucible' ? 'bg-purple-600 text-white shadow-lg' : 'text-white/50 hover:text-white hover:bg-white/5'}`}><Target size={16} /> Crucible QA</button>
                 </div>
               </div>
 
               <div>
-                <h3 className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 px-3">System</h3>
+                <h3 className="text-xs font-black text-white uppercase tracking-[0.2em] mb-3 px-3">System</h3>
                 <div className="space-y-1">
                   <button onClick={() => setActiveTab('settings')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all ${activeTab === 'settings' ? 'bg-purple-600 text-white shadow-lg' : 'text-white/50 hover:text-white hover:bg-white/5'}`}><Settings size={16} /> Settings</button>
                 </div>
@@ -1267,12 +1272,7 @@ const AdminDashboard = () => {
           </div>
         )}
 
-        {/* Crucible QA Tab */}
-        {activeTab === 'crucible' && (
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <AdminCrucible />
-          </div>
-        )}
+
 
       </div>
 
@@ -1513,6 +1513,78 @@ const AdminDashboard = () => {
                 className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold transition-all disabled:opacity-50"
               >
                 {isUpdatingMat ? "Saving Changes..." : "Save Changes"}
+              </button>
+            </form>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Edit Assignment Modal */}
+      {editingAssign && (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm" onClick={() => setEditingAssign(null)}>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="w-full max-w-md bg-[#0a0a0f] border border-white/10 rounded-2xl overflow-hidden shadow-2xl"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="p-6 border-b border-white/10 flex justify-between items-center bg-purple-500/5">
+              <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                <Edit2 className="text-purple-400" size={20} /> Edit Assignment
+              </h3>
+              <button onClick={() => setEditingAssign(null)} className="text-white/50 hover:text-white transition-colors">
+                <X size={20} />
+              </button>
+            </div>
+            
+            <form onSubmit={handleUpdateAssignment} className="p-6 space-y-6">
+              <div>
+                <label className="block text-xs font-bold text-white/40 uppercase mb-2">Assignment Title</label>
+                <input 
+                  type="text" 
+                  required 
+                  value={editAssignTitle} 
+                  onChange={e => setEditAssignTitle(e.target.value)} 
+                  className="w-full bg-[#050507] border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-purple-500/50 transition-colors" 
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-white/40 uppercase mb-2">Description</label>
+                <textarea 
+                  required 
+                  value={editAssignDesc} 
+                  onChange={e => setEditAssignDesc(e.target.value)} 
+                  rows={3}
+                  className="w-full bg-[#050507] border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-purple-500/50 transition-colors" 
+                />
+              </div>
+              
+              <div>
+                <label className="block text-xs font-bold text-white/40 uppercase mb-2">Due Date</label>
+                <input 
+                  type="date" 
+                  required 
+                  value={editAssignDueDate} 
+                  onChange={e => setEditAssignDueDate(e.target.value)} 
+                  className="w-full bg-[#050507] border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-purple-500/50 transition-colors" 
+                />
+              </div>
+
+              <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-4 flex gap-3">
+                <AlertCircle className="text-yellow-400 shrink-0" size={20} />
+                <p className="text-xs text-yellow-200/70 leading-relaxed">
+                  Only the Title, Description, and Due Date can be edited. If you assigned the wrong file, please delete this assignment and re-upload it.
+                </p>
+              </div>
+
+              <button 
+                type="submit" 
+                disabled={isUpdatingAssign} 
+                className="w-full py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold transition-all disabled:opacity-50"
+              >
+                {isUpdatingAssign ? "Saving Changes..." : "Save Changes"}
               </button>
             </form>
           </motion.div>

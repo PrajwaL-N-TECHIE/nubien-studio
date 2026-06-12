@@ -612,45 +612,27 @@ const MockInterviewArena = ({ student, setStudent }: { student: StudentData, set
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [earnedCores, setEarnedCores] = useState(0);
 
-  const [questions, setQuestions] = useState<any[]>([]);
-  const [loadingQs, setLoadingQs] = useState(true);
-
-  useEffect(() => {
-    const fetchQuestions = async () => {
-      try {
-        const snap = await getDocs(collection(db, "crucible_questions"));
-        const data: any[] = [];
-        const answered = student.answered_questions || [];
-        snap.forEach(doc => {
-          if (!answered.includes(doc.id)) {
-            data.push({ id: doc.id, ...doc.data() });
-          }
-        });
-        
-        // Sort by Difficulty: Easy -> Medium -> Hard
-        const diffWeight: Record<string, number> = { 'Easy': 1, 'Medium': 2, 'Hard': 3 };
-        data.sort((a, b) => {
-          const wA = diffWeight[a.difficulty] || 2;
-          const wB = diffWeight[b.difficulty] || 2;
-          return wA - wB;
-        });
-        
-        setQuestions(data);
-      } catch (err) {
-        console.error("Failed to load questions", err);
-      } finally {
-        setLoadingQs(false);
-      }
-    };
-    fetchQuestions();
-  }, []);
+  const [questions] = useState<any[]>(() => {
+    const answered = student.answered_questions || [];
+    const data = QUESTIONS.filter(q => !answered.includes(q.id.toString()));
+    
+    // Sort by Difficulty: Easy -> Medium -> Hard
+    const diffWeight: Record<string, number> = { 'Easy': 1, 'Medium': 2, 'Hard': 3 };
+    data.sort((a, b) => {
+      const wA = diffWeight[a.difficulty] || 2;
+      const wB = diffWeight[b.difficulty] || 2;
+      return wA - wB;
+    });
+    
+    return data;
+  });
 
   const handleSkip = async () => {
     setSelectedOption(null);
     setShowResult(false);
     
     const q = questions[currentQIndex];
-    const newAnswered = [...(student.answered_questions || []), q.id];
+    const newAnswered = [...(student.answered_questions || []), q.id.toString()];
     
     try {
       await updateDoc(doc(db, "internships", student.id), {
@@ -669,7 +651,7 @@ const MockInterviewArena = ({ student, setStudent }: { student: StudentData, set
     setIsSubmitting(true);
     const q = questions[currentQIndex];
     const isCorrect = selectedOption === q.answer;
-    const newAnswered = [...(student.answered_questions || []), q.id];
+    const newAnswered = [...(student.answered_questions || []), q.id.toString()];
 
     if (isCorrect) {
       try {
@@ -705,7 +687,6 @@ const MockInterviewArena = ({ student, setStudent }: { student: StudentData, set
     setCurrentQIndex(prev => prev + 1);
   };
 
-  if (loadingQs) return <div className="text-center text-zinc-500 py-20 font-mono animate-pulse">Initializing Arena...</div>;
   if (currentQIndex >= questions.length) return <div className="text-center text-zinc-500 py-20 font-mono">You have answered all available questions. Great job! Check back later for more.</div>;
 
   const q = questions[currentQIndex];
@@ -717,9 +698,9 @@ const MockInterviewArena = ({ student, setStudent }: { student: StudentData, set
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="bg-[#0C0C12]/80 border border-white/10 rounded-3xl p-8 md:p-12 relative overflow-hidden group">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-red-500/5 rounded-full blur-[80px] -mr-32 -mt-32 pointer-events-none" />
+        <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/10 rounded-full blur-[80px] -mr-32 -mt-32 pointer-events-none" />
         <h2 className="text-3xl font-black text-white mb-2 flex items-center gap-3">
-          <Target className="text-red-500" size={32} /> The Buildicy Crucible
+          <Target className="text-purple-500" size={32} /> The Buildicy Crucible
         </h2>
         <p className="text-zinc-400 mb-8 max-w-2xl">
           Welcome to the Arena. Face rapid-fire technical questions covering AI, Full Stack, and Architecture. Earn 5 B-Cores per correct answer. Skip anytime with no penalty.
