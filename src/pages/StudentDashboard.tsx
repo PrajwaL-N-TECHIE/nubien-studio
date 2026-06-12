@@ -197,29 +197,36 @@ const MissionControl = ({ materials, assignments, submissions, student }: { mate
             </h3>
             {pendingAssignments.length > 0 ? (
               <div className="space-y-3">
-                {pendingAssignments.map(a => (
-                  <div key={a.id} className="p-4 bg-white/5 border border-white/5 rounded-2xl flex justify-between items-center group hover:border-purple-500/30 transition-colors">
-                    <div>
-                      <p className="text-white font-medium text-sm">{a.title}</p>
-                      <p className="text-xs text-zinc-500 mt-1 flex items-center gap-1"><Clock size={12}/> Due: {a.due_date ? new Date(a.due_date).toLocaleDateString() : "No deadline"}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {a.attachment_url && (
-                        <a 
-                          href={a.attachment_url} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="px-3 py-1.5 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border border-purple-500/20 rounded-lg text-xs font-bold transition-colors flex items-center gap-1"
-                        >
-                          <FileText size={12} /> Attachment
-                        </a>
-                      )}
-                      <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-zinc-400 group-hover:text-purple-400 transition-colors">
-                        <ChevronRight size={16} />
+                {pendingAssignments.map((a) => {
+                  const originalIndex = assignments.findIndex(assign => assign.id === a.id);
+                  const isLocked = originalIndex > 0 && !submissions.some(s => s.assignment_id === assignments[originalIndex-1].id);
+                  
+                  return (
+                    <div key={a.id} className={`p-4 bg-white/5 border border-white/5 rounded-2xl flex justify-between items-center group ${isLocked ? 'opacity-50' : 'hover:border-purple-500/30'} transition-colors`}>
+                      <div>
+                        <p className={`font-medium text-sm ${isLocked ? 'text-zinc-500' : 'text-white'} flex items-center gap-2`}>
+                          {isLocked && <FileLock2 size={14} />} {a.title}
+                        </p>
+                        <p className="text-xs text-zinc-500 mt-1 flex items-center gap-1"><Clock size={12}/> Due: {a.due_date}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {a.attachment_url && !isLocked && (
+                          <a 
+                            href={a.attachment_url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="px-3 py-1.5 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border border-purple-500/20 rounded-lg text-xs font-bold transition-colors flex items-center gap-1"
+                          >
+                            <FileText size={12} /> Attachment
+                          </a>
+                        )}
+                        <div className={`w-8 h-8 rounded-full bg-white/5 flex items-center justify-center ${isLocked ? 'text-zinc-600' : 'text-zinc-400 group-hover:text-purple-400'} transition-colors`}>
+                          {isLocked ? <FileLock2 size={14} /> : <ChevronRight size={16} />}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               <p className="text-sm text-zinc-500 py-4">No pending assignments.</p>
@@ -398,23 +405,34 @@ const Dropzone = ({ assignments, student, submissions, setSubmissions }: { assig
             {assignments.length === 0 ? (
               <p className="text-zinc-500 text-sm">No active tasks available right now.</p>
             ) : (
-              assignments.map(a => {
+              assignments.map((a, i) => {
                 const isSubmitted = submissions.some(s => s.assignment_id === a.id);
+                const isLocked = i > 0 && !submissions.some(s => s.assignment_id === assignments[i-1].id);
+                
                 return (
-                  <div key={a.id} className={`p-5 border rounded-2xl transition-all ${isSubmitted ? 'bg-green-500/5 border-green-500/20' : 'bg-white/5 border-white/10 hover:border-purple-500/30'}`}>
+                  <div key={a.id} className={`p-5 border rounded-2xl transition-all ${isSubmitted ? 'bg-green-500/5 border-green-500/20' : isLocked ? 'bg-[#050507]/80 border-white/5 opacity-60' : 'bg-white/5 border-white/10 hover:border-purple-500/30'}`}>
                     <div className="flex justify-between items-start mb-2">
-                      <h4 className="font-bold text-white">{a.title}</h4>
+                      <h4 className={`font-bold ${isLocked ? 'text-zinc-500' : 'text-white'} flex items-center gap-2`}>
+                        {isLocked && <FileLock2 size={16} />} {a.title}
+                      </h4>
                       {isSubmitted && <span className="px-2 py-1 bg-green-500/20 text-green-400 text-[10px] uppercase font-bold tracking-widest rounded">Submitted</span>}
+                      {isLocked && <span className="px-2 py-1 bg-zinc-800 text-zinc-500 text-[10px] uppercase font-bold tracking-widest rounded">Locked</span>}
                     </div>
-                    <p className="text-sm text-zinc-300 leading-relaxed whitespace-pre-wrap mb-3">{a.description}</p>
-                    <div className="flex items-center gap-4 text-xs font-mono">
-                      <span className="text-purple-400 flex items-center gap-1"><Clock size={12}/> Due: {a.due_date}</span>
-                      {a.attachment_url && (
-                        <a href={a.attachment_url} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline flex items-center gap-1">
-                          <FileText size={12}/> Resource
-                        </a>
-                      )}
-                    </div>
+                    {!isLocked ? (
+                      <>
+                        <p className="text-sm text-zinc-300 leading-relaxed whitespace-pre-wrap mb-3">{a.description}</p>
+                        <div className="flex items-center gap-4 text-xs font-mono">
+                          <span className="text-purple-400 flex items-center gap-1"><Clock size={12}/> Due: {a.due_date}</span>
+                          {a.attachment_url && (
+                            <a href={a.attachment_url} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline flex items-center gap-1">
+                              <FileText size={12}/> Resource
+                            </a>
+                          )}
+                        </div>
+                      </>
+                    ) : (
+                      <p className="text-sm text-zinc-500 italic mt-2">Submit the previous assignment to unlock this task.</p>
+                    )}
                   </div>
                 );
               })
@@ -431,9 +449,14 @@ const Dropzone = ({ assignments, student, submissions, setSubmissions }: { assig
                 <label className="block text-[10px] font-bold text-white/40 uppercase mb-2 tracking-widest">Select Assignment</label>
                 <select required value={selectedAssignId} onChange={e => setSelectedAssignId(e.target.value)} className="w-full bg-[#050507] border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-blue-500/50 text-sm">
                   <option value="">-- Choose Assignment --</option>
-                  {assignments.map(a => (
-                    <option key={a.id} value={a.id}>{a.title}</option>
-                  ))}
+                  {assignments.map((a, i) => {
+                    const isLocked = i > 0 && !submissions.some(s => s.assignment_id === assignments[i-1].id);
+                    return (
+                      <option key={a.id} value={a.id} disabled={isLocked}>
+                        {a.title} {isLocked ? "(Locked)" : ""}
+                      </option>
+                    );
+                  })}
                 </select>
               </div>
               <div>
