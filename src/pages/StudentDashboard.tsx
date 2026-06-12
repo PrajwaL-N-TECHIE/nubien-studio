@@ -943,15 +943,16 @@ export default function StudentDashboard() {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
 
   const [loadingAuth, setLoadingAuth] = useState(true);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   useEffect(() => {
     let redirectTimeout: NodeJS.Timeout;
 
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (!user) {
-        // Debounce the redirect to prevent race conditions on mobile browsers
         redirectTimeout = setTimeout(() => {
-          navigate('/student-login');
+          setAuthError("No active Firebase session. Please ensure your browser allows cookies/localStorage and try logging in again.");
+          setLoadingAuth(false);
         }, 1500);
         return;
       }
@@ -965,13 +966,12 @@ export default function StudentDashboard() {
           const doc = snap.docs[0];
           setStudent({ id: doc.id, ...doc.data() } as StudentData);
         } else {
-          alert(`SYSTEM DEBUG: Cannot find student profile for ${user.email} in the database. Please ensure the email matches exactly.`);
+          setAuthError(`DATABASE MISMATCH: You are logged in as ${user.email}, but there is no matching profile for this exact email in the database.`);
           await signOut(auth);
-          navigate('/student-login');
         }
       } catch (err: any) {
         console.error(err);
-        alert(`SYSTEM DEBUG: Database read error: ${err.message}`);
+        setAuthError(`PERMISSION DENIED: ${err.message}`);
       } finally {
         setLoadingAuth(false);
       }
@@ -1032,10 +1032,31 @@ export default function StudentDashboard() {
     { id: 'dropzone', label: 'Dropzone', icon: UploadCloud }
   ];
 
+  if (authError) {
+    return (
+      <div className="min-h-screen bg-[#050507] flex items-center justify-center text-white p-6">
+        <div className="bg-red-500/10 border border-red-500/50 p-8 rounded-3xl max-w-lg text-center shadow-2xl">
+          <ShieldCheck size={48} className="text-red-500 mx-auto mb-6" />
+          <h1 className="text-2xl font-black mb-2 text-white">Authentication Failed</h1>
+          <p className="text-red-400 font-mono text-sm leading-relaxed mb-8">{authError}</p>
+          <button 
+            onClick={() => navigate('/student-login')} 
+            className="px-8 py-3 bg-red-600 hover:bg-red-500 text-white rounded-xl font-bold transition-colors"
+          >
+            Return to Login
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (loadingAuth || !student) {
     return (
       <div className="min-h-screen bg-[#050507] flex items-center justify-center text-white">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
+        <div className="flex flex-col items-center gap-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
+          <p className="text-zinc-500 font-mono text-sm animate-pulse">Establishing secure connection...</p>
+        </div>
       </div>
     );
   }
