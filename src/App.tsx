@@ -27,6 +27,8 @@ const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const VerifyCertificate = lazy(() => import("./pages/VerifyCertificate"));
 const StudentDashboard = lazy(() => import("./pages/StudentDashboard"));
 const StudentLogin = lazy(() => import("./pages/StudentLogin"));
+const BuizClient = lazy(() => import("./pages/BuizClient"));
+const BuizHost = lazy(() => import("./pages/BuizHost"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -48,6 +50,8 @@ const AnimatedRoutes = () => {
           <Route path="/student-login" element={<StudentLogin />} />
           <Route path="/student-dashboard" element={<StudentDashboard />} />
           <Route path="/verify" element={<VerifyCertificate />} />
+          <Route path="/buiz" element={<BuizClient />} />
+          <Route path="/buiz/host" element={<BuizHost />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
@@ -57,7 +61,7 @@ const AnimatedRoutes = () => {
 
 const GlobalLayout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
-  const isStandaloneRoute = location.pathname.includes('/student-dashboard') || location.pathname.includes('/student-login') || location.pathname.includes('/admin');
+  const isStandaloneRoute = location.pathname.includes('/student-dashboard') || location.pathname.includes('/student-login') || location.pathname.includes('/admin') || location.pathname.includes('/buiz');
 
   return (
     <div className="bg-[#050507] min-h-screen flex flex-col text-white">
