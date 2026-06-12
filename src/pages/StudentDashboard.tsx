@@ -61,7 +61,7 @@ const getNextLiveSession = () => {
   const currentHour = now.getHours();
   const currentMinute = now.getMinutes();
   
-  const targetDays = [5]; // Friday
+  const targetDays = [1]; // Monday
   let daysToAdd = 0;
   
   const isPastTimeToday = currentHour > 19 || (currentHour === 19 && currentMinute >= 45);
