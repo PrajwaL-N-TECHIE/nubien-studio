@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { User, Lock, ArrowRight, CheckCircle2, Loader2, ShieldCheck, Mail, Key } from "lucide-react";
+import { User, Lock, ArrowRight, CheckCircle2, Loader2, ShieldCheck, Mail, Key, Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import PageTransition from "@/components/PageTransition";
 import { db, auth } from "@/lib/firebase";
@@ -12,6 +12,8 @@ export default function StudentLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
   
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [statusText, setStatusText] = useState("");
@@ -137,13 +139,20 @@ export default function StudentLogin() {
                       <Lock className="text-zinc-500 group-focus-within:text-purple-400 transition-colors" size={18} />
                     </div>
                     <input
-                      type="password"
+                      type={showPassword ? "text" : "password"}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder={mode === "change" ? "Enter current password" : "Enter your password"}
-                      className="w-full bg-[#050507] border border-white/10 rounded-xl py-3.5 pl-12 pr-4 text-white placeholder-zinc-600 focus:outline-none focus:border-purple-500/50 transition-all text-sm"
+                      className="w-full bg-[#050507] border border-white/10 rounded-xl py-3.5 pl-12 pr-12 text-white placeholder-zinc-600 focus:outline-none focus:border-purple-500/50 transition-all text-sm"
                       required
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute inset-y-0 right-0 pr-4 flex items-center text-zinc-500 hover:text-white transition-colors"
+                    >
+                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
                   </div>
                 </div>
 
@@ -157,14 +166,21 @@ export default function StudentLogin() {
                         <Key className="text-zinc-500 group-focus-within:text-purple-400 transition-colors" size={18} />
                       </div>
                       <input
-                        type="password"
+                        type={showNewPassword ? "text" : "password"}
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
                         placeholder="Set a secure new password"
-                        className="w-full bg-[#050507] border border-white/10 rounded-xl py-3.5 pl-12 pr-4 text-white placeholder-zinc-600 focus:outline-none focus:border-purple-500/50 transition-all text-sm"
+                        className="w-full bg-[#050507] border border-white/10 rounded-xl py-3.5 pl-12 pr-12 text-white placeholder-zinc-600 focus:outline-none focus:border-purple-500/50 transition-all text-sm"
                         required={mode === "change"}
                         minLength={6}
                       />
+                      <button
+                        type="button"
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-zinc-500 hover:text-white transition-colors"
+                      >
+                        {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
                     </div>
                   </div>
                 )}
