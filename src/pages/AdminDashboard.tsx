@@ -70,6 +70,76 @@ const trackNames: Record<string, string> = {
   ai_architect: "AI Architect"
 };
 
+const AdminLeaderboard = () => {
+  const [leaderboard, setLeaderboard] = useState<InternshipRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchLeaderboard = async () => {
+      try {
+        const q = query(collection(db, "internships"), orderBy("b_cores", "desc"));
+        const snap = await getDocs(q);
+        const data: InternshipRecord[] = [];
+        snap.forEach(doc => data.push({ id: doc.id, ...doc.data() } as InternshipRecord));
+        
+        const sanitizedData = data.map(s => ({ ...s, b_cores: (s as any).b_cores || 0 }));
+        sanitizedData.sort((a, b) => ((b as any).b_cores || 0) - ((a as any).b_cores || 0));
+        setLeaderboard(sanitizedData);
+      } catch (err) {
+        console.error("Error fetching leaderboard", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchLeaderboard();
+  }, []);
+
+  if (loading) return <div className="text-center text-zinc-500 py-20 font-mono animate-pulse">Syncing Leaderboard Data...</div>;
+
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-left border-collapse">
+        <thead>
+          <tr className="border-b border-white/10 bg-black/20">
+            <th className="p-4 text-xs font-bold text-white/50 uppercase tracking-wider">Rank</th>
+            <th className="p-4 text-xs font-bold text-white/50 uppercase tracking-wider">Student</th>
+            <th className="p-4 text-xs font-bold text-white/50 uppercase tracking-wider">Track & Cohort</th>
+            <th className="p-4 text-xs font-bold text-white/50 uppercase tracking-wider text-right">B-Cores</th>
+          </tr>
+        </thead>
+        <tbody>
+          {leaderboard.map((student, idx) => {
+            const rank = idx + 1;
+            return (
+              <tr key={student.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                <td className="p-4">
+                  {rank === 1 ? <span className="text-yellow-500 font-black">1st</span> :
+                   rank === 2 ? <span className="text-zinc-300 font-black">2nd</span> :
+                   rank === 3 ? <span className="text-amber-600 font-black">3rd</span> :
+                   <span className="text-zinc-500 font-bold">#{rank}</span>}
+                </td>
+                <td className="p-4">
+                  <p className="font-bold text-white">{student.name}</p>
+                  <p className="text-xs text-zinc-500">{student.email}</p>
+                </td>
+                <td className="p-4">
+                  <p className="text-sm text-zinc-300">{trackNames[student.track] || student.track}</p>
+                  <p className="text-xs text-blue-400 font-mono">{student.cohort}</p>
+                </td>
+                <td className="p-4 text-right">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-purple-500/10 text-purple-400 rounded-lg font-mono font-bold border border-purple-500/20">
+                    {(student as any).b_cores || 0}
+                  </span>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
 const AdminDashboard = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -117,7 +187,7 @@ const AdminDashboard = () => {
   // Submissions State
   const [submissions, setSubmissions] = useState<Submission[]>([]);
 
-  const [activeTab, setActiveTab] = useState<'temp_registrations' | 'perm_registrations' | 'materials' | 'assignments' | 'submissions' | 'settings'>('temp_registrations');
+  const [activeTab, setActiveTab] = useState<'temp_registrations' | 'perm_registrations' | 'materials' | 'assignments' | 'submissions' | 'settings' | 'leaderboard'>('temp_registrations');
   const [globalBatch, setGlobalBatch] = useState("batch-1");
   const [isSavingSettings, setIsSavingSettings] = useState(false);
 
@@ -747,6 +817,7 @@ const AdminDashboard = () => {
             { id: 'materials', label: 'Vault Materials', icon: BookOpen },
             { id: 'assignments', label: 'Assignments', icon: Edit2 },
             { id: 'submissions', label: 'Submissions', icon: CheckCircle2 },
+            { id: 'leaderboard', label: 'Leaderboard', icon: Trophy },
             { id: 'settings', label: 'Settings', icon: Settings }
           ].map(tab => (
             <button
@@ -1159,6 +1230,20 @@ const AdminDashboard = () => {
                   )}
                 </tbody>
               </table>
+            </div>
+          </div>
+        )}
+
+        {/* Leaderboard Tab */}
+        {activeTab === 'leaderboard' && (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="bg-[#0a0a0f]/80 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden mb-8">
+              <div className="p-6 border-b border-white/10 flex items-center justify-between bg-blue-500/5">
+                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                  <Trophy className="text-blue-400" /> B-Cores Leaderboard
+                </h2>
+              </div>
+              <AdminLeaderboard />
             </div>
           </div>
         )}

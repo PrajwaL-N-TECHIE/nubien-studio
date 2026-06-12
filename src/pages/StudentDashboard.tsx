@@ -13,8 +13,9 @@ import { usePerformance } from "@/context/PerformanceContext";
 import PageTransition from "@/components/PageTransition";
 import { useNavigate } from "react-router-dom";
 import { db, auth } from "@/lib/firebase";
-import { collection, query, where, getDocs, addDoc, serverTimestamp, orderBy } from "firebase/firestore";
+import { collection, query, where, getDocs, addDoc, serverTimestamp, orderBy, updateDoc, doc } from "firebase/firestore";
 import { onAuthStateChanged, signOut } from "firebase/auth";
+import { QUESTIONS } from "@/data/questions";
 
 
 interface StudentData {
@@ -23,7 +24,7 @@ interface StudentData {
   track: string;
   cohort: string;
   registration_id: string;
-  xp?: number;
+  b_cores?: number;
   progress?: number;
 }
 
@@ -512,362 +513,240 @@ const Dropzone = ({ assignments, student, submissions, setSubmissions }: { assig
   );
 };
 
-const Leaderboard = () => (
-  <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-    <div className="flex flex-col md:flex-row gap-8 mb-8">
-      <div className="flex-1">
-        <h2 className="text-2xl font-bold text-white mb-2 flex items-center gap-2">
-          <Trophy className="text-yellow-500" /> The Hustle Board
-        </h2>
-        <p className="text-zinc-400 text-sm">Earn XP by submitting assignments early, helping peers, and attending live sessions. Top 3 secure a guaranteed mock interview.</p>
-      </div>
-      <div className="bg-[#0C0C12]/80 border border-white/10 p-6 rounded-2xl flex items-center gap-6">
-        <div>
-          <p className="text-xs text-zinc-500 uppercase tracking-widest font-mono mb-1">Your Rank</p>
-          <p className="text-3xl font-black text-white">#{STUDENT.rank}</p>
-        </div>
-        <div className="w-px h-12 bg-white/10" />
-        <div>
-          <p className="text-xs text-zinc-500 uppercase tracking-widest font-mono mb-1">Your XP</p>
-          <p className="text-3xl font-black text-purple-400">{STUDENT.xp}</p>
-        </div>
-      </div>
-    </div>
+const GlobalLeaderboard = ({ currentStudent }: { currentStudent: StudentData }) => {
+  const [leaderboard, setLeaderboard] = useState<StudentData[]>([]);
+  const [loading, setLoading] = useState(true);
 
-    <div className="bg-[#0C0C12]/80 border border-white/10 rounded-3xl overflow-hidden">
-      <table className="w-full text-left border-collapse">
-        <thead>
-          <tr className="border-b border-white/5 bg-white/[0.02]">
-            <th className="p-5 text-xs font-bold text-zinc-500 uppercase tracking-wider">Rank</th>
-            <th className="p-5 text-xs font-bold text-zinc-500 uppercase tracking-wider">Intern</th>
-            <th className="p-5 text-xs font-bold text-zinc-500 uppercase tracking-wider">Track</th>
-            <th className="p-5 text-xs font-bold text-zinc-500 uppercase tracking-wider text-right">XP</th>
-          </tr>
-        </thead>
-        <tbody>
-          {LEADERBOARD.map((student) => (
-            <tr key={student.id} className={`border-b border-white/5 last:border-0 ${student.name === STUDENT.name ? 'bg-purple-900/20' : 'hover:bg-white/[0.02]'} transition-colors`}>
-              <td className="p-5">
-                {student.rank === 1 ? <span className="text-yellow-500 font-black text-xl">1st</span> :
-                 student.rank === 2 ? <span className="text-zinc-300 font-black text-xl">2nd</span> :
-                 student.rank === 3 ? <span className="text-amber-600 font-black text-xl">3rd</span> :
-                 <span className="text-zinc-500 font-bold">#{student.rank}</span>}
-              </td>
-              <td className="p-5 font-bold text-white flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center text-xs">
-                  {student.name.charAt(0)}
-                </div>
-                {student.name}
-              </td>
-              <td className="p-5 text-sm text-zinc-400">{student.track}</td>
-              <td className="p-5 text-right font-mono font-bold text-purple-400">{student.xp}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  </div>
-);
+  useEffect(() => {
+    const fetchLeaderboard = async () => {
+      try {
+        const q = query(collection(db, "internships"), orderBy("b_cores", "desc"));
+        const snap = await getDocs(q);
+        const data: StudentData[] = [];
+        snap.forEach(doc => data.push({ id: doc.id, ...doc.data() } as StudentData));
+        
+        // Ensure everyone has at least 0 b_cores for UI consistency
+        const sanitizedData = data.map(s => ({ ...s, b_cores: s.b_cores || 0 }));
+        // Sort descending explicitly just in case
+        sanitizedData.sort((a, b) => (b.b_cores || 0) - (a.b_cores || 0));
+        setLeaderboard(sanitizedData);
+      } catch (err) {
+        console.error("Error fetching leaderboard", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchLeaderboard();
+  }, []);
 
-const AIMentor = () => {
-  const [messages, setMessages] = useState([
-    { role: 'ai', content: "Hello Alex! I am your Buildicy AI Mentor. I've analyzed your Week 2 assignment on React Hooks. You did a great job with `useEffect`, but I noticed a potential memory leak. Need help optimizing it?" }
-  ]);
-  const [input, setInput] = useState("");
+  const currentRank = leaderboard.findIndex(s => s.id === currentStudent.id) + 1;
 
-  const handleSend = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim()) return;
-    
-    setMessages(prev => [...prev, { role: 'user', content: input }]);
-    setInput("");
-    
-    setTimeout(() => {
-      setMessages(prev => [...prev, { role: 'ai', content: "Processing your request... (This is a high-fidelity MVP mockup. In production, this will seamlessly connect to our fine-tuned OpenAI model to instantly debug your code and explain concepts!)" }]);
-    }, 1000);
-  };
+  if (loading) return <div className="text-center text-zinc-500 py-20 font-mono animate-pulse">Syncing Leaderboard Data...</div>;
 
   return (
-    <div className="h-[calc(100vh-12rem)] flex flex-col bg-[#0C0C12]/80 border border-white/10 rounded-3xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <div className="p-6 border-b border-white/5 bg-white/[0.02] flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center relative">
-            <Bot className="text-purple-400" size={20} />
-            <div className="absolute top-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-[#0C0C12]" />
-          </div>
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="flex flex-col md:flex-row gap-8 mb-8">
+        <div className="flex-1">
+          <h2 className="text-2xl font-bold text-white mb-2 flex items-center gap-2">
+            <Trophy className="text-yellow-500" /> Global Leaderboard
+          </h2>
+          <p className="text-zinc-400 text-sm">Rank up by earning B-Cores in The Crucible. The top 5 interns receive guaranteed placement interviews.</p>
+        </div>
+        <div className="bg-[#0C0C12]/80 border border-white/10 p-6 rounded-2xl flex items-center gap-6">
           <div>
-            <h2 className="font-bold text-white">Buildicy Mentor</h2>
-            <p className="text-xs text-green-400 font-mono">Online • Powered by GPT-4o</p>
+            <p className="text-xs text-zinc-500 uppercase tracking-widest font-mono mb-1">Your Rank</p>
+            <p className="text-3xl font-black text-white">#{currentRank || '-'}</p>
+          </div>
+          <div className="w-px h-12 bg-white/10" />
+          <div>
+            <p className="text-xs text-zinc-500 uppercase tracking-widest font-mono mb-1">B-Cores</p>
+            <p className="text-3xl font-black text-purple-400">{currentStudent.b_cores || 0}</p>
           </div>
         </div>
-        <button className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs text-zinc-300 font-medium transition-colors">
-          Clear Chat
-        </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-6 space-y-6">
-        {messages.map((msg, i) => (
-          <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-[80%] rounded-2xl p-4 text-sm leading-relaxed ${
-              msg.role === 'user' 
-                ? 'bg-purple-600 text-white rounded-tr-sm' 
-                : 'bg-white/5 border border-white/10 text-zinc-300 rounded-tl-sm'
-            }`}>
-              {msg.content}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="p-4 border-t border-white/5 bg-white/[0.02]">
-        <form onSubmit={handleSend} className="relative">
-          <input 
-            type="text" 
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask about your code, design principles, or career advice..."
-            className="w-full bg-[#1A1A24]/60 border border-white/10 rounded-xl py-4 pl-5 pr-14 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500/50 transition-all"
-          />
-          <button 
-            type="submit"
-            className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-lg bg-purple-600 hover:bg-purple-500 flex items-center justify-center transition-colors"
-          >
-            <Send size={16} className="text-white" />
-          </button>
-        </form>
+      <div className="bg-[#0C0C12]/80 border border-white/10 rounded-3xl overflow-hidden">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="border-b border-white/5 bg-white/[0.02]">
+              <th className="p-5 text-xs font-bold text-zinc-500 uppercase tracking-wider">Rank</th>
+              <th className="p-5 text-xs font-bold text-zinc-500 uppercase tracking-wider">Intern</th>
+              <th className="p-5 text-xs font-bold text-zinc-500 uppercase tracking-wider">Track</th>
+              <th className="p-5 text-xs font-bold text-zinc-500 uppercase tracking-wider text-right">B-Cores</th>
+            </tr>
+          </thead>
+          <tbody>
+            {leaderboard.map((student, idx) => {
+              const rank = idx + 1;
+              return (
+                <tr key={student.id} className={`border-b border-white/5 last:border-0 ${student.id === currentStudent.id ? 'bg-purple-900/20' : 'hover:bg-white/[0.02]'} transition-colors`}>
+                  <td className="p-5">
+                    {rank === 1 ? <span className="text-yellow-500 font-black text-xl">1st</span> :
+                     rank === 2 ? <span className="text-zinc-300 font-black text-xl">2nd</span> :
+                     rank === 3 ? <span className="text-amber-600 font-black text-xl">3rd</span> :
+                     <span className="text-zinc-500 font-bold">#{rank}</span>}
+                  </td>
+                  <td className="p-5 font-bold text-white flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center text-xs">
+                      {student.name.charAt(0).toUpperCase()}
+                    </div>
+                    {student.name}
+                  </td>
+                  <td className="p-5 text-sm text-zinc-400">{student.track}</td>
+                  <td className="p-5 text-right font-mono font-bold text-purple-400">{student.b_cores || 0}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
     </div>
   );
 };
 
-const CareerPrep = () => (
-  <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-    <div className="bg-gradient-to-r from-blue-900/30 to-purple-900/30 border border-blue-500/20 rounded-3xl p-8 md:p-12 text-center relative overflow-hidden">
-      <div className="absolute top-0 right-0 p-8 opacity-10">
-        <Briefcase size={120} />
-      </div>
-      <h2 className="text-3xl font-black text-white mb-4 relative z-10">AI Resume Rater</h2>
-      <p className="text-zinc-400 max-w-lg mx-auto mb-8 relative z-10">
-        Upload your PDF resume or drop your LinkedIn URL. Our AI will analyze your profile against industry ATS standards and give you actionable feedback.
-      </p>
-      
-      <div className="max-w-xl mx-auto flex flex-col sm:flex-row gap-4 relative z-10">
-        <input 
-          type="text" 
-          placeholder="https://linkedin.com/in/your-profile"
-          className="flex-1 bg-black/50 border border-white/10 rounded-xl px-5 py-4 text-sm text-white focus:outline-none focus:border-blue-500/50"
-        />
-        <button className="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-all shadow-[0_0_20px_rgba(37,99,235,0.3)]">
-          Scan Profile
-        </button>
-      </div>
-      
-      <div className="mt-6 text-sm text-zinc-500 font-mono">
-        or <button className="text-blue-400 hover:underline">upload a PDF file</button>
-      </div>
-    </div>
+const MockInterviewArena = ({ student, setStudent }: { student: StudentData, setStudent: React.Dispatch<React.SetStateAction<StudentData | null>> }) => {
+  const [currentQIndex, setCurrentQIndex] = useState(0);
+  const [selectedOption, setSelectedOption] = useState<number | null>(null);
+  const [showResult, setShowResult] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [earnedCores, setEarnedCores] = useState(0);
 
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div className="bg-[#0C0C12]/80 border border-white/10 rounded-3xl p-8">
-        <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-          <Terminal className="text-zinc-500" /> Mock Interview Prep
-        </h3>
-        <p className="text-sm text-zinc-400 mb-6">Schedule a 1-on-1 technical or behavioral mock interview with a Buildicy Senior Engineer.</p>
-        <button className="w-full py-3 border border-white/10 hover:bg-white/5 rounded-xl text-white font-medium transition-colors text-sm">
-          Schedule Session
-        </button>
-      </div>
-      <div className="bg-[#0C0C12]/80 border border-white/10 rounded-3xl p-8">
-        <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-          <Trophy className="text-zinc-500" /> Alumni Job Board
-        </h3>
-        <p className="text-sm text-zinc-400 mb-6">Unlock exclusive freelance gigs and full-time roles directly from our agency partners upon graduation.</p>
-        <button disabled className="w-full py-3 bg-white/5 text-zinc-600 rounded-xl font-medium cursor-not-allowed text-sm flex items-center justify-center gap-2">
-          <FileLock2 size={16} /> Unlocks on Week 4
-        </button>
-      </div>
-    </div>
-  </div>
-);
+  // Generate a personalized order of questions when component mounts
+  const [questions] = useState(() => {
+    const shuffled = [...QUESTIONS].sort(() => 0.5 - Math.random());
+    return shuffled;
+  });
 
-const PeerReview = () => (
-  <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-    <div className="bg-gradient-to-r from-teal-900/20 to-emerald-900/20 border border-teal-500/20 rounded-3xl p-8">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-        <div>
-          <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-            <Users className="text-teal-400" /> Peer-to-Peer Review
-          </h2>
-          <p className="text-zinc-400 text-sm mt-1">Review a peer's project to unlock your own Grade & XP.</p>
-        </div>
-        <div className="px-4 py-2 bg-teal-500/10 border border-teal-500/30 rounded-xl text-teal-400 font-mono text-sm font-bold flex items-center gap-2">
-          <ShieldCheck size={16} /> Anonymous Mode Active
-        </div>
-      </div>
+  const handleSkip = () => {
+    setSelectedOption(null);
+    setShowResult(false);
+    setCurrentQIndex(prev => (prev + 1) % questions.length);
+  };
 
-      <div className="bg-[#0C0C12] border border-white/5 rounded-2xl p-6">
-        <h3 className="font-bold text-white mb-2 text-lg">Submission #8492 - React Hooks refactor</h3>
-        <p className="text-sm text-zinc-400 mb-6">Please review the implementation of useMemo in the provided sandbox.</p>
-        
-        <div className="flex gap-4 mb-8">
-          <button className="px-6 py-3 bg-white/5 hover:bg-white/10 rounded-xl text-sm font-medium transition-colors flex items-center gap-2">
-            <Code2 size={16} /> View Code Sandbox
-          </button>
-          <button className="px-6 py-3 bg-white/5 hover:bg-white/10 rounded-xl text-sm font-medium transition-colors flex items-center gap-2">
-            <Globe size={16} /> View Live Demo
-          </button>
-        </div>
+  const handleSubmit = async () => {
+    if (selectedOption === null) return;
+    setIsSubmitting(true);
+    const q = questions[currentQIndex];
+    const isCorrect = selectedOption === q.answer;
 
-        <div className="space-y-4">
-          <label className="text-sm font-bold text-zinc-300">Constructive Feedback (Required)</label>
-          <textarea 
-            placeholder="I noticed you used useMemo here, but since the array is small, it might actually degrade performance due to overhead..."
-            className="w-full h-32 bg-[#1A1A24]/60 border border-white/10 rounded-xl p-4 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-teal-500/50"
-          />
-          <div className="flex items-center gap-4">
-            <label className="text-sm font-bold text-zinc-300">Grade</label>
-            <div className="flex gap-2">
-              {[1, 2, 3, 4, 5].map(star => (
-                <button key={star} className="text-zinc-600 hover:text-teal-400 transition-colors">
-                  <Star size={24} />
-                </button>
-              ))}
-            </div>
-          </div>
-          <button className="mt-4 px-8 py-3 bg-teal-600 hover:bg-teal-500 text-white font-bold rounded-xl transition-all shadow-[0_0_20px_rgba(20,184,166,0.3)]">
-            Submit Review & Unlock My Grade
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-);
+    if (isCorrect) {
+      try {
+        const newScore = (student.b_cores || 0) + 5;
+        await updateDoc(doc(db, "internships", student.id), {
+          b_cores: newScore
+        });
+        setStudent({ ...student, b_cores: newScore });
+        setEarnedCores(5);
+      } catch (err) {
+        console.error("Failed to update B-Cores", err);
+      }
+    } else {
+      setEarnedCores(0);
+    }
 
-const LivePortfolio = () => (
-  <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-    <div className="bg-[#0C0C12]/80 border border-white/10 rounded-3xl p-8 text-center relative overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-blue-900/20 via-[#0C0C12]/80 to-[#0C0C12]/80 pointer-events-none" />
-      <Globe size={48} className="text-blue-400 mx-auto mb-4 relative z-10" />
-      <h2 className="text-2xl font-bold text-white mb-2 relative z-10">Your Proof-of-Work Portfolio</h2>
-      <p className="text-zinc-400 text-sm max-w-lg mx-auto mb-6 relative z-10">
-        Your assignments are automatically compiled into a beautiful, public portfolio. Send this link to recruiters instead of a PDF certificate.
-      </p>
-      
-      <div className="max-w-md mx-auto bg-black/50 border border-white/10 rounded-xl p-4 flex items-center justify-between mb-8 relative z-10">
-        <span className="text-zinc-300 font-mono text-sm truncate">buildicy.com/interns/alex-developer</span>
-        <button className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-xs font-bold transition-colors">
-          Copy Link
-        </button>
-      </div>
+    setShowResult(true);
+    setIsSubmitting(false);
+  };
 
-      <div className="w-full aspect-video max-w-3xl mx-auto rounded-2xl overflow-hidden border border-white/20 shadow-2xl relative z-10 bg-gradient-to-b from-[#1a1a24] to-black p-4 flex flex-col">
-        <div className="flex gap-2 mb-4">
-          <div className="w-3 h-3 rounded-full bg-red-500" />
-          <div className="w-3 h-3 rounded-full bg-yellow-500" />
-          <div className="w-3 h-3 rounded-full bg-green-500" />
-        </div>
-        <div className="flex-1 border border-white/10 rounded-xl bg-[#050507] p-8 flex flex-col items-center justify-center text-center">
-          <div className="w-20 h-20 rounded-full bg-blue-500/20 flex items-center justify-center mb-4">
-            <span className="text-2xl font-bold text-blue-400">AD</span>
-          </div>
-          <h3 className="text-xl font-bold text-white">Alex Developer</h3>
-          <p className="text-blue-400 font-mono text-sm mb-6">Full Stack Engineer</p>
-          <div className="grid grid-cols-2 gap-4 w-full max-w-sm">
-            <div className="h-24 bg-white/5 border border-white/10 rounded-xl" />
-            <div className="h-24 bg-white/5 border border-white/10 rounded-xl" />
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-);
+  const handleNext = () => {
+    setSelectedOption(null);
+    setShowResult(false);
+    setCurrentQIndex(prev => (prev + 1) % questions.length);
+  };
 
-const SnippetVault = () => (
-  <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-    <div className="flex items-center justify-between mb-8">
-      <div>
-        <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-          <CodeSquare className="text-orange-500" /> Component Vault
-        </h2>
-        <p className="text-zinc-400 text-sm mt-1">Your personal library of reusable code snippets gathered during the internship.</p>
-      </div>
-      <button className="px-4 py-2 bg-orange-600 hover:bg-orange-500 text-white rounded-xl text-sm font-bold transition-all shadow-[0_0_15px_rgba(249,115,22,0.3)]">
-        + New Snippet
-      </button>
-    </div>
-
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      {[
-        { title: "useDebounce Hook", lang: "TypeScript", code: "export function useDebounce(value, delay) {..." },
-        { title: "Glassmorphism Card", lang: "CSS", code: ".glass { backdrop-filter: blur(10px); ... }" },
-        { title: "Axios Interceptor", lang: "JavaScript", code: "axios.interceptors.request.use((config) => {..." },
-        { title: "Firebase Auth Flow", lang: "TypeScript", code: "const signIn = async () => {..." }
-      ].map((snippet, i) => (
-        <div key={i} className="bg-[#0C0C12]/80 border border-white/10 rounded-2xl p-6 group hover:border-orange-500/30 transition-all">
-          <div className="flex justify-between items-start mb-4">
-            <div>
-              <h3 className="font-bold text-white mb-1">{snippet.title}</h3>
-              <span className="text-[10px] font-mono uppercase tracking-widest text-orange-400 bg-orange-500/10 px-2 py-1 rounded-md">{snippet.lang}</span>
-            </div>
-            <button className="text-zinc-500 hover:text-white transition-colors p-2 hover:bg-white/5 rounded-lg">
-              <Copy size={16} />
-            </button>
-          </div>
-          <div className="bg-black/50 border border-white/5 rounded-xl p-4 font-mono text-sm text-zinc-400 overflow-hidden text-ellipsis whitespace-nowrap">
-            {snippet.code}
-          </div>
-        </div>
-      ))}
-    </div>
-  </div>
-);
-
-const FocusMode = () => {
-  const [isActive, setIsActive] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(25 * 60);
+  const q = questions[currentQIndex];
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <div className={`transition-all duration-1000 ${isActive ? 'fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center' : 'bg-[#0C0C12]/80 border border-white/10 rounded-3xl p-12 text-center relative overflow-hidden'}`}>
-        
-        {isActive && (
-          <div className="absolute inset-0 z-0 opacity-40 mix-blend-screen pointer-events-none flex items-center justify-center gap-2">
-             {/* Mock visualizer bars */}
-             {[...Array(20)].map((_, i) => (
-               <motion.div 
-                 key={i}
-                 animate={{ height: ['20px', `${Math.random() * 200 + 50}px`, '20px'] }}
-                 transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: i * 0.1 }}
-                 className="w-2 bg-gradient-to-t from-pink-500 to-purple-500 rounded-full blur-[2px]"
-               />
-             ))}
-          </div>
-        )}
+      <div className="bg-[#0C0C12]/80 border border-white/10 rounded-3xl p-8 md:p-12 relative overflow-hidden group">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-red-500/5 rounded-full blur-[80px] -mr-32 -mt-32 pointer-events-none" />
+        <h2 className="text-3xl font-black text-white mb-2 flex items-center gap-3">
+          <Target className="text-red-500" size={32} /> The Buildicy Crucible
+        </h2>
+        <p className="text-zinc-400 mb-8 max-w-2xl">
+          Welcome to the Arena. Face rapid-fire technical questions covering AI, Full Stack, and Architecture. Earn 5 B-Cores per correct answer. Skip anytime with no penalty.
+        </p>
 
-        <div className="relative z-10 flex flex-col items-center justify-center">
-          {!isActive && (
-            <>
-              <Focus size={48} className="text-pink-500 mb-6" />
-              <h2 className="text-3xl font-black text-white mb-2">Deep Work Zone</h2>
-              <p className="text-zinc-400 max-w-md mx-auto mb-10">Activate Focus Mode to start a Pomodoro session with built-in lo-fi beats and visualizer. The rest of the dashboard will dim.</p>
-            </>
-          )}
+        <div className="bg-[#050507] border border-white/10 rounded-2xl p-6 md:p-8">
+          <div className="flex justify-between items-center mb-6">
+            <span className="text-xs font-bold text-red-500 uppercase tracking-widest bg-red-500/10 px-3 py-1 rounded-lg">
+              {q.topic} • {q.difficulty}
+            </span>
+            <span className="text-sm font-mono text-zinc-500">Question {currentQIndex + 1} of {questions.length}</span>
+          </div>
           
-          <div className={`font-mono font-black tabular-nums transition-all ${isActive ? 'text-[12rem] text-transparent bg-clip-text bg-gradient-to-b from-white to-white/20' : 'text-6xl text-white mb-8'}`}>
-            {Math.floor(timeLeft / 60).toString().padStart(2, '0')}:{(timeLeft % 60).toString().padStart(2, '0')}
+          <h3 className="text-xl font-bold text-white mb-8 leading-relaxed">{q.question}</h3>
+          
+          <div className="space-y-3">
+            {q.options.map((opt, idx) => {
+              const isSelected = selectedOption === idx;
+              let btnClass = "w-full text-left p-4 rounded-xl border text-sm font-medium transition-all ";
+              
+              if (!showResult) {
+                btnClass += isSelected 
+                  ? "bg-purple-500/20 border-purple-500/50 text-purple-300 shadow-[0_0_15px_rgba(168,85,247,0.15)]" 
+                  : "bg-white/5 border-white/10 text-zinc-300 hover:bg-white/10 hover:border-white/20";
+              } else {
+                if (idx === q.answer) {
+                  btnClass += "bg-green-500/20 border-green-500/50 text-green-300 shadow-[0_0_15px_rgba(34,197,94,0.15)]";
+                } else if (isSelected) {
+                  btnClass += "bg-red-500/20 border-red-500/50 text-red-300";
+                } else {
+                  btnClass += "bg-white/5 border-white/10 text-zinc-500 opacity-50";
+                }
+              }
+
+              return (
+                <button 
+                  key={idx} 
+                  disabled={showResult || isSubmitting}
+                  onClick={() => setSelectedOption(idx)}
+                  className={btnClass}
+                >
+                  <span className="inline-block w-6 text-zinc-500 font-mono">{['A', 'B', 'C', 'D'][idx]}.</span>
+                  {opt}
+                </button>
+              );
+            })}
           </div>
 
-          <div className="flex gap-4">
-            <button 
-              onClick={() => setIsActive(!isActive)}
-              className={`px-8 py-4 rounded-2xl font-bold transition-all flex items-center gap-2 ${isActive ? 'bg-white/10 hover:bg-white/20 text-white backdrop-blur-md' : 'bg-pink-600 hover:bg-pink-500 text-white shadow-[0_0_30px_rgba(236,72,153,0.3)]'}`}
-            >
-              {isActive ? 'Exit Focus Mode' : 'Enter Focus Mode'}
-            </button>
-            {!isActive && (
-              <button className="w-14 h-14 bg-white/5 hover:bg-white/10 rounded-2xl flex items-center justify-center transition-colors">
-                <Clock size={20} className="text-zinc-400" />
-              </button>
+          <div className="mt-8 pt-6 border-t border-white/5 flex items-center justify-between">
+            {!showResult ? (
+              <>
+                <button 
+                  onClick={handleSkip}
+                  className="px-6 py-3 text-zinc-400 hover:text-white font-bold text-sm transition-colors"
+                >
+                  Skip Question
+                </button>
+                <button 
+                  disabled={selectedOption === null || isSubmitting}
+                  onClick={handleSubmit}
+                  className="px-8 py-3 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl transition-all shadow-[0_0_20px_rgba(220,38,38,0.3)] disabled:opacity-50 disabled:shadow-none"
+                >
+                  {isSubmitting ? "Submitting..." : "Submit Answer"}
+                </button>
+              </>
+            ) : (
+              <div className="w-full flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  {earnedCores > 0 ? (
+                    <span className="flex items-center gap-2 text-green-400 font-bold bg-green-500/10 px-4 py-2 rounded-lg">
+                      <CheckCircle2 size={20} /> Correct! +5 B-Cores
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-2 text-red-400 font-bold bg-red-500/10 px-4 py-2 rounded-lg">
+                      <AlertCircle size={20} /> Incorrect
+                    </span>
+                  )}
+                </div>
+                <button 
+                  onClick={handleNext}
+                  className="px-8 py-3 bg-white text-black font-black rounded-xl hover:bg-zinc-200 transition-colors shadow-[0_0_20px_rgba(255,255,255,0.2)]"
+                >
+                  Next Question →
+                </button>
+              </div>
             )}
           </div>
         </div>
@@ -875,82 +754,6 @@ const FocusMode = () => {
     </div>
   );
 };
-
-const ProfileCustomization = () => (
-  <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-    <div className="flex flex-col lg:flex-row gap-8">
-      
-      {/* Edit Form */}
-      <div className="flex-1 space-y-6">
-        <div className="bg-[#0C0C12]/80 border border-white/10 rounded-3xl p-8">
-          <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-            <UserCircle className="text-blue-400" /> Identity Matrix
-          </h2>
-          
-          <div className="flex items-center gap-6 mb-8">
-            <div className="w-24 h-24 rounded-full bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden group cursor-pointer relative">
-              <span className="text-2xl font-bold text-zinc-500">AD</span>
-              <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                <UploadCloud size={20} className="text-white" />
-              </div>
-            </div>
-            <div>
-              <button className="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-sm font-medium transition-colors mb-2 block">Upload Avatar</button>
-              <p className="text-xs text-zinc-500">JPG, PNG. Max 2MB.</p>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm font-bold text-zinc-400 block mb-2">Display Name</label>
-              <input type="text" defaultValue="Alex Developer" className="w-full bg-[#1A1A24]/60 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-blue-500/50 focus:outline-none" />
-            </div>
-            <div>
-              <label className="text-sm font-bold text-zinc-400 block mb-2">Short Bio</label>
-              <textarea defaultValue="Building the future of the web. Passionate about AI and React." className="w-full h-24 bg-[#1A1A24]/60 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-blue-500/50 focus:outline-none" />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-bold text-zinc-400 block mb-2">GitHub URL</label>
-                <input type="text" defaultValue="github.com/alexdev" className="w-full bg-[#1A1A24]/60 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-blue-500/50 focus:outline-none" />
-              </div>
-              <div>
-                <label className="text-sm font-bold text-zinc-400 block mb-2">LinkedIn URL</label>
-                <input type="text" defaultValue="linkedin.com/in/alexdev" className="w-full bg-[#1A1A24]/60 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-blue-500/50 focus:outline-none" />
-              </div>
-            </div>
-            <button className="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-all shadow-[0_0_20px_rgba(37,99,235,0.3)] mt-4">
-              Save Profile Identity
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Real-time Card Preview */}
-      <div className="w-full lg:w-80">
-        <div className="sticky top-24">
-          <p className="text-xs font-mono uppercase tracking-widest text-zinc-500 font-bold mb-4 ml-2">Live Portfolio Preview</p>
-          <div className="w-full aspect-[3/4] bg-gradient-to-b from-[#1a1a24] to-black rounded-3xl border border-white/20 shadow-2xl p-6 flex flex-col items-center justify-center text-center relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/20 rounded-full blur-[40px] -mr-10 -mt-10 pointer-events-none" />
-            
-            <div className="w-24 h-24 rounded-full bg-[#0C0C12] border-4 border-[#1a1a24] shadow-xl flex items-center justify-center mb-6 z-10">
-              <span className="text-3xl font-black text-blue-400">AD</span>
-            </div>
-            <h3 className="text-2xl font-black text-white mb-2 z-10">Alex Developer</h3>
-            <p className="text-blue-400 font-mono text-sm mb-6 z-10">Full Stack Engineer</p>
-            <p className="text-sm text-zinc-400 leading-relaxed mb-8 z-10">Building the future of the web. Passionate about AI and React.</p>
-            
-            <div className="flex gap-4 w-full z-10">
-              <div className="flex-1 py-3 bg-white/5 rounded-xl border border-white/10 text-xs font-bold hover:bg-white/10 transition-colors cursor-pointer">GitHub</div>
-              <div className="flex-1 py-3 bg-blue-600/20 text-blue-400 rounded-xl border border-blue-500/30 text-xs font-bold hover:bg-blue-600/30 transition-colors cursor-pointer">LinkedIn</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-);
 
 // --- MAIN LAYOUT ---
 
@@ -1052,7 +855,9 @@ export default function StudentDashboard() {
   const STUDENT_TABS = [
     { id: 'mission', label: 'Mission Control', icon: LayoutDashboard },
     { id: 'vault', label: 'The Vault', icon: BookOpen },
-    { id: 'dropzone', label: 'Dropzone', icon: UploadCloud }
+    { id: 'dropzone', label: 'Dropzone', icon: UploadCloud },
+    { id: 'crucible', label: 'The Crucible', icon: Target },
+    { id: 'leaderboard', label: 'Leaderboard', icon: Trophy }
   ];
 
   if (authError) {
@@ -1232,6 +1037,8 @@ export default function StudentDashboard() {
                 {activeTab === 'mission' && <MissionControl materials={materials} assignments={assignments} submissions={submissions} student={student} />}
                 {activeTab === 'vault' && <Vault materials={materials} student={student} />}
                 {activeTab === 'dropzone' && <Dropzone assignments={assignments} student={student} submissions={submissions} setSubmissions={setSubmissions} />}
+                {activeTab === 'crucible' && <MockInterviewArena student={student} setStudent={setStudent} />}
+                {activeTab === 'leaderboard' && <GlobalLeaderboard currentStudent={student} />}
               </motion.div>
             </AnimatePresence>
           </div>
