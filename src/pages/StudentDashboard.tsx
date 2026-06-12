@@ -26,6 +26,7 @@ interface StudentData {
   registration_id: string;
   b_cores?: number;
   progress?: number;
+  answered_questions?: string[];
 }
 
 interface Material {
@@ -619,9 +620,22 @@ const MockInterviewArena = ({ student, setStudent }: { student: StudentData, set
       try {
         const snap = await getDocs(collection(db, "crucible_questions"));
         const data: any[] = [];
-        snap.forEach(doc => data.push({ id: doc.id, ...doc.data() }));
-        const shuffled = data.sort(() => 0.5 - Math.random());
-        setQuestions(shuffled);
+        const answered = student.answered_questions || [];
+        snap.forEach(doc => {
+          if (!answered.includes(doc.id)) {
+            data.push({ id: doc.id, ...doc.data() });
+          }
+        });
+        
+        // Sort by Difficulty: Easy -> Medium -> Hard
+        const diffWeight: Record<string, number> = { 'Easy': 1, 'Medium': 2, 'Hard': 3 };
+        data.sort((a, b) => {
+          const wA = diffWeight[a.difficulty] || 2;
+          const wB = diffWeight[b.difficulty] || 2;
+          return wA - wB;
+        });
+        
+        setQuestions(data);
       } catch (err) {
         console.error("Failed to load questions", err);
       } finally {
@@ -631,10 +645,23 @@ const MockInterviewArena = ({ student, setStudent }: { student: StudentData, set
     fetchQuestions();
   }, []);
 
-  const handleSkip = () => {
+  const handleSkip = async () => {
     setSelectedOption(null);
     setShowResult(false);
-    setCurrentQIndex(prev => (prev + 1) % questions.length);
+    
+    const q = questions[currentQIndex];
+    const newAnswered = [...(student.answered_questions || []), q.id];
+    
+    try {
+      await updateDoc(doc(db, "internships", student.id), {
+        answered_questions: newAnswered
+      });
+      setStudent({ ...student, answered_questions: newAnswered });
+    } catch (err) {
+      console.error("Failed to skip question", err);
+    }
+    
+    setCurrentQIndex(prev => prev + 1); // move to next without modulo to run out eventually
   };
 
   const handleSubmit = async () => {
@@ -642,19 +669,29 @@ const MockInterviewArena = ({ student, setStudent }: { student: StudentData, set
     setIsSubmitting(true);
     const q = questions[currentQIndex];
     const isCorrect = selectedOption === q.answer;
+    const newAnswered = [...(student.answered_questions || []), q.id];
 
     if (isCorrect) {
       try {
         const newScore = (student.b_cores || 0) + 5;
         await updateDoc(doc(db, "internships", student.id), {
-          b_cores: newScore
+          b_cores: newScore,
+          answered_questions: newAnswered
         });
-        setStudent({ ...student, b_cores: newScore });
+        setStudent({ ...student, b_cores: newScore, answered_questions: newAnswered });
         setEarnedCores(5);
       } catch (err) {
         console.error("Failed to update B-Cores", err);
       }
     } else {
+      try {
+        await updateDoc(doc(db, "internships", student.id), {
+          answered_questions: newAnswered
+        });
+        setStudent({ ...student, answered_questions: newAnswered });
+      } catch (err) {
+        console.error("Failed to record wrong answer", err);
+      }
       setEarnedCores(0);
     }
 
@@ -665,13 +702,17 @@ const MockInterviewArena = ({ student, setStudent }: { student: StudentData, set
   const handleNext = () => {
     setSelectedOption(null);
     setShowResult(false);
-    setCurrentQIndex(prev => (prev + 1) % questions.length);
+    setCurrentQIndex(prev => prev + 1);
   };
 
   if (loadingQs) return <div className="text-center text-zinc-500 py-20 font-mono animate-pulse">Initializing Arena...</div>;
-  if (questions.length === 0) return <div className="text-center text-zinc-500 py-20 font-mono">The Crucible is currently closed.</div>;
+  if (currentQIndex >= questions.length) return <div className="text-center text-zinc-500 py-20 font-mono">You have answered all available questions. Great job! Check back later for more.</div>;
 
   const q = questions[currentQIndex];
+  
+  const diffColor = q.difficulty === 'Easy' ? 'text-green-500 bg-green-500/10' :
+                    q.difficulty === 'Medium' ? 'text-yellow-500 bg-yellow-500/10' :
+                    'text-red-500 bg-red-500/10';
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -686,7 +727,7 @@ const MockInterviewArena = ({ student, setStudent }: { student: StudentData, set
 
         <div className="bg-[#050507] border border-white/10 rounded-2xl p-6 md:p-8">
           <div className="flex justify-between items-center mb-6">
-            <span className="text-xs font-bold text-red-500 uppercase tracking-widest bg-red-500/10 px-3 py-1 rounded-lg">
+            <span className={`text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-lg ${diffColor}`}>
               {q.topic} • {q.difficulty}
             </span>
             <span className="text-sm font-mono text-zinc-500">Question {currentQIndex + 1} of {questions.length}</span>
