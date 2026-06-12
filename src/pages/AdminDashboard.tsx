@@ -810,30 +810,47 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="flex flex-wrap gap-2 p-1 bg-white/5 rounded-2xl mb-8 border border-white/10 w-fit">
-          {[
-            { id: 'temp_registrations', label: 'Current Batch (Temp)', icon: ShieldAlert },
-            { id: 'perm_registrations', label: 'Master DB (Permanent)', icon: ShieldAlert },
-            { id: 'materials', label: 'Vault Materials', icon: BookOpen },
-            { id: 'assignments', label: 'Assignments', icon: Edit2 },
-            { id: 'submissions', label: 'Submissions', icon: CheckCircle2 },
-            { id: 'leaderboard', label: 'Leaderboard', icon: Trophy },
-            { id: 'crucible', label: 'Crucible QA', icon: Target },
-            { id: 'settings', label: 'Settings', icon: Settings }
-          ].map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
-              className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all ${activeTab === tab.id
-                  ? 'bg-purple-600 text-white shadow-lg'
-                  : 'text-white/50 hover:text-white hover:bg-white/5'
-                }`}
-            >
-              <tab.icon size={16} /> {tab.label}
-            </button>
-          ))}
-        </div>
+        <div className="flex flex-col lg:flex-row gap-8 items-start">
+          
+          {/* Sidebar */}
+          <div className="w-full lg:w-72 shrink-0 bg-[#0C0C12]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-4 sticky top-24 z-20 shadow-[0_0_40px_rgba(0,0,0,0.5)]">
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 px-3">People</h3>
+                <div className="space-y-1">
+                  <button onClick={() => setActiveTab('temp_registrations')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all ${activeTab === 'temp_registrations' ? 'bg-purple-600 text-white shadow-lg' : 'text-white/50 hover:text-white hover:bg-white/5'}`}><ShieldAlert size={16} /> Temporary Registrations</button>
+                  <button onClick={() => setActiveTab('perm_registrations')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all ${activeTab === 'perm_registrations' ? 'bg-purple-600 text-white shadow-lg' : 'text-white/50 hover:text-white hover:bg-white/5'}`}><Lock size={16} /> Permanent Interns</button>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 px-3">Content</h3>
+                <div className="space-y-1">
+                  <button onClick={() => setActiveTab('materials')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all ${activeTab === 'materials' ? 'bg-purple-600 text-white shadow-lg' : 'text-white/50 hover:text-white hover:bg-white/5'}`}><BookOpen size={16} /> Vault Materials</button>
+                  <button onClick={() => setActiveTab('assignments')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all ${activeTab === 'assignments' ? 'bg-purple-600 text-white shadow-lg' : 'text-white/50 hover:text-white hover:bg-white/5'}`}><Edit2 size={16} /> Assignments</button>
+                  <button onClick={() => setActiveTab('submissions')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all ${activeTab === 'submissions' ? 'bg-purple-600 text-white shadow-lg' : 'text-white/50 hover:text-white hover:bg-white/5'}`}><CheckCircle2 size={16} /> Submissions</button>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 px-3">Gamification</h3>
+                <div className="space-y-1">
+                  <button onClick={() => setActiveTab('leaderboard')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all ${activeTab === 'leaderboard' ? 'bg-purple-600 text-white shadow-lg' : 'text-white/50 hover:text-white hover:bg-white/5'}`}><Trophy size={16} /> Leaderboard</button>
+                  <button onClick={() => setActiveTab('crucible')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all ${activeTab === 'crucible' ? 'bg-purple-600 text-white shadow-lg' : 'text-white/50 hover:text-white hover:bg-white/5'}`}><Target size={16} /> Crucible QA</button>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 px-3">System</h3>
+                <div className="space-y-1">
+                  <button onClick={() => setActiveTab('settings')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all ${activeTab === 'settings' ? 'bg-purple-600 text-white shadow-lg' : 'text-white/50 hover:text-white hover:bg-white/5'}`}><Settings size={16} /> Settings</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Content Area */}
+          <div className="flex-1 min-w-0 w-full">
 
         {(activeTab === 'temp_registrations' || activeTab === 'perm_registrations') && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -1437,6 +1454,9 @@ const AdminDashboard = () => {
           </div>
         </div>
       )}
+
+        </div>
+      </div>
 
       {/* Edit Material Modal */}
       {editingMaterial && (

@@ -130,7 +130,7 @@ const AdminCrucible = () => {
       <div className="bg-[#0a0a0f]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
-            <Target className="text-red-500" /> {isEditing ? "Edit Question" : "Add New Question"}
+            <Target className="text-purple-500" /> {isEditing ? "Edit Question" : "Add New Question"}
           </h2>
           {isEditing && (
             <button 
@@ -154,7 +154,7 @@ const AdminCrucible = () => {
                 value={formData.topic} 
                 onChange={e => setFormData({ ...formData, topic: e.target.value })}
                 placeholder="e.g. AI Architect, Full Stack, React..."
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-red-500/50"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500/50"
               />
             </div>
             <div>
@@ -162,7 +162,7 @@ const AdminCrucible = () => {
               <select 
                 value={formData.difficulty} 
                 onChange={e => setFormData({ ...formData, difficulty: e.target.value })}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-red-500/50 appearance-none"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500/50 appearance-none"
               >
                 <option value="Easy" className="bg-[#0a0a0f]">Easy</option>
                 <option value="Medium" className="bg-[#0a0a0f]">Medium</option>
@@ -176,7 +176,7 @@ const AdminCrucible = () => {
             <textarea 
               value={formData.question} 
               onChange={e => setFormData({ ...formData, question: e.target.value })}
-              className="w-full h-24 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-red-500/50"
+              className="w-full h-24 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500/50"
               placeholder="Enter the question here..."
             />
           </div>
@@ -190,14 +190,14 @@ const AdminCrucible = () => {
                   name="correct_answer" 
                   checked={formData.answer === idx}
                   onChange={() => setFormData({ ...formData, answer: idx })}
-                  className="w-5 h-5 accent-red-500 cursor-pointer"
+                  className="w-5 h-5 accent-purple-500 cursor-pointer"
                 />
                 <input 
                   type="text" 
                   value={opt} 
                   onChange={e => handleOptionChange(idx, e.target.value)}
                   placeholder={`Option ${['A','B','C','D'][idx]}`}
-                  className={`flex-1 bg-white/5 border rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-red-500/50 ${formData.answer === idx ? 'border-red-500/50 bg-red-500/5' : 'border-white/10'}`}
+                  className={`flex-1 bg-white/5 border rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500/50 ${formData.answer === idx ? 'border-purple-500/50 bg-purple-500/5' : 'border-white/10'}`}
                 />
               </div>
             ))}
@@ -205,7 +205,7 @@ const AdminCrucible = () => {
 
           <button 
             type="submit"
-            className="w-full py-4 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-all shadow-[0_0_20px_rgba(220,38,38,0.2)]"
+            className="w-full py-4 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-all shadow-[0_0_20px_rgba(168,85,247,0.2)]"
           >
             {isEditing ? <CheckCircle2 size={18} /> : <Plus size={18} />}
             {isEditing ? "Update Question" : "Add Question"}
