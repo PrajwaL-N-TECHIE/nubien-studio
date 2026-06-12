@@ -31,16 +31,15 @@ export default function StudentLogin() {
         }
         
         setStatusText("Verifying credentials...");
-        const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
+        const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password.trim());
         
         setStatusText("Updating password...");
         await updatePassword(userCredential.user, newPassword);
         
         setStatusText("Password Changed Successfully!");
         
-      } else {
         // Standard Login
-        await signInWithEmailAndPassword(auth, email.trim(), password);
+        await signInWithEmailAndPassword(auth, email.trim(), password.trim());
         setStatusText("Access Granted.");
       }
 
