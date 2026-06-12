@@ -611,11 +611,25 @@ const MockInterviewArena = ({ student, setStudent }: { student: StudentData, set
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [earnedCores, setEarnedCores] = useState(0);
 
-  // Generate a personalized order of questions when component mounts
-  const [questions] = useState(() => {
-    const shuffled = [...QUESTIONS].sort(() => 0.5 - Math.random());
-    return shuffled;
-  });
+  const [questions, setQuestions] = useState<any[]>([]);
+  const [loadingQs, setLoadingQs] = useState(true);
+
+  useEffect(() => {
+    const fetchQuestions = async () => {
+      try {
+        const snap = await getDocs(collection(db, "crucible_questions"));
+        const data: any[] = [];
+        snap.forEach(doc => data.push({ id: doc.id, ...doc.data() }));
+        const shuffled = data.sort(() => 0.5 - Math.random());
+        setQuestions(shuffled);
+      } catch (err) {
+        console.error("Failed to load questions", err);
+      } finally {
+        setLoadingQs(false);
+      }
+    };
+    fetchQuestions();
+  }, []);
 
   const handleSkip = () => {
     setSelectedOption(null);
@@ -653,6 +667,9 @@ const MockInterviewArena = ({ student, setStudent }: { student: StudentData, set
     setShowResult(false);
     setCurrentQIndex(prev => (prev + 1) % questions.length);
   };
+
+  if (loadingQs) return <div className="text-center text-zinc-500 py-20 font-mono animate-pulse">Initializing Arena...</div>;
+  if (questions.length === 0) return <div className="text-center text-zinc-500 py-20 font-mono">The Crucible is currently closed.</div>;
 
   const q = questions[currentQIndex];
 

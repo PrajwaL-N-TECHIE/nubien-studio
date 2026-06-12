@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Lock, ShieldAlert, ArrowRight, Eye, EyeOff, Search, LogOut, Trash2, Info, X, Edit2, BookOpen, UploadCloud, CheckCircle2, Plus, Download, Settings, Mail } from "lucide-react";
+import { Lock, ShieldAlert, ArrowRight, Eye, EyeOff, Search, LogOut, Trash2, Info, X, Edit2, BookOpen, UploadCloud, CheckCircle2, Plus, Download, Settings, Mail, FileText, Link, Calendar, Building, Loader2, Target } from "lucide-react";
+import AdminCrucible from "@/components/AdminCrucible";
 import { useNavigate } from "react-router-dom";
 import { initializeApp } from "firebase/app";
 
@@ -187,7 +188,7 @@ const AdminDashboard = () => {
   // Submissions State
   const [submissions, setSubmissions] = useState<Submission[]>([]);
 
-  const [activeTab, setActiveTab] = useState<'temp_registrations' | 'perm_registrations' | 'materials' | 'assignments' | 'submissions' | 'settings' | 'leaderboard'>('temp_registrations');
+  const [activeTab, setActiveTab] = useState<'temp_registrations' | 'perm_registrations' | 'materials' | 'assignments' | 'submissions' | 'settings' | 'leaderboard' | 'crucible'>('temp_registrations');
   const [globalBatch, setGlobalBatch] = useState("batch-1");
   const [isSavingSettings, setIsSavingSettings] = useState(false);
 
@@ -818,6 +819,7 @@ const AdminDashboard = () => {
             { id: 'assignments', label: 'Assignments', icon: Edit2 },
             { id: 'submissions', label: 'Submissions', icon: CheckCircle2 },
             { id: 'leaderboard', label: 'Leaderboard', icon: Trophy },
+            { id: 'crucible', label: 'Crucible QA', icon: Target },
             { id: 'settings', label: 'Settings', icon: Settings }
           ].map(tab => (
             <button
@@ -1245,6 +1247,13 @@ const AdminDashboard = () => {
               </div>
               <AdminLeaderboard />
             </div>
+          </div>
+        )}
+
+        {/* Crucible QA Tab */}
+        {activeTab === 'crucible' && (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <AdminCrucible />
           </div>
         )}
 
