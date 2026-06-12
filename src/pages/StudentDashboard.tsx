@@ -958,11 +958,13 @@ export default function StudentDashboard() {
           const doc = snap.docs[0];
           setStudent({ id: doc.id, ...doc.data() } as StudentData);
         } else {
+          alert(`SYSTEM DEBUG: Cannot find student profile for ${user.email} in the database. Please ensure the email matches exactly.`);
           await signOut(auth);
           navigate('/student-login');
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error(err);
+        alert(`SYSTEM DEBUG: Database read error: ${err.message}`);
       } finally {
         setLoadingAuth(false);
       }
