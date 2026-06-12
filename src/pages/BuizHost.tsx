@@ -1,9 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, Play, Trophy, Copy, CheckCircle2, Target, StopCircle } from 'lucide-react';
+import { Users, Play, Trophy, Copy, CheckCircle2, Target, StopCircle, Plus, Lock } from 'lucide-react';
 import { db } from '@/lib/firebase';
-import { doc, setDoc, onSnapshot, collection, updateDoc, deleteDoc } from 'firebase/firestore';
+import { doc, setDoc, onSnapshot, collection, updateDoc } from 'firebase/firestore';
 import { QUESTIONS } from '@/data/questions';
+
+interface CustomQuestion {
+  id: string;
+  question: string;
+  options: string[];
+  answer: number;
+  difficulty: string;
+  topic: string;
+}
 
 interface Player {
   id: string;
@@ -15,13 +24,24 @@ interface Player {
 
 const BuizHost = () => {
   const [pin, setPin] = useState<string | null>(null);
-  const [status, setStatus] = useState<'setup' | 'configure' | 'waiting' | 'playing' | 'finished'>('setup');
+  const [status, setStatus] = useState<'login' | 'setup' | 'configure' | 'waiting' | 'playing' | 'finished'>('login');
   const [players, setPlayers] = useState<Player[]>([]);
   const [copied, setCopied] = useState(false);
   
+  // Login state
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
+
   // Host config state
   const [selectedQuestions, setSelectedQuestions] = useState<Set<number | string>>(new Set());
+  const [customQuestions, setCustomQuestions] = useState<CustomQuestion[]>([]);
   const [podiumPhase, setPodiumPhase] = useState<0 | 1 | 2 | 3>(0); // 0=none, 1=3rd, 2=2nd, 3=1st
+  
+  // Custom Q Form State
+  const [cqText, setCqText] = useState('');
+  const [cqOptions, setCqOptions] = useState(['', '', '', '']);
+  const [cqAnswer, setCqAnswer] = useState(0);
 
   useEffect(() => {
     if (!pin) return;
@@ -41,8 +61,8 @@ const BuizHost = () => {
   }, [pin]);
 
   const generateRoom = async () => {
-    if (selectedQuestions.size === 0) {
-      alert("Please select at least one question!");
+    if (selectedQuestions.size === 0 && customQuestions.length === 0) {
+      alert("Please select or create at least one question!");
       return;
     }
 
@@ -50,14 +70,15 @@ const BuizHost = () => {
     const newPin = Math.floor(100000 + Math.random() * 900000).toString();
     
     try {
-      // Map selected IDs back to full question objects
+      // Map selected IDs back to full question objects and combine with custom questions
       const selectedQs = QUESTIONS.filter(q => selectedQuestions.has(q.id));
+      const finalPayload = [...selectedQs, ...customQuestions];
 
       await setDoc(doc(db, "buiz_rooms", newPin), {
         pin: newPin,
         status: 'waiting',
         hostId: 'admin',
-        questions: selectedQs,
+        questions: finalPayload,
         createdAt: new Date()
       });
       
@@ -80,6 +101,35 @@ const BuizHost = () => {
     if (newSet.has(id)) newSet.delete(id);
     else newSet.add(id);
     setSelectedQuestions(newSet);
+  };
+
+  const addCustomQuestion = () => {
+    if (!cqText.trim() || cqOptions.some(opt => !opt.trim())) {
+      alert("Please fill out the question and all 4 options.");
+      return;
+    }
+    const newQ: CustomQuestion = {
+      id: `custom_${Date.now()}`,
+      question: cqText,
+      options: [...cqOptions],
+      answer: cqAnswer,
+      difficulty: 'Medium',
+      topic: 'Custom'
+    };
+    setCustomQuestions([...customQuestions, newQ]);
+    setCqText('');
+    setCqOptions(['', '', '', '']);
+    setCqAnswer(0);
+  };
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (email === 'admin@buildicy.com' && password === 'admin@123') {
+      setStatus('setup');
+      setLoginError('');
+    } else {
+      setLoginError('Invalid credentials');
+    }
   };
 
   const startGame = async () => {
@@ -111,6 +161,56 @@ const BuizHost = () => {
       setTimeout(() => setCopied(false), 2000);
     }
   };
+
+  if (status === 'login') {
+    return (
+      <div className="min-h-screen bg-[#050507] flex flex-col items-center justify-center p-6 relative overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-600/10 rounded-full blur-[120px] pointer-events-none" />
+        
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-[#0C0C12]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-10 max-w-md w-full relative z-10 shadow-[0_0_50px_rgba(168,85,247,0.15)]"
+        >
+          <div className="w-16 h-16 bg-purple-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-purple-500/30">
+            <Lock className="text-purple-400" size={32} />
+          </div>
+          <h1 className="text-3xl font-black text-white mb-2 text-center">Host Login</h1>
+          <p className="text-zinc-400 text-center mb-8 text-sm">Secure access to the Buiz Arena Host Panel</p>
+          
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <input 
+                type="email" 
+                required
+                placeholder="Admin Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full bg-[#1A1A24]/50 border border-white/10 rounded-xl px-5 py-4 text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500/50 transition-colors"
+              />
+            </div>
+            <div>
+              <input 
+                type="password" 
+                required
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full bg-[#1A1A24]/50 border border-white/10 rounded-xl px-5 py-4 text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500/50 transition-colors"
+              />
+            </div>
+            {loginError && <p className="text-red-400 text-sm font-bold text-center">{loginError}</p>}
+            <button 
+              type="submit"
+              className="w-full py-4 mt-4 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold text-lg transition-all shadow-[0_0_20px_rgba(168,85,247,0.4)]"
+            >
+              Authenticate
+            </button>
+          </form>
+        </motion.div>
+      </div>
+    );
+  }
 
   if (status === 'setup') {
     return (
@@ -145,8 +245,8 @@ const BuizHost = () => {
         <div className="max-w-4xl mx-auto w-full relative z-10 flex flex-col h-full bg-[#0C0C12]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h1 className="text-3xl font-black text-white">Select Questions</h1>
-              <p className="text-zinc-400 mt-1">Choose the questions for this arena ({selectedQuestions.size} selected)</p>
+              <h1 className="text-3xl font-black text-white">Configure Arena</h1>
+              <p className="text-zinc-400 mt-1">{selectedQuestions.size} from Bank, {customQuestions.length} Custom</p>
             </div>
             <div className="flex items-center gap-4">
               <button onClick={handleQuickPick} className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-xl font-bold transition-all text-sm border border-white/10">
@@ -161,8 +261,70 @@ const BuizHost = () => {
             </div>
           </div>
           
-          <div className="flex-1 overflow-y-auto pr-4 space-y-2 h-[60vh]">
-            {QUESTIONS.map((q) => (
+          <div className="flex-1 overflow-y-auto pr-4 space-y-6 h-[60vh]">
+            
+            {/* Custom Question Builder */}
+            <div className="p-6 bg-purple-900/10 border border-purple-500/30 rounded-2xl">
+              <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2"><Plus size={18}/> Create Custom Question</h2>
+              <div className="space-y-4">
+                <input 
+                  type="text" 
+                  placeholder="Enter your question..." 
+                  value={cqText}
+                  onChange={e => setCqText(e.target.value)}
+                  className="w-full bg-[#1A1A24]/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500/50"
+                />
+                <div className="grid grid-cols-2 gap-4">
+                  {cqOptions.map((opt, idx) => (
+                    <div key={idx} className="flex items-center gap-3">
+                      <input 
+                        type="radio" 
+                        name="correctAnswer" 
+                        checked={cqAnswer === idx} 
+                        onChange={() => setCqAnswer(idx)}
+                        className="w-4 h-4 text-purple-600 bg-zinc-800 border-zinc-600"
+                      />
+                      <input 
+                        type="text" 
+                        placeholder={`Option ${idx + 1}`} 
+                        value={opt}
+                        onChange={e => {
+                          const newOpts = [...cqOptions];
+                          newOpts[idx] = e.target.value;
+                          setCqOptions(newOpts);
+                        }}
+                        className={`w-full bg-[#1A1A24]/50 border rounded-xl px-4 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none transition-colors ${cqAnswer === idx ? 'border-green-500/50' : 'border-white/10'}`}
+                      />
+                    </div>
+                  ))}
+                </div>
+                <button 
+                  onClick={addCustomQuestion}
+                  className="px-6 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl font-bold transition-all text-sm border border-white/10"
+                >
+                  Add to Arena
+                </button>
+              </div>
+
+              {customQuestions.length > 0 && (
+                <div className="mt-6 space-y-2 border-t border-purple-500/20 pt-4">
+                  <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-3">Added Custom Questions</p>
+                  {customQuestions.map(q => (
+                    <div key={q.id} className="p-3 bg-white/5 border border-white/10 rounded-lg flex items-center gap-3">
+                      <div className="w-5 h-5 rounded bg-green-500/20 text-green-400 flex items-center justify-center shrink-0">
+                        <CheckCircle2 size={14} />
+                      </div>
+                      <p className="text-white text-sm font-medium truncate">{q.question}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="border-t border-white/5 pt-6">
+              <h2 className="text-lg font-bold text-white mb-4">Select from Question Bank</h2>
+              <div className="space-y-2">
+                {QUESTIONS.map((q) => (
               <div 
                 key={q.id} 
                 onClick={() => toggleQuestion(q.id)}
@@ -182,6 +344,8 @@ const BuizHost = () => {
                 </div>
               </div>
             ))}
+          </div>
+          </div>
           </div>
         </div>
       </div>

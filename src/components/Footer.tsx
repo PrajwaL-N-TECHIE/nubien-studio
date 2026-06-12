@@ -302,7 +302,8 @@ const Footer = () => {
       { name: "Services", path: "/services" },
       { name: "Careers", path: "#" },
       { name: "Blog", path: "#" },
-      { name: "Admin Portal", path: "/admin" }
+      { name: "Admin Portal", path: "/admin" },
+      { name: "Host Buiz Arena", path: "/buiz/host" }
     ],
     Solutions: [
       { name: "AI Studio", path: "#" },
