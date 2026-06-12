@@ -98,6 +98,12 @@ const AdminDashboard = () => {
   const [newMatUrl, setNewMatUrl] = useState("");
   const [isUploadingMat, setIsUploadingMat] = useState(false);
   const [accessLogs, setAccessLogs] = useState<AccessLog[]>([]);
+  
+  // Edit Material State
+  const [editingMaterial, setEditingMaterial] = useState<Material | null>(null);
+  const [editMatTitle, setEditMatTitle] = useState("");
+  const [editMatCohort, setEditMatCohort] = useState("");
+  const [isUpdatingMat, setIsUpdatingMat] = useState(false);
 
   // Assignments State
   const [assignments, setAssignments] = useState<Assignment[]>([]);
@@ -249,6 +255,39 @@ const AdminDashboard = () => {
       setSubmissions(data);
     } catch (error) {
       console.error("Failed to fetch submissions:", error);
+    }
+  };
+
+  const openEditMaterial = (mat: Material) => {
+    setEditingMaterial(mat);
+    setEditMatTitle(mat.title);
+    setEditMatCohort(mat.cohort);
+  };
+
+  const handleUpdateMaterial = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingMaterial) return;
+    
+    setIsUpdatingMat(true);
+    try {
+      await updateDoc(doc(db, "materials", editingMaterial.id), {
+        title: editMatTitle.trim(),
+        cohort: editMatCohort.trim()
+      });
+      
+      setMaterials(prev => prev.map(m => 
+        m.id === editingMaterial.id 
+          ? { ...m, title: editMatTitle.trim(), cohort: editMatCohort.trim() } 
+          : m
+      ));
+      
+      setEditingMaterial(null);
+      alert("Material updated successfully!");
+    } catch (error) {
+      console.error("Error updating material:", error);
+      alert("Failed to update material.");
+    } finally {
+      setIsUpdatingMat(false);
     }
   };
 
@@ -969,8 +1008,11 @@ const AdminDashboard = () => {
                       <td className="px-6 py-4"><span className="px-2 py-1 bg-white/5 rounded text-xs font-mono text-white/70">{mat.cohort}</span></td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex justify-end gap-2">
-                          <a href={mat.url} target="_blank" rel="noopener noreferrer" className="p-2 bg-white/5 hover:bg-white/10 rounded-lg text-white/70 transition-colors"><Eye size={16} /></a>
-                          <button onClick={() => handleDeleteMaterial(mat.id)} className="p-2 bg-red-900/20 hover:bg-red-600 text-red-400 hover:text-white rounded-lg transition-colors"><Trash2 size={16} /></button>
+                          <button onClick={() => openEditMaterial(mat)} className="p-2 bg-blue-900/20 hover:bg-blue-600 text-blue-400 hover:text-white rounded-lg transition-colors" title="Edit Material">
+                            <Edit2 size={16} />
+                          </button>
+                          <a href={mat.url} target="_blank" rel="noopener noreferrer" className="p-2 bg-white/5 hover:bg-white/10 rounded-lg text-white/70 transition-colors" title="View Material"><Eye size={16} /></a>
+                          <button onClick={() => handleDeleteMaterial(mat.id)} className="p-2 bg-red-900/20 hover:bg-red-600 text-red-400 hover:text-white rounded-lg transition-colors" title="Delete Material"><Trash2 size={16} /></button>
                         </div>
                       </td>
                     </tr>
@@ -1299,6 +1341,67 @@ const AdminDashboard = () => {
               </button>
             </form>
           </div>
+        </div>
+      )}
+
+      {/* Edit Material Modal */}
+      {editingMaterial && (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm" onClick={() => setEditingMaterial(null)}>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="w-full max-w-md bg-[#0a0a0f] border border-white/10 rounded-2xl overflow-hidden shadow-2xl"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="p-6 border-b border-white/10 flex justify-between items-center bg-blue-500/5">
+              <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                <Edit2 className="text-blue-400" size={20} /> Edit Material
+              </h3>
+              <button onClick={() => setEditingMaterial(null)} className="text-white/50 hover:text-white transition-colors">
+                <X size={20} />
+              </button>
+            </div>
+            
+            <form onSubmit={handleUpdateMaterial} className="p-6 space-y-6">
+              <div>
+                <label className="block text-xs font-bold text-white/40 uppercase mb-2">Material Title</label>
+                <input 
+                  type="text" 
+                  required 
+                  value={editMatTitle} 
+                  onChange={e => setEditMatTitle(e.target.value)} 
+                  className="w-full bg-[#050507] border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-blue-500/50 transition-colors" 
+                />
+              </div>
+              
+              <div>
+                <label className="block text-xs font-bold text-white/40 uppercase mb-2">Assigned Cohort</label>
+                <input 
+                  type="text" 
+                  required 
+                  value={editMatCohort} 
+                  onChange={e => setEditMatCohort(e.target.value)} 
+                  className="w-full bg-[#050507] border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-blue-500/50 transition-colors" 
+                />
+              </div>
+
+              <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-4 flex gap-3">
+                <AlertCircle className="text-yellow-400 shrink-0" size={20} />
+                <p className="text-xs text-yellow-200/70 leading-relaxed">
+                  Only the Title and Cohort can be edited. If you uploaded the wrong file or link, please delete this material and re-upload it.
+                </p>
+              </div>
+
+              <button 
+                type="submit" 
+                disabled={isUpdatingMat} 
+                className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold transition-all disabled:opacity-50"
+              >
+                {isUpdatingMat ? "Saving Changes..." : "Save Changes"}
+              </button>
+            </form>
+          </motion.div>
         </div>
       )}
 
