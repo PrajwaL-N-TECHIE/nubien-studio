@@ -162,7 +162,6 @@ const InternshipRegistration = () => {
       const formData = new FormData(form);
       
       const email = formData.get('email') as string;
-      const password = formData.get('password') as string;
       const localPhone = formData.get('phone') as string;
       const phone = `${countryCode} ${localPhone}`;
 
@@ -241,8 +240,11 @@ const InternshipRegistration = () => {
 
       // Create Firebase Auth account for the student
       try {
-        await createUserWithEmailAndPassword(auth, email, password);
+        await createUserWithEmailAndPassword(auth, email, registrationId);
       } catch (authError: any) {
+        if (authError.code === 'auth/email-already-in-use') {
+          throw new Error("This email is already registered. If you need to re-register, please contact support or use a different email address.");
+        }
         throw new Error(authError.message || "Failed to create secure student account. Please try again.");
       }
 
@@ -323,9 +325,9 @@ const InternshipRegistration = () => {
         audio.playPrint();
         setIsPrinting(true);
       }, 600);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting form:', error);
-      alert('An error occurred while submitting your application. Please try again.');
+      alert(error.message || 'An error occurred while submitting your application. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -667,23 +669,7 @@ const InternshipRegistration = () => {
                 </div>
               </div>
 
-              {/* Portal Password */}
-              <div className="md:col-span-2 space-y-2">
-                <label className="text-sm font-medium text-white/80 ml-1">Student Portal Password</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <User size={18} className="text-white/40" />
-                  </div>
-                  <input
-                    name="password"
-                    required
-                    type="password"
-                    minLength={6}
-                    placeholder="Create a secure password (min 6 characters)"
-                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-11 pr-4 text-white placeholder:text-white/20 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all"
-                  />
-                </div>
-              </div>
+
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
