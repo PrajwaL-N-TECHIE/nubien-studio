@@ -94,11 +94,14 @@ const BuizClient = () => {
       }
       
       const newPlayerId = `player_${Math.random().toString(36).substr(2, 9)}`;
+      const avatarUrl = `https://api.dicebear.com/7.x/adventurer/svg?seed=${name.replace(/\s+/g, '')}${Math.random()}`;
+      
       await setDoc(doc(db, `buiz_rooms/${pin}/players`, newPlayerId), {
         name,
         score: 0,
         streak: 0,
         progress: 0,
+        avatar: avatarUrl,
         joinedAt: new Date()
       });
       

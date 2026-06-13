@@ -19,6 +19,7 @@ interface Player {
   score: number;
   streak: number;
   progress: number;
+  avatar?: string;
 }
 
 const BuizHost = () => {
@@ -552,6 +553,11 @@ const BuizHost = () => {
                           }`}>
                           {index + 1}
                         </div>
+                        {p.avatar && (
+                          <div className="w-12 h-12 bg-white/5 rounded-full p-1 border border-white/10 shrink-0">
+                            <img src={p.avatar} alt="Avatar" className="w-full h-full object-contain" />
+                          </div>
+                        )}
                         <div>
                           <p className={`font-bold text-lg ${status !== 'waiting' && index < 3 ? 'text-white' : 'text-zinc-300'}`}>{p.name}</p>
                           <div className="flex items-center gap-2 mt-1">
