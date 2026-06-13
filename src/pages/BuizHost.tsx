@@ -11,8 +11,10 @@ interface CustomQuestion {
   question: string;
   options: string[];
   answer: number;
+  answer: number;
   difficulty: string;
   topic: string;
+  imageUrl?: string;
 }
 
 interface Player {
@@ -42,6 +44,7 @@ const BuizHost = () => {
 
   // Custom Q Form State
   const [cqText, setCqText] = useState('');
+  const [cqImageUrl, setCqImageUrl] = useState('');
   const [cqOptions, setCqOptions] = useState(['', '', '', '']);
   const [cqAnswer, setCqAnswer] = useState(0);
 
@@ -115,10 +118,12 @@ const BuizHost = () => {
       options: [...cqOptions],
       answer: cqAnswer,
       difficulty: 'Medium',
-      topic: 'Custom'
+      topic: 'Custom',
+      imageUrl: cqImageUrl.trim() || undefined
     };
     setCustomQuestions([...customQuestions, newQ]);
     setCqText('');
+    setCqImageUrl('');
     setCqOptions(['', '', '', '']);
     setCqAnswer(0);
   };
@@ -274,6 +279,13 @@ const BuizHost = () => {
                   value={cqText}
                   onChange={e => setCqText(e.target.value)}
                   className="w-full bg-[#1A1A24]/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500/50"
+                />
+                <input
+                  type="url"
+                  placeholder="Optional: Image URL (e.g. https://example.com/image.png)"
+                  value={cqImageUrl}
+                  onChange={e => setCqImageUrl(e.target.value)}
+                  className="w-full bg-[#1A1A24]/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500/50 text-sm"
                 />
                 <div className="grid grid-cols-2 gap-4">
                   {cqOptions.map((opt, idx) => (

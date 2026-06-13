@@ -338,6 +338,12 @@ const BuizClient = () => {
               {showFeedback === 'correct' ? <CheckCircle2 size={40} className="text-green-500" /> : <XCircle size={40} className="text-red-500" />}
             </motion.div>
           )}
+          
+          {q.imageUrl && (
+            <div className="w-full max-w-lg mx-auto mb-6 rounded-2xl overflow-hidden border border-white/10">
+              <img src={q.imageUrl} alt="Question context" className="w-full h-auto object-cover max-h-64" />
+            </div>
+          )}
           <h2 className="text-2xl md:text-4xl font-black text-white leading-tight mt-4">{q.question}</h2>
         </div>
 
