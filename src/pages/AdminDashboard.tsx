@@ -7,6 +7,7 @@ import { initializeApp } from "firebase/app";
 import { db, auth, firebaseConfig } from "@/lib/firebase";
 import { collection, getDocs, deleteDoc, doc, query, orderBy, updateDoc, addDoc, serverTimestamp, getDoc, setDoc } from "firebase/firestore";
 import { signInWithEmailAndPassword, onAuthStateChanged, signOut, createUserWithEmailAndPassword, getAuth } from "firebase/auth";
+import { QUESTIONS } from "@/data/questions";
 
 interface InternshipRecord {
   id: string;
@@ -60,6 +61,15 @@ interface Submission {
   status: 'pending' | 'approved' | 'rejected';
   submitted_at: any;
   feedback?: string;
+}
+
+interface CrucibleQuestion {
+  id: string | number;
+  topic: string;
+  difficulty: string;
+  question: string;
+  options: string[];
+  answer: number;
 }
 
 const trackNames: Record<string, string> = {
@@ -194,7 +204,16 @@ const AdminDashboard = () => {
   // Submissions State
   const [submissions, setSubmissions] = useState<Submission[]>([]);
 
-  const [activeTab, setActiveTab] = useState<'temp_registrations' | 'perm_registrations' | 'materials' | 'assignments' | 'submissions' | 'settings' | 'leaderboard'>('temp_registrations');
+  // Crucible State
+  const [crucibleQuestions, setCrucibleQuestions] = useState<CrucibleQuestion[]>([]);
+  const [newCqText, setNewCqText] = useState("");
+  const [newCqOptions, setNewCqOptions] = useState(["", "", "", ""]);
+  const [newCqAnswer, setNewCqAnswer] = useState(0);
+  const [newCqDifficulty, setNewCqDifficulty] = useState("Medium");
+  const [newCqTopic, setNewCqTopic] = useState("General");
+  const [isSeedingQs, setIsSeedingQs] = useState(false);
+
+  const [activeTab, setActiveTab] = useState<'temp_registrations' | 'perm_registrations' | 'materials' | 'assignments' | 'submissions' | 'settings' | 'leaderboard' | 'crucible'>('temp_registrations');
   const [globalBatch, setGlobalBatch] = useState("batch-1");
   const [isSavingSettings, setIsSavingSettings] = useState(false);
 
@@ -368,6 +387,76 @@ const AdminDashboard = () => {
     }
   };
 
+  const fetchCrucibleQuestions = async () => {
+    try {
+      const snap = await getDocs(collection(db, "crucible_questions"));
+      const data: CrucibleQuestion[] = [];
+      snap.forEach(doc => data.push({ id: doc.id, ...doc.data() } as CrucibleQuestion));
+      setCrucibleQuestions(data);
+    } catch (err) {
+      console.error("Failed to fetch crucible questions:", err);
+    }
+  };
+
+  const handleAddCrucibleQuestion = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCqText) return;
+    try {
+      await addDoc(collection(db, "crucible_questions"), {
+        question: newCqText,
+        options: newCqOptions,
+        answer: newCqAnswer,
+        difficulty: newCqDifficulty,
+        topic: newCqTopic,
+        created_at: serverTimestamp()
+      });
+      setNewCqText("");
+      setNewCqOptions(["", "", "", ""]);
+      setNewCqAnswer(0);
+      setNewCqDifficulty("Medium");
+      setNewCqTopic("General");
+      fetchCrucibleQuestions();
+    } catch (err) {
+      console.error("Error adding question:", err);
+      alert("Failed to add question.");
+    }
+  };
+
+  const handleDeleteCrucibleQuestion = async (id: string | number) => {
+    if (!window.confirm("Are you sure you want to delete this question from The Crucible?")) return;
+    try {
+      await deleteDoc(doc(db, "crucible_questions", String(id)));
+      setCrucibleQuestions(prev => prev.filter(q => q.id !== id));
+    } catch (err) {
+      console.error("Error deleting question:", err);
+      alert("Failed to delete question.");
+    }
+  };
+
+  const handleSeedCrucibleQuestions = async () => {
+    if (!window.confirm("This will upload all original 100 questions into the Crucible. Continue?")) return;
+    setIsSeedingQs(true);
+    try {
+      for (const q of QUESTIONS) {
+        await setDoc(doc(db, "crucible_questions", String(q.id)), {
+          topic: q.topic,
+          difficulty: q.difficulty,
+          question: q.question,
+          options: q.options,
+          answer: q.answer,
+          created_at: serverTimestamp()
+        });
+      }
+      alert("Seeding complete! You now have a full question bank.");
+      fetchCrucibleQuestions();
+    } catch (err) {
+      console.error(err);
+      alert("Error seeding questions.");
+    } finally {
+      setIsSeedingQs(false);
+    }
+  };
+
   useEffect(() => {
     if (activeTab === 'materials') {
       fetchMaterials();
@@ -383,6 +472,8 @@ const AdminDashboard = () => {
       fetchRecords('perm');
     } else if (activeTab === 'settings') {
       fetchSettings();
+    } else if (activeTab === 'crucible') {
+      fetchCrucibleQuestions();
     }
   }, [activeTab]);
 
@@ -842,6 +933,7 @@ const AdminDashboard = () => {
                 <h3 className="text-xs font-black text-white uppercase tracking-[0.2em] mb-3 px-3">Gamification</h3>
                 <div className="space-y-1">
                   <button onClick={() => setActiveTab('leaderboard')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all ${activeTab === 'leaderboard' ? 'bg-purple-600 text-white shadow-lg' : 'text-white/50 hover:text-white hover:bg-white/5'}`}><Trophy size={16} /> Leaderboard</button>
+                  <button onClick={() => setActiveTab('crucible')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all ${activeTab === 'crucible' ? 'bg-purple-600 text-white shadow-lg' : 'text-white/50 hover:text-white hover:bg-white/5'}`}><Target size={16} /> The Crucible</button>
                 </div>
               </div>
 
@@ -1268,6 +1360,133 @@ const AdminDashboard = () => {
                 </h2>
               </div>
               <AdminLeaderboard />
+            </div>
+          </div>
+        )}
+
+        {/* Crucible Tab */}
+        {activeTab === 'crucible' && (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="bg-[#0a0a0f]/80 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden mb-8">
+              <div className="p-6 md:p-8 border-b border-white/10 flex justify-between items-start bg-purple-500/5">
+                <div>
+                  <h2 className="text-xl font-bold text-white mb-2 flex items-center gap-2"><Target className="text-purple-400" size={24} /> The Crucible Bank</h2>
+                  <p className="text-sm text-white/50">Manage the global question bank for Buiz Arena.</p>
+                </div>
+                {crucibleQuestions.length === 0 && (
+                  <button 
+                    onClick={handleSeedCrucibleQuestions}
+                    disabled={isSeedingQs}
+                    className="px-4 py-2 bg-purple-600/20 hover:bg-purple-600 text-purple-400 hover:text-white rounded-lg border border-purple-500/30 text-sm font-bold transition-colors flex items-center gap-2 disabled:opacity-50"
+                  >
+                    {isSeedingQs ? "Seeding..." : "Seed Default Questions"}
+                  </button>
+                )}
+              </div>
+              
+              <div className="p-6 md:p-8 flex flex-col xl:flex-row gap-8">
+                {/* Add New Question Form */}
+                <div className="w-full xl:w-1/3 space-y-4">
+                  <h3 className="text-lg font-bold text-white mb-4">Add New Question</h3>
+                  <form onSubmit={handleAddCrucibleQuestion} className="space-y-4 bg-white/5 border border-white/10 rounded-2xl p-6">
+                    <input 
+                      type="text" 
+                      placeholder="Enter question text..." 
+                      value={newCqText}
+                      onChange={e => setNewCqText(e.target.value)}
+                      className="w-full bg-[#050507] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/50"
+                      required
+                    />
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      {newCqOptions.map((opt, idx) => (
+                        <div key={idx} className="flex items-center gap-3">
+                          <input 
+                            type="radio" 
+                            name="newCqAnswer" 
+                            checked={newCqAnswer === idx} 
+                            onChange={() => setNewCqAnswer(idx)}
+                            className="w-4 h-4 text-purple-600 bg-[#050507] border-white/20"
+                          />
+                          <input 
+                            type="text" 
+                            placeholder={`Option ${idx + 1}`} 
+                            value={opt}
+                            onChange={e => {
+                              const newOpts = [...newCqOptions];
+                              newOpts[idx] = e.target.value;
+                              setNewCqOptions(newOpts);
+                            }}
+                            className="w-full bg-[#050507] border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-purple-500/50"
+                            required
+                          />
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <select 
+                        value={newCqDifficulty} 
+                        onChange={e => setNewCqDifficulty(e.target.value)}
+                        className="w-full bg-[#050507] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/50 text-sm"
+                      >
+                        <option value="Easy">Easy</option>
+                        <option value="Medium">Medium</option>
+                        <option value="Hard">Hard</option>
+                      </select>
+                      <input 
+                        type="text" 
+                        placeholder="Topic (e.g. React)"
+                        value={newCqTopic}
+                        onChange={e => setNewCqTopic(e.target.value)}
+                        className="w-full bg-[#050507] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/50 text-sm"
+                        required
+                      />
+                    </div>
+                    
+                    <button 
+                      type="submit"
+                      className="w-full px-6 py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold transition-all text-sm"
+                    >
+                      Add Question
+                    </button>
+                  </form>
+                </div>
+
+                {/* List of Questions */}
+                <div className="flex-1 space-y-4 max-h-[600px] overflow-y-auto pr-4">
+                  <h3 className="text-lg font-bold text-white mb-4">Question Bank ({crucibleQuestions.length})</h3>
+                  {crucibleQuestions.length === 0 ? (
+                    <p className="text-white/40 italic">The Crucible is empty. Seed default questions or add a new one.</p>
+                  ) : (
+                    crucibleQuestions.map(q => (
+                      <div key={q.id} className="bg-white/5 border border-white/10 rounded-xl p-4 relative group">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${q.difficulty === 'Easy' ? 'bg-green-500/20 text-green-400' : q.difficulty === 'Medium' ? 'bg-yellow-500/20 text-yellow-400' : 'bg-red-500/20 text-red-400'}`}>
+                            {q.difficulty}
+                          </span>
+                          <span className="text-xs text-zinc-500 font-mono">{q.topic}</span>
+                        </div>
+                        <p className="text-white font-medium mb-3">{q.question}</p>
+                        <div className="grid grid-cols-2 gap-2">
+                          {q.options.map((opt, idx) => (
+                            <div key={idx} className={`text-xs p-2 rounded border ${idx === q.answer ? 'bg-green-500/20 border-green-500/50 text-green-400 font-bold' : 'bg-[#050507] border-white/10 text-zinc-400'}`}>
+                              {String.fromCharCode(65 + idx)}. {opt}
+                            </div>
+                          ))}
+                        </div>
+                        <button 
+                          onClick={() => handleDeleteCrucibleQuestion(q.id)}
+                          className="absolute top-4 right-4 text-white/20 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"
+                          title="Delete Question"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         )}
