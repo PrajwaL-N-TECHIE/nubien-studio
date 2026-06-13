@@ -5,7 +5,6 @@ export interface Question {
   question: string;
   options: string[];
   answer: number;
-  imageUrl?: string;
 }
 
 export const QUESTIONS: Question[] = [

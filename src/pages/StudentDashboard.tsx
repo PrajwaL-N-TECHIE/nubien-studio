@@ -715,12 +715,6 @@ const MockInterviewArena = ({ student, setStudent }: { student: StudentData, set
             <span className="text-sm font-mono text-zinc-500">Question {currentQIndex + 1} of {questions.length}</span>
           </div>
           
-          {q.imageUrl && (
-            <div className="w-full max-w-lg mx-auto mb-6 rounded-2xl overflow-hidden border border-white/10">
-              <img src={q.imageUrl} alt="Question context" className="w-full h-auto object-cover max-h-64" />
-            </div>
-          )}
-          
           <h3 className="text-xl font-bold text-white mb-8 leading-relaxed">{q.question}</h3>
           
           <div className="space-y-3">
