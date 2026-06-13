@@ -4,6 +4,8 @@ import { Users, Play, Trophy, Copy, CheckCircle2, Target, StopCircle, Plus, Lock
 import { db } from '@/lib/firebase';
 import { doc, setDoc, onSnapshot, collection, updateDoc, getDocs } from 'firebase/firestore';
 
+import { QUESTIONS } from '@/data/questions';
+
 interface CustomQuestion {
   id: string;
   question: string;
@@ -43,26 +45,6 @@ const BuizHost = () => {
   const [cqOptions, setCqOptions] = useState(['', '', '', '']);
   const [cqAnswer, setCqAnswer] = useState(0);
 
-  // Global Bank State
-  const [globalQuestions, setGlobalQuestions] = useState<any[]>([]);
-
-  useEffect(() => {
-    // Fetch global questions when host configures
-    if (status === 'configure') {
-      const fetchQs = async () => {
-        try {
-          const snap = await getDocs(collection(db, "crucible_questions"));
-          const qs: any[] = [];
-          snap.forEach(doc => qs.push({ id: doc.id, ...doc.data() }));
-          setGlobalQuestions(qs);
-        } catch (err) {
-          console.error("Failed to fetch global questions", err);
-        }
-      };
-      fetchQs();
-    }
-  }, [status]);
-
   useEffect(() => {
     if (!pin) return;
 
@@ -90,8 +72,7 @@ const BuizHost = () => {
     const newPin = Math.floor(100000 + Math.random() * 900000).toString();
 
     try {
-      // Map selected IDs back to full question objects and combine with custom questions
-      const selectedQs = globalQuestions.filter(q => selectedQuestions.has(q.id));
+      const selectedQs = QUESTIONS.filter(q => selectedQuestions.has(q.id));
       const finalPayload = [...selectedQs, ...customQuestions];
 
       await setDoc(doc(db, "buiz_rooms", newPin), {
@@ -111,7 +92,7 @@ const BuizHost = () => {
   };
 
   const handleQuickPick = () => {
-    const shuffled = [...globalQuestions].sort(() => 0.5 - Math.random());
+    const shuffled = [...QUESTIONS].sort(() => 0.5 - Math.random());
     const selectedIds = new Set(shuffled.slice(0, 10).map(q => q.id));
     setSelectedQuestions(selectedIds);
   };
@@ -343,11 +324,11 @@ const BuizHost = () => {
 
             <div className="border-t border-white/5 pt-6">
               <h2 className="text-lg font-bold text-white mb-4">Select from Question Bank</h2>
-              {globalQuestions.length === 0 ? (
+              {QUESTIONS.length === 0 ? (
                 <p className="text-white/40 text-sm italic">Loading questions or The Crucible is empty...</p>
               ) : (
                 <div className="space-y-2">
-                  {globalQuestions.map((q) => (
+                  {QUESTIONS.map((q) => (
                     <div
                       key={q.id}
                       onClick={() => toggleQuestion(q.id)}
