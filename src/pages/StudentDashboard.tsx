@@ -634,13 +634,14 @@ const MockInterviewArena = ({ student, setStudent }: { student: StudentData, set
     const q = questions[currentQIndex];
     const newAnswered = [...(student.answered_questions || []), q.id.toString()];
     
+    setStudent({ ...student, answered_questions: newAnswered });
+    
     try {
       await updateDoc(doc(db, "internships", student.id), {
         answered_questions: newAnswered
       });
-      setStudent({ ...student, answered_questions: newAnswered });
     } catch (err) {
-      console.error("Failed to skip question", err);
+      console.error("Failed to skip question in DB", err);
     }
     
     setCurrentQIndex(prev => prev + 1); // move to next without modulo to run out eventually
@@ -654,27 +655,27 @@ const MockInterviewArena = ({ student, setStudent }: { student: StudentData, set
     const newAnswered = [...(student.answered_questions || []), q.id.toString()];
 
     if (isCorrect) {
+      setEarnedCores(5);
+      setStudent({ ...student, b_cores: (student.b_cores || 0) + 5, answered_questions: newAnswered });
       try {
         const newScore = (student.b_cores || 0) + 5;
         await updateDoc(doc(db, "internships", student.id), {
           b_cores: newScore,
           answered_questions: newAnswered
         });
-        setStudent({ ...student, b_cores: newScore, answered_questions: newAnswered });
-        setEarnedCores(5);
       } catch (err) {
-        console.error("Failed to update B-Cores", err);
+        console.error("Failed to update B-Cores in DB (Check Firebase Rules):", err);
       }
     } else {
+      setEarnedCores(0);
+      setStudent({ ...student, answered_questions: newAnswered });
       try {
         await updateDoc(doc(db, "internships", student.id), {
           answered_questions: newAnswered
         });
-        setStudent({ ...student, answered_questions: newAnswered });
       } catch (err) {
-        console.error("Failed to record wrong answer", err);
+        console.error("Failed to record wrong answer in DB (Check Firebase Rules):", err);
       }
-      setEarnedCores(0);
     }
 
     setShowResult(true);
