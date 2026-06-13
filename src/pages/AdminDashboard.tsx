@@ -221,11 +221,18 @@ const AdminDashboard = () => {
 
   // Listen for Firebase Auth state changes
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        setIsAuthenticated(true);
-        fetchSettings();
-        fetchRecords('temp');
+        if (user.email === 'admin@buildicy.com') {
+          setIsAuthenticated(true);
+          fetchSettings();
+          fetchRecords('temp');
+        } else {
+          // If a student tries to access admin, log them out of the admin panel
+          await signOut(auth);
+          setIsAuthenticated(false);
+          setError("Access denied. Admin privileges required.");
+        }
       } else {
         setIsAuthenticated(false);
       }
