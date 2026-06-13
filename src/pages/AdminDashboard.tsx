@@ -1373,15 +1373,13 @@ const AdminDashboard = () => {
                   <h2 className="text-xl font-bold text-white mb-2 flex items-center gap-2"><Target className="text-purple-400" size={24} /> The Crucible Bank</h2>
                   <p className="text-sm text-white/50">Manage the global question bank for Buiz Arena.</p>
                 </div>
-                {crucibleQuestions.length === 0 && (
-                  <button 
-                    onClick={handleSeedCrucibleQuestions}
-                    disabled={isSeedingQs}
-                    className="px-4 py-2 bg-purple-600/20 hover:bg-purple-600 text-purple-400 hover:text-white rounded-lg border border-purple-500/30 text-sm font-bold transition-colors flex items-center gap-2 disabled:opacity-50"
-                  >
-                    {isSeedingQs ? "Seeding..." : "Seed Default Questions"}
-                  </button>
-                )}
+                <button 
+                  onClick={handleSeedCrucibleQuestions}
+                  disabled={isSeedingQs}
+                  className="px-4 py-2 bg-purple-600/20 hover:bg-purple-600 text-purple-400 hover:text-white rounded-lg border border-purple-500/30 text-sm font-bold transition-colors flex items-center gap-2 disabled:opacity-50"
+                >
+                  {isSeedingQs ? "Seeding..." : "Seed Default Questions"}
+                </button>
               </div>
               
               <div className="p-6 md:p-8 flex flex-col xl:flex-row gap-8">
