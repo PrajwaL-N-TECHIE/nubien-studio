@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, Play, Trophy, Copy, CheckCircle2, Target, StopCircle, Plus, Lock } from 'lucide-react';
+import { Users, Play, Trophy, Copy, CheckCircle2, Target, StopCircle, Plus, Lock, Trash2, Save } from 'lucide-react';
 import { db } from '@/lib/firebase';
-import { doc, setDoc, onSnapshot, collection, updateDoc, getDocs } from 'firebase/firestore';
+import { doc, setDoc, onSnapshot, collection, updateDoc, getDocs, deleteDoc, addDoc } from 'firebase/firestore';
 
 import { QUESTIONS } from '@/data/questions';
 
@@ -45,6 +45,10 @@ const BuizHost = () => {
   const [cqOptions, setCqOptions] = useState(['', '', '', '']);
   const [cqAnswer, setCqAnswer] = useState(0);
 
+  // Saved Quizzes State
+  const [quizName, setQuizName] = useState('');
+  const [savedQuizzes, setSavedQuizzes] = useState<any[]>([]);
+
   useEffect(() => {
     if (!pin) return;
 
@@ -61,6 +65,22 @@ const BuizHost = () => {
 
     return () => unsubscribe();
   }, [pin]);
+
+  useEffect(() => {
+    if (status === 'setup') {
+      const fetchQuizzes = async () => {
+        try {
+          const snap = await getDocs(collection(db, 'buiz_saved_quizzes'));
+          const quizzes: any[] = [];
+          snap.forEach(doc => quizzes.push({ id: doc.id, ...doc.data() }));
+          setSavedQuizzes(quizzes);
+        } catch (err) {
+          console.error("Failed to fetch saved quizzes", err);
+        }
+      };
+      fetchQuizzes();
+    }
+  }, [status]);
 
   const generateRoom = async () => {
     if (selectedQuestions.size === 0 && customQuestions.length === 0) {
@@ -88,6 +108,65 @@ const BuizHost = () => {
     } catch (err) {
       console.error("Failed to create room", err);
       alert("Make sure you updated your Firebase Rules to allow writing to buiz_rooms!");
+    }
+  };
+
+  const saveQuiz = async () => {
+    if (!quizName.trim()) {
+      alert("Please enter a name for this quiz session!");
+      return;
+    }
+    if (selectedQuestions.size === 0 && customQuestions.length === 0) {
+      alert("Please select or create at least one question!");
+      return;
+    }
+
+    try {
+      const selectedQs = QUESTIONS.filter(q => selectedQuestions.has(q.id));
+      const finalPayload = [...selectedQs, ...customQuestions];
+
+      await addDoc(collection(db, "buiz_saved_quizzes"), {
+        name: quizName,
+        questions: finalPayload,
+        createdAt: new Date().toISOString()
+      });
+
+      alert("Quiz saved successfully!");
+      setStatus('setup');
+      setQuizName('');
+      setSelectedQuestions(new Set());
+      setCustomQuestions([]);
+    } catch (err) {
+      console.error("Failed to save quiz", err);
+      alert("Failed to save. Check your Firebase permissions.");
+    }
+  };
+
+  const deleteSavedQuiz = async (quizId: string) => {
+    try {
+      await deleteDoc(doc(db, "buiz_saved_quizzes", quizId));
+      setSavedQuizzes(savedQuizzes.filter(q => q.id !== quizId));
+    } catch (err) {
+      console.error("Failed to delete quiz", err);
+    }
+  };
+
+  const launchSavedQuiz = async (quiz: any) => {
+    const newPin = Math.floor(100000 + Math.random() * 900000).toString();
+    try {
+      await setDoc(doc(db, "buiz_rooms", newPin), {
+        pin: newPin,
+        status: 'waiting',
+        hostId: 'admin',
+        questions: quiz.questions,
+        createdAt: new Date()
+      });
+
+      setPin(newPin);
+      setStatus('waiting');
+    } catch (err) {
+      console.error("Failed to create room from saved quiz", err);
+      alert("Failed to launch. Check your Firebase permissions.");
     }
   };
 
@@ -221,20 +300,56 @@ const BuizHost = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-[#0C0C12]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-12 max-w-lg w-full text-center relative z-10 shadow-[0_0_50px_rgba(168,85,247,0.1)]"
+          className="bg-[#0C0C12]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-8 max-w-2xl w-full relative z-10 shadow-[0_0_50px_rgba(168,85,247,0.1)]"
         >
-          <div className="w-20 h-20 bg-purple-500/20 rounded-2xl flex items-center justify-center mx-auto mb-8 border border-purple-500/30">
-            <Target className="text-purple-400" size={40} />
+          <div className="flex items-center gap-4 mb-8 pb-6 border-b border-white/10">
+            <div className="w-16 h-16 bg-purple-500/20 rounded-2xl flex items-center justify-center border border-purple-500/30 shrink-0">
+              <Target className="text-purple-400" size={32} />
+            </div>
+            <div>
+              <h1 className="text-3xl font-black text-white tracking-tight">Host Buiz Arena</h1>
+              <p className="text-zinc-400 text-sm">Create a live multiplayer session or launch a saved quiz.</p>
+            </div>
           </div>
-          <h1 className="text-4xl font-black text-white mb-4 tracking-tight">Host Buiz Arena</h1>
-          <p className="text-zinc-400 mb-8 text-lg">Create a live multiplayer session. Students will join via a game PIN.</p>
 
           <button
             onClick={() => setStatus('configure')}
-            className="w-full py-5 bg-purple-600 hover:bg-purple-500 text-white rounded-2xl font-bold text-xl transition-all shadow-[0_0_30px_rgba(168,85,247,0.4)] flex items-center justify-center gap-3"
+            className="w-full py-4 mb-8 bg-purple-600 hover:bg-purple-500 text-white rounded-2xl font-bold text-xl transition-all shadow-[0_0_30px_rgba(168,85,247,0.4)] flex items-center justify-center gap-3"
           >
-            <Play fill="currentColor" size={24} /> Configure Game
+            <Plus size={24} /> Create New Quiz Session
           </button>
+
+          <div>
+            <h2 className="text-lg font-bold text-white mb-4">Saved Quizzes</h2>
+            {savedQuizzes.length === 0 ? (
+              <p className="text-zinc-500 text-center py-8 border border-white/5 rounded-xl bg-white/[0.02]">No saved quizzes yet. Create one above!</p>
+            ) : (
+              <div className="space-y-3 max-h-64 overflow-y-auto pr-2">
+                {savedQuizzes.map(quiz => (
+                  <div key={quiz.id} className="bg-white/5 border border-white/10 rounded-xl p-4 flex items-center justify-between hover:bg-white/10 transition-colors">
+                    <div>
+                      <h3 className="font-bold text-white text-lg">{quiz.name}</h3>
+                      <p className="text-xs text-zinc-400 font-mono mt-1">{quiz.questions?.length || 0} Questions • {new Date(quiz.createdAt).toLocaleDateString()}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => launchSavedQuiz(quiz)}
+                        className="px-4 py-2 bg-green-500/20 hover:bg-green-500/30 text-green-400 rounded-lg font-bold transition-colors text-sm flex items-center gap-2"
+                      >
+                        <Play fill="currentColor" size={14} /> Launch
+                      </button>
+                      <button
+                        onClick={() => deleteSavedQuiz(quiz.id)}
+                        className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </motion.div>
       </div>
     );
@@ -244,20 +359,32 @@ const BuizHost = () => {
     return (
       <div className="min-h-screen bg-[#050507] flex flex-col p-6">
         <div className="max-w-4xl mx-auto w-full relative z-10 flex flex-col h-full bg-[#0C0C12]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h1 className="text-3xl font-black text-white">Configure Arena</h1>
-              <p className="text-zinc-400 mt-1">{selectedQuestions.size} from Bank, {customQuestions.length} Custom</p>
+          <div className="flex items-center justify-between mb-8 pb-6 border-b border-white/10">
+            <div className="flex-1 max-w-md">
+              <input
+                type="text"
+                placeholder="Quiz Session Name (e.g. Friday Code Battle)"
+                value={quizName}
+                onChange={e => setQuizName(e.target.value)}
+                className="w-full bg-transparent border-none text-3xl font-black text-white placeholder-zinc-600 focus:outline-none"
+              />
+              <p className="text-zinc-400 mt-2 text-sm">{selectedQuestions.size} from Bank, {customQuestions.length} Custom</p>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 shrink-0">
               <button onClick={handleQuickPick} className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-xl font-bold transition-all text-sm border border-white/10">
                 Quick Pick 10
+              </button>
+              <button
+                onClick={saveQuiz}
+                className="px-6 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl font-bold transition-all flex items-center gap-2 border border-white/10"
+              >
+                <Save size={16} /> Save For Later
               </button>
               <button
                 onClick={generateRoom}
                 className="px-6 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold transition-all shadow-[0_0_20px_rgba(168,85,247,0.3)] flex items-center gap-2"
               >
-                Launch Arena <Target size={16} />
+                Launch Now <Target size={16} />
               </button>
             </div>
           </div>
