@@ -255,7 +255,7 @@ const LaboratorySection = () => {
                     <div className="flex flex-col gap-12 max-w-6xl mx-auto">
                         {/* Co-founders */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 w-full px-0 md:px-8">
-                            <LeadershipCard name="Nuvaaf AN" role="Co-founder & AI Automation Engineer" description="Driving the integration of advanced AI workflows and automation systems to streamline processes and elevate intelligent digital solutions." imageSrc={NuvaafImage} imageWrapperClassName="scale-[1.35] translate-y-[8%]" />
+                            <LeadershipCard name="Nuvaaf AN" role="AI Automation Engineer" description="Driving the integration of advanced AI workflows and automation systems to streamline processes and elevate intelligent digital solutions." imageSrc={NuvaafImage} imageWrapperClassName="scale-[1.35] translate-y-[8%]" />
                             <LeadershipCard name="Mayur P" role="Co-founder & Web3 Developer" description="Pioneering decentralized applications and Web3 infrastructure, focusing on secure, scalable blockchain solutions for the modern web." imageSrc={MayurImage} />
                         </div>
                     </div>
