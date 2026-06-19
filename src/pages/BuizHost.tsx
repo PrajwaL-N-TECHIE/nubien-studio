@@ -385,7 +385,7 @@ const BuizHost = () => {
                 className="px-6 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold transition-all shadow-[0_0_20px_rgba(168,85,247,0.3)] flex items-center gap-2"
               >
                 Launch Now <Target size={16} />
-              </button>
+                when               </button>
             </div>
           </div>
 
@@ -648,16 +648,16 @@ const BuizHost = () => {
                       animate={{ opacity: 1, scale: 1, x: 0 }}
                       transition={{ type: "spring", stiffness: 300, damping: 20 }}
                       className={`flex items-center justify-between p-4 rounded-2xl border ${status !== 'waiting' && index === 0 ? 'bg-yellow-500/10 border-yellow-500/30' :
-                          status !== 'waiting' && index === 1 ? 'bg-zinc-300/10 border-zinc-300/30' :
-                            status !== 'waiting' && index === 2 ? 'bg-orange-500/10 border-orange-500/30' :
-                              'bg-white/5 border-white/10'
+                        status !== 'waiting' && index === 1 ? 'bg-zinc-300/10 border-zinc-300/30' :
+                          status !== 'waiting' && index === 2 ? 'bg-orange-500/10 border-orange-500/30' :
+                            'bg-white/5 border-white/10'
                         }`}
                     >
                       <div className="flex items-center gap-4">
                         <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black text-lg ${status !== 'waiting' && index === 0 ? 'bg-yellow-500 text-black' :
-                            status !== 'waiting' && index === 1 ? 'bg-zinc-300 text-black' :
-                              status !== 'waiting' && index === 2 ? 'bg-orange-500 text-black' :
-                                'bg-white/10 text-white/50'
+                          status !== 'waiting' && index === 1 ? 'bg-zinc-300 text-black' :
+                            status !== 'waiting' && index === 2 ? 'bg-orange-500 text-black' :
+                              'bg-white/10 text-white/50'
                           }`}>
                           {index + 1}
                         </div>
@@ -674,15 +674,15 @@ const BuizHost = () => {
                                 🔥 {p.streak} Streak
                               </span>
                             )}
-                            <span className="text-xs text-white/40 font-mono">Progress: {Math.round((p.progress || 0) * 10)}%</span>
+                            <span className="text-xs text-white/40 font-mono">Progress: {Math.round((p.progress || 0) * 100)}%</span>
                           </div>
                         </div>
                       </div>
                       <div className="text-right">
                         <p className={`font-black text-2xl font-mono ${status !== 'waiting' && index === 0 ? 'text-yellow-400' :
-                            status !== 'waiting' && index === 1 ? 'text-zinc-300' :
-                              status !== 'waiting' && index === 2 ? 'text-orange-400' :
-                                'text-white'
+                          status !== 'waiting' && index === 1 ? 'text-zinc-300' :
+                            status !== 'waiting' && index === 2 ? 'text-orange-400' :
+                              'text-white'
                           }`}>
                           {p.score.toLocaleString()}
                         </p>

@@ -157,7 +157,7 @@ const BuizClient = () => {
     setScore(newScore);
     setStreak(newStreak);
     
-    const progress = (currentQIndex + 1) / 10; // assuming 10 questions
+    const progress = (currentQIndex + 1) / questions.length;
     updatePlayerScore(newScore, newStreak, progress);
     
     // Move to next question after delay
