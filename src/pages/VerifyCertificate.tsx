@@ -37,7 +37,7 @@ const VerifyCertificate = () => {
     setResult(null);
 
     try {
-      const q = query(collection(db, "internships"), where("registration_id", "==", searchId.trim()));
+      const q = query(collection(db, "internships"), where("registration_id", "==", searchId.trim().toUpperCase()));
       const querySnapshot = await getDocs(q);
       
       if (querySnapshot.empty) {
@@ -96,7 +96,7 @@ const VerifyCertificate = () => {
             type="text"
             placeholder="e.g. BLDCY-UIUX-4921"
             value={searchId}
-            onChange={(e) => setSearchId(e.target.value)}
+            onChange={(e) => setSearchId(e.target.value.toUpperCase())}
             className="w-full bg-[#0a0a0f] border-2 border-white/10 rounded-2xl py-6 pl-16 pr-40 text-white text-lg placeholder-white/30 focus:outline-none focus:border-purple-500/50 transition-colors uppercase font-['DM_Mono']"
           />
           <button 
