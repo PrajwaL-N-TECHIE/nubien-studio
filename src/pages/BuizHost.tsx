@@ -628,7 +628,7 @@ const BuizHost = () => {
           <div className="lg:col-span-2 bg-[#0C0C12]/80 border border-white/10 rounded-3xl p-8 backdrop-blur-xl flex flex-col">
             <div className="flex items-center gap-3 mb-8">
               <Trophy className="text-yellow-500" size={28} />
-              <h2 className="text-2xl font-black text-white">Live Leaderboard</h2>
+              <h2 className="text-2xl font-black text-white">{status === 'waiting' ? 'Lobby' : 'Live Leaderboard'}</h2>
             </div>
 
             {players.length === 0 ? (
@@ -636,6 +636,22 @@ const BuizHost = () => {
                 <Users className="text-white/10 mb-4" size={64} />
                 <p className="text-zinc-500 text-xl font-medium">Waiting for players to join via PIN...</p>
                 <p className="text-zinc-600 mt-2">Go to /buiz to join</p>
+              </div>
+            ) : status === 'waiting' ? (
+              <div className="flex-1 flex flex-wrap gap-4 items-start content-start">
+                <AnimatePresence>
+                  {players.map((p) => (
+                    <motion.div
+                      key={p.id}
+                      initial={{ opacity: 0, scale: 0.5 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="bg-purple-600/20 border border-purple-500/30 px-4 py-2 rounded-full flex items-center gap-2"
+                    >
+                      {p.avatar && <img src={p.avatar} alt="Avatar" className="w-6 h-6 rounded-full bg-black/20" />}
+                      <span className="text-white font-bold text-sm">{p.name}</span>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
               </div>
             ) : (
               <div className="space-y-3 overflow-y-auto pr-4 flex-1">
