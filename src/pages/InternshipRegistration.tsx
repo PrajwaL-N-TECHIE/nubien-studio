@@ -59,6 +59,7 @@ const InternshipRegistration = () => {
   const [referralStatus, setReferralStatus] = useState<'idle' | 'verifying' | 'valid' | 'invalid'>('idle');
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [countryCode, setCountryCode] = useState("+91");
+  const [earlyBirdActive, setEarlyBirdActive] = useState<boolean>(true);
   const navigate = useNavigate();
 
   const trackPricing: Record<string, string> = {
@@ -66,7 +67,10 @@ const InternshipRegistration = () => {
     ai_automation: "₹899",
     fullstack: "₹1099",
     blockchain: "₹1099",
-    ai_architect: "₹1299"
+    ai_architect: "₹1299",
+    data_science: "₹1099",
+    cybersecurity: "₹1099",
+    cloud_computing: "₹1099"
   };
 
   const trackNames: Record<string, string> = {
@@ -74,7 +78,10 @@ const InternshipRegistration = () => {
     ai_automation: "AI Automation Engineer",
     fullstack: "Full Stack Developer",
     blockchain: "Blockchain Engineer",
-    ai_architect: "AI Architect"
+    ai_architect: "AI Architect",
+    data_science: "Data Scientist",
+    cybersecurity: "Cybersecurity Analyst",
+    cloud_computing: "Cloud & DevOps Engineer"
   };
 
   useEffect(() => {
@@ -92,7 +99,19 @@ const InternshipRegistration = () => {
       }
     };
 
+    const fetchEarlyBirdSettings = async () => {
+      try {
+        const snap = await getDoc(doc(db, "settings", "general"));
+        if (snap.exists() && snap.data().earlyBirdActive !== undefined) {
+          setEarlyBirdActive(snap.data().earlyBirdActive);
+        }
+      } catch (err) {
+        console.error("Failed to fetch settings", err);
+      }
+    };
+
     fetchStats();
+    fetchEarlyBirdSettings();
   }, []);
 
   const handleVerifyReferral = async (code: string) => {
@@ -133,7 +152,7 @@ const InternshipRegistration = () => {
   };
 
   const trackCount = selectedTrack ? (trackStats[selectedTrack] || 0) : 0;
-  const isEarlyBird = selectedTrack !== "" && trackCount < 10;
+  const isEarlyBird = earlyBirdActive && selectedTrack !== "" && trackCount < 10;
   
   const originalPrice = parseInt(trackPricing[selectedTrack]?.replace('₹', '') || '0');
   

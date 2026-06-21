@@ -18,7 +18,10 @@ const trackNames: Record<string, string> = {
   ai_automation: "AI Automation Engineer",
   fullstack: "Full Stack Developer",
   blockchain: "Blockchain Engineer",
-  ai_architect: "AI Architect"
+  ai_architect: "AI Architect",
+  data_science: "Data Scientist",
+  cybersecurity: "Cybersecurity Analyst",
+  cloud_computing: "Cloud & DevOps Engineer"
 };
 
 const VerifyCertificate = () => {

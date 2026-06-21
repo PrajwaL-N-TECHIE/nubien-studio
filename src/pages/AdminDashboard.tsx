@@ -77,7 +77,10 @@ const trackNames: Record<string, string> = {
   ai_automation: "AI Automation Engineer",
   fullstack: "Full Stack Developer",
   blockchain: "Blockchain Engineer",
-  ai_architect: "AI Architect"
+  ai_architect: "AI Architect",
+  data_science: "Data Scientist",
+  cybersecurity: "Cybersecurity Analyst",
+  cloud_computing: "Cloud & DevOps Engineer"
 };
 
 const AdminLeaderboard = () => {
@@ -207,6 +210,7 @@ const AdminDashboard = () => {
   // Crucible State
   const [activeTab, setActiveTab] = useState<'temp_registrations' | 'perm_registrations' | 'materials' | 'assignments' | 'submissions' | 'settings' | 'leaderboard'>('temp_registrations');
   const [globalBatch, setGlobalBatch] = useState("batch-1");
+  const [globalEarlyBird, setGlobalEarlyBird] = useState(true);
   const [isSavingSettings, setIsSavingSettings] = useState(false);
 
   const navigate = useNavigate();
@@ -282,8 +286,9 @@ const AdminDashboard = () => {
   const fetchSettings = async () => {
     try {
       const snap = await getDoc(doc(db, "settings", "general"));
-      if (snap.exists() && snap.data().currentBatch) {
-        setGlobalBatch(snap.data().currentBatch);
+      if (snap.exists()) {
+        if (snap.data().currentBatch) setGlobalBatch(snap.data().currentBatch);
+        if (snap.data().earlyBirdActive !== undefined) setGlobalEarlyBird(snap.data().earlyBirdActive);
       }
     } catch (err) {
       console.error(err);
@@ -294,7 +299,10 @@ const AdminDashboard = () => {
     e.preventDefault();
     setIsSavingSettings(true);
     try {
-      const updates: any = { currentBatch: globalBatch };
+      const updates: any = { 
+        currentBatch: globalBatch,
+        earlyBirdActive: globalEarlyBird 
+      };
       await setDoc(doc(db, "settings", "general"), updates, { merge: true });
       alert("Settings saved successfully!");
     } catch(err) {
@@ -1466,6 +1474,28 @@ const AdminDashboard = () => {
                 <label className="block text-xs font-bold text-white/40 uppercase mb-2">Current Active Batch</label>
                 <input type="text" required value={globalBatch} onChange={e => setGlobalBatch(e.target.value)} className="w-full bg-[#050507] border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-purple-500/50" placeholder="e.g. batch-2" />
                 <p className="text-sm text-white/40 mt-2">New student registrations will automatically be tagged with this cohort name. This affects both databases.</p>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-white/40 uppercase mb-2">Early Bird Offer</label>
+                <div className="flex items-center gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setGlobalEarlyBird(!globalEarlyBird)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-[#0a0a0f] ${
+                      globalEarlyBird ? 'bg-purple-600' : 'bg-white/20'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        globalEarlyBird ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                  <span className="text-sm text-white/90">
+                    {globalEarlyBird ? 'Active (10% Discount applied)' : 'Disabled'}
+                  </span>
+                </div>
+                <p className="text-sm text-white/40 mt-2">Turn on or off the early bird offer globally on the registration page.</p>
               </div>
               <button type="submit" disabled={isSavingSettings} className="px-6 py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold transition-all disabled:opacity-50">
                 {isSavingSettings ? "Saving..." : "Save Settings"}
