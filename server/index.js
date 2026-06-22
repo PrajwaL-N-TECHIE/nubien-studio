@@ -1,5 +1,8 @@
 import express from 'express';
 import cors from 'cors';
+import dotenv from 'dotenv';
+import Groq from 'groq-sdk';
+
 import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
 import path from 'path';
@@ -10,8 +13,15 @@ import fs from 'fs';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+dotenv.config();
+
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
+
+// Initialize Groq
+const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY || 'dummy_key_replace_me',
+});
 
 // Middleware
 app.use(cors());
@@ -220,6 +230,43 @@ app.post('/api/internship/:registrationId/profile-image', upload.single('image')
     res.json({ success: true, profile_image: imagePath });
   } catch (error) {
     res.status(500).json({ error: 'Failed to update profile image' });
+  }
+});
+
+// AI-SDR: Generate Personalized Sales Pitch
+app.post('/api/generate-pitch', async (req, res) => {
+  try {
+    const { leadName, companyName, industry, painPoint } = req.body;
+
+    if (!leadName || !companyName) {
+      return res.status(400).json({ error: 'leadName and companyName are required' });
+    }
+
+    const systemPrompt = `You are an elite, highly persuasive AI Sales Development Representative (SDR) working for 'Buildicy', a top-tier Custom Software and SaaS development agency based in Coimbatore. 
+Your goal is to write a short, punchy, cold email to a potential client.
+The email must not sound like marketing spam. It must sound like a human wrote it.
+Keep it under 150 words. Do not use generic buzzwords.
+Mention that Buildicy builds high-performance SaaS, AI Automation, and Web3 solutions.
+End with a soft call to action asking for a quick 10-minute chat.`;
+
+    const userPrompt = `Write a cold email to ${leadName} at ${companyName}. They are in the ${industry || 'Tech'} industry. Focus on the pain point of: ${painPoint || 'Scaling their software infrastructure'}.`;
+
+    const chatCompletion = await groq.chat.completions.create({
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt }
+      ],
+      model: 'llama3-8b-8192',
+      temperature: 0.7,
+      max_tokens: 300,
+    });
+
+    const generatedEmail = chatCompletion.choices[0]?.message?.content || 'Failed to generate email.';
+
+    res.json({ success: true, email: generatedEmail });
+  } catch (error) {
+    console.error('Error generating pitch:', error);
+    res.status(500).json({ error: 'Failed to generate pitch. Check API key and quota.' });
   }
 });
 
