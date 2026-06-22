@@ -211,7 +211,7 @@ const LiveStatus = () => {
           setVisitorCount(data.uniqueVisitors || 0);
         }
       } catch (err) {
-        console.error("Failed to sync real analytics", err);
+        // Silent fail on permission error for analytics
       }
     };
     

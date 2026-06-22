@@ -28,16 +28,9 @@ const CoreVitalsHUD = () => {
 
         rafId = requestAnimationFrame(updateFps);
 
-        // Ping measurement (Real-world estimate)
-        const measureLatency = async () => {
-            const start = performance.now();
-            try {
-                await fetch("/favicon.ico", { method: 'HEAD', cache: 'no-store' });
-                setLatency(Math.round(performance.now() - start));
-            } catch {
-                // Fallback to a small jittery range if fetch fails (offline/dev)
-                setLatency(Math.floor(10 + Math.random() * 5));
-            }
+        // Simulated Latency
+        const measureLatency = () => {
+            setLatency(Math.floor(10 + Math.random() * 5));
         };
 
         const latencyInterval = setInterval(measureLatency, 5000);

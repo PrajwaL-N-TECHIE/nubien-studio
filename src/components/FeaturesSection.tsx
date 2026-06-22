@@ -73,7 +73,7 @@ const ApiVisual = () => {
     <div className="relative mt-6 h-[200px] w-full rounded-[20px] bg-[#08080B] border border-white/5 overflow-hidden group">
       <div className="absolute inset-0 opacity-[0.15]" style={{ backgroundImage: `linear-gradient(rgba(168, 85, 247, 0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(168, 85, 247, 0.2) 1px, transparent 1px)`, backgroundSize: '30px 30px' }} />
 
-      <svg className="absolute inset-0 w-full h-full z-0">
+      <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 w-full h-full z-0">
         <defs>
           <linearGradient id="network-grad" x1="0%" y1="0%" x2="100%" y2="0%">
             <stop offset="0%" stopColor="#a855f7" stopOpacity="0.1" />
@@ -83,12 +83,12 @@ const ApiVisual = () => {
         </defs>
 
         {icons.map((_, i) => {
-          const startX = 12 + (i * 15.2) + "%";
+          const startXNum = 12 + (i * 15.2);
           const isActive = activeNodes.includes(i);
           return (
             <motion.path
               key={i}
-              d={`M ${startX} 25% C ${startX} 55%, 50% 50%, 50% 75%`}
+              d={`M ${startXNum} 25 C ${startXNum} 55, 50 50, 50 75`}
               fill="none"
               stroke={isActive ? "#a855f7" : "rgba(255,255,255,0.05)"}
               strokeWidth={isActive ? "2" : "1"}
