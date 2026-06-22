@@ -56,8 +56,8 @@ const Portfolio = () => {
   return (
     <PageTransition>
       <SEO 
-        title="Our Work | High-Performance Digital Products & AI | Buildicy"
-        description="View our portfolio of cinematic digital experiences, AI-driven applications, and scalable architectures. See how we build the future of software."
+        title="Our Work | Custom SaaS & Enterprise Software Projects | Buildicy"
+        description="View our portfolio of custom software applications, B2B SaaS platforms, and enterprise solutions built for high scalability and performance."
         canonicalUrl="/portfolio"
         schema={JSON.stringify({
           "@context": "https://schema.org",

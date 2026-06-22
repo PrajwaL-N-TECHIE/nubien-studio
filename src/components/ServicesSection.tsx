@@ -17,7 +17,7 @@ const serviceSpeech = "https://images.unsplash.com/photo-1589254065878-42c9da997
 const serviceAutomation = "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=800&auto=format&fit=crop";
 
 const mainServices = [
-  { icon: Cloud, title: "AI-Powered Development", subtitle: "Smart Websites", description: "Build intelligent web applications and digital experiences powered by cutting-edge AI.", stats: ["98% efficiency", "50+ projects"] },
+  { icon: Cloud, title: "Custom SaaS & Software Development", subtitle: "Enterprise Solutions", description: "Build intelligent web applications, B2B SaaS platforms, and enterprise software systems.", stats: ["Highly Scalable", "50+ apps shipped"] },
   { icon: Box, title: "Web3 & Blockchain", subtitle: "Decentralized Future", description: "Design and deploy secure, scalable smart contracts and dApps on robust blockchain networks.", stats: ["Zero breaches", "High throughput"] },
   { icon: Layout, title: "Cinematic UI/UX", subtitle: "Next-Gen Design", description: "Craft breathtaking, high-performance interfaces that engage users and drive conversions.", stats: ["Award-winning", "60fps animations"] },
   { icon: Cog, title: "AI Automation", subtitle: "Workflow Optimization", description: "Automate complex business workflows with intelligent, self-learning AI systems.", stats: ["24/7 operation", "80% cost reduction"] },

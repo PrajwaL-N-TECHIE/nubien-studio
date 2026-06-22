@@ -9,8 +9,8 @@ const Home = () => {
   return (
     <PageTransition>
       <SEO 
-        title="Buildicy | Elite AI Studio & High-Performance Engineering"
-        description="Buildicy is a premier AI studio in Coimbatore specializing in high-performance digital products, Web3 & Blockchain solutions, AI Automation, and cinematic UI/UX design."
+        title="Buildicy | Elite Custom Software & SaaS Development Agency"
+        description="Buildicy is a premier custom software and SaaS development agency. We engineer high-performance B2B applications, enterprise platforms, and scalable digital architectures."
         canonicalUrl="/"
       />
       <HeroSection />

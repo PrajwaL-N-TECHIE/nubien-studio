@@ -81,7 +81,7 @@ const HeroSection = () => {
   const [isConnecting, setIsConnecting] = useState(false);
   const containerRef = useRef<HTMLElement>(null);
 
-  const swapWords = ["Growth", "Evolution", "Success", "Solutions", "Impact"];
+  const swapWords = ["SaaS Products", "B2B Platforms", "Software Systems", "Enterprise Apps"];
 
   useEffect(() => {
     setIsMounted(true);
@@ -207,7 +207,7 @@ const HeroSection = () => {
         >
           {/* Flex container managing the layout */}
           <div className="flex flex-wrap justify-center items-center gap-x-4 w-full">
-            <span className="drop-shadow-sm whitespace-nowrap">AI-Driven</span>
+            <span className="drop-shadow-sm whitespace-nowrap">Elite</span>
 
             {/* GRID STACKING: Forces words into the same physical cell - Increased height to prevent clipping */}
             <div className="grid place-items-center relative h-[1.3em] overflow-visible py-2">
@@ -245,7 +245,7 @@ const HeroSection = () => {
             // Gradient applied here using bg-clip-text
             className="block mt-2 whitespace-nowrap bg-gradient-to-r from-white via-zinc-300 to-zinc-500 bg-clip-text text-transparent drop-shadow-sm font-['Syne'] italic"
           >
-            Redefining the Future.
+            Engineering Excellence.
           </motion.span>
         </motion.h1>
 
@@ -271,10 +271,10 @@ const HeroSection = () => {
             className="text-base sm:text-lg md:text-xl leading-relaxed text-zinc-300 font-medium relative z-10 drop-shadow-md"
           >
             <motion.span variants={lineVariants} className="block">
-              Creating cutting-edge solutions that <span className="text-white font-bold">redefine technology</span>.
+              Architecting high-performance <span className="text-white font-bold">custom software and SaaS platforms</span>.
             </motion.span>
             <motion.span variants={lineVariants} className="block mt-2 md:mt-0">
-              Stay ahead with intelligent engineering built for tomorrow.
+              We build scalable enterprise systems that dominate industries.
             </motion.span>
           </motion.p>
         </motion.div>
