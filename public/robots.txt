@@ -1,3 +1,8 @@
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /student-login
+Disallow: /student-dashboard
+Disallow: /buiz
+
 Sitemap: https://www.buildicy.com/sitemap.xml

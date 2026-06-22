@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Search, CheckCircle, XCircle, ShieldCheck, ArrowLeft, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { audio } from "@/utils/audio";
+import SEO from "@/components/SEO";
 
 import { db } from "@/lib/firebase";
 import { collection, query, where, getDocs, getDoc, doc } from "firebase/firestore";
@@ -90,7 +91,13 @@ const VerifyCertificate = () => {
   };
 
   return (
-    <div className="min-h-screen pt-32 pb-24 px-4 sm:px-6 relative overflow-hidden bg-[#050507]">
+    <>
+      <SEO 
+        title="Verify Certificate | Buildicy Internships"
+        description="Verify the authenticity of a Buildicy Internship Certificate. Enter the unique ID to confirm the graduate's credentials and program track."
+        canonicalUrl="/verify"
+      />
+      <div className="min-h-screen pt-32 pb-24 px-4 sm:px-6 relative overflow-hidden bg-[#050507]">
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[150px] pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-green-600/5 rounded-full blur-[150px] pointer-events-none" />
       
@@ -186,6 +193,7 @@ const VerifyCertificate = () => {
 
       </div>
     </div>
+    </>
   );
 };
 

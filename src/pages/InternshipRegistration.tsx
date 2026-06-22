@@ -6,6 +6,8 @@ import emailjs from '@emailjs/browser';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { useNavigate } from "react-router-dom";
+import SEO from "@/components/SEO";
+import PageTransition from "@/components/PageTransition";
 
 import { db, auth } from "@/lib/firebase";
 import { collection, query, where, getDocs, getDoc, doc, addDoc, serverTimestamp } from "firebase/firestore";
@@ -545,8 +547,27 @@ const InternshipRegistration = () => {
     );
   }
 
+  const courseSchema = JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Course",
+    "name": "Buildicy Premium Internship Program",
+    "description": "Intensive 30-day industry-grade training in Full Stack Development, UI/UX Design, AI Automation, and Web3/Blockchain.",
+    "provider": {
+      "@type": "Organization",
+      "name": "Buildicy",
+      "sameAs": "https://www.buildicy.com"
+    }
+  });
+
   return (
-    <div className="min-h-screen pt-32 pb-24 px-4 relative overflow-hidden flex flex-col items-center">
+    <PageTransition>
+      <SEO 
+        title="Apply for Buildicy Internship | 30 Days Tech Program"
+        description="Join Buildicy's elite 30-day internship. Master UI/UX, AI Automation, Web3, and Fullstack Development with live projects and expert guidance."
+        canonicalUrl="/internship-registration"
+        schema={courseSchema}
+      />
+      <div className="min-h-screen bg-[#050507] pt-24 pb-20 relative overflow-hidden flex flex-col items-center">
       {/* Background Ambience */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-purple-600/20 rounded-[100%] blur-[120px] opacity-50 pointer-events-none" />
       
@@ -920,6 +941,7 @@ const InternshipRegistration = () => {
         )}
       </motion.div>
     </div>
+    </PageTransition>
   );
 };
 

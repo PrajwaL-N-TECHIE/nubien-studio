@@ -59,6 +59,18 @@ const Portfolio = () => {
         title="Our Work | High-Performance Digital Products & AI | Buildicy"
         description="View our portfolio of cinematic digital experiences, AI-driven applications, and scalable architectures. See how we build the future of software."
         canonicalUrl="/portfolio"
+        schema={JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          "name": "Buildicy Portfolio",
+          "url": "https://www.buildicy.com/portfolio",
+          "description": "A curated selection of our most ambitious projects, featuring AI integrations, Web3 platforms, and high-performance engineering.",
+          "isPartOf": {
+            "@type": "WebSite",
+            "name": "Buildicy",
+            "url": "https://www.buildicy.com"
+          }
+        })}
       />
       <div className="pt-32 pb-40 min-h-screen bg-[#050507] text-white overflow-hidden selection:bg-purple-500/30">
 
