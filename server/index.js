@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import Groq from 'groq-sdk';
+import axios from 'axios';
 
 import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
@@ -233,7 +234,7 @@ app.post('/api/internship/:registrationId/profile-image', upload.single('image')
   }
 });
 
-// AI-SDR: Generate Personalized Sales Pitch
+// AI-SDR: Generate Personalized Sales Pitch (Manual Single)
 app.post('/api/generate-pitch', async (req, res) => {
   try {
     const { leadName, companyName, industry, painPoint } = req.body;
@@ -267,6 +268,93 @@ End with a soft call to action asking for a quick 10-minute chat.`;
   } catch (error) {
     console.error('Error generating pitch:', error);
     res.status(500).json({ error: 'Failed to generate pitch. Check API key and quota.' });
+  }
+});
+
+// AI-SDR: Fully Automated Apollo.io Pipeline
+app.post('/api/generate-campaign', async (req, res) => {
+  try {
+    const { personaTitle, painPoint } = req.body;
+
+    if (!personaTitle) {
+      return res.status(400).json({ error: 'Persona title is required (e.g. "SaaS Founder")' });
+    }
+
+    const APOLLO_KEY = process.env.APOLLO_API_KEY;
+    if (!APOLLO_KEY) {
+      return res.status(500).json({ error: 'Apollo API key missing in server/.env' });
+    }
+
+    // 1. Fetch Leads from Apollo
+    const apolloData = {
+      api_key: APOLLO_KEY,
+      q_keywords: personaTitle,
+      person_titles: [personaTitle],
+      page: 1,
+      per_page: 5 // Keep it small for MVP performance
+    };
+
+    const apolloRes = await axios.post('https://api.apollo.io/v1/mixed_people/search', apolloData, {
+      headers: {
+        'Cache-Control': 'no-cache',
+        'Content-Type': 'application/json'
+      }
+    });
+
+    const people = apolloRes.data.people || [];
+
+    if (people.length === 0) {
+      return res.status(404).json({ error: 'No leads found for that persona.' });
+    }
+
+    // 2. Generate Emails for each lead in parallel using Groq
+    const systemPrompt = `You are an elite AI Sales Rep for 'Buildicy', a custom software agency. Write a highly personalized, non-spammy cold email (under 150 words) offering to build custom software for their pain point. End with a call to action.`;
+
+    const generatedLeads = await Promise.all(people.map(async (person) => {
+      const leadName = person.first_name + ' ' + person.last_name;
+      const companyName = person.organization?.name || 'your company';
+      const title = person.title || 'Leader';
+
+      const userPrompt = `Write a cold email to ${leadName}, who is the ${title} at ${companyName}. Their likely pain point is: ${painPoint || 'needing scalable custom software'}.`;
+
+      try {
+        const chatCompletion = await groq.chat.completions.create({
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt }
+          ],
+          model: 'llama3-8b-8192',
+          temperature: 0.7,
+          max_tokens: 300,
+        });
+
+        const emailBody = chatCompletion.choices[0]?.message?.content || 'Failed to generate pitch.';
+
+        return {
+          id: person.id,
+          name: leadName,
+          title: title,
+          company: companyName,
+          linkedin: person.linkedin_url,
+          emailBody: emailBody
+        };
+      } catch (err) {
+        console.error('Groq generation error for lead:', leadName, err);
+        return {
+          id: person.id,
+          name: leadName,
+          title: title,
+          company: companyName,
+          linkedin: person.linkedin_url,
+          emailBody: 'Error: Could not generate pitch due to AI quota limits.'
+        };
+      }
+    }));
+
+    res.json({ success: true, leads: generatedLeads });
+  } catch (error) {
+    console.error('Error generating campaign:', error);
+    res.status(500).json({ error: 'Failed to generate campaign. Verify Apollo API Key.' });
   }
 });
 
