@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, CheckCircle, XCircle, ShieldCheck, ArrowLeft, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { audio } from "@/utils/audio";
 
 import { db } from "@/lib/firebase";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import { collection, query, where, getDocs, getDoc, doc } from "firebase/firestore";
 interface VerificationData {
   name: string;
   track: string;
@@ -13,15 +13,12 @@ interface VerificationData {
   registration_id: string;
 }
 
-const trackNames: Record<string, string> = {
+const initialTrackNames: Record<string, string> = {
   uiux: "UI/UX Designer",
   ai_automation: "AI Automation Engineer",
   fullstack: "Full Stack Developer",
   blockchain: "Blockchain Engineer",
-  ai_architect: "AI Architect",
-  data_science: "Data Scientist",
-  cybersecurity: "Cybersecurity Analyst",
-  cloud_computing: "Cloud & DevOps Engineer"
+  ai_architect: "AI Architect"
 };
 
 const VerifyCertificate = () => {
@@ -29,7 +26,27 @@ const VerifyCertificate = () => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<VerificationData | null>(null);
   const [error, setError] = useState(false);
+  const [trackNames, setTrackNames] = useState<Record<string, string>>(initialTrackNames);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchTracks = async () => {
+      try {
+        const snap = await getDoc(doc(db, "settings", "tracks"));
+        if (snap.exists() && snap.data().items) {
+          const items = snap.data().items;
+          const newNames = { ...initialTrackNames };
+          items.forEach((t: any) => {
+            newNames[t.id] = t.name;
+          });
+          setTrackNames(newNames);
+        }
+      } catch (err) {
+        console.error("Failed to fetch tracks", err);
+      }
+    };
+    fetchTracks();
+  }, []);
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();

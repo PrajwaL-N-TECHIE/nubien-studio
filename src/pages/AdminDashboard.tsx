@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Lock, ShieldAlert, ArrowRight, Eye, EyeOff, Search, LogOut, Trash2, Info, X, Edit2, BookOpen, UploadCloud, CheckCircle2, Plus, Download, Settings, Mail, FileText, Link, Calendar, Building, Loader2, Target, Trophy, AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -77,10 +77,7 @@ const trackNames: Record<string, string> = {
   ai_automation: "AI Automation Engineer",
   fullstack: "Full Stack Developer",
   blockchain: "Blockchain Engineer",
-  ai_architect: "AI Architect",
-  data_science: "Data Scientist",
-  cybersecurity: "Cybersecurity Analyst",
-  cloud_computing: "Cloud & DevOps Engineer"
+  ai_architect: "AI Architect"
 };
 
 const AdminLeaderboard = () => {
@@ -212,6 +209,19 @@ const AdminDashboard = () => {
   const [globalBatch, setGlobalBatch] = useState("batch-1");
   const [globalEarlyBird, setGlobalEarlyBird] = useState(true);
   const [isSavingSettings, setIsSavingSettings] = useState(false);
+  const [customTracks, setCustomTracks] = useState<{id: string, name: string, price: string}[]>([]);
+  const [newTrackId, setNewTrackId] = useState("");
+  const [newTrackName, setNewTrackName] = useState("");
+  const [newTrackPrice, setNewTrackPrice] = useState("");
+  const [isAddingTrack, setIsAddingTrack] = useState(false);
+
+  const allTracks = useMemo(() => {
+    const combined = { ...trackNames };
+    customTracks.forEach(t => {
+      combined[t.id] = t.name;
+    });
+    return combined;
+  }, [customTracks]);
 
   const navigate = useNavigate();
 
@@ -290,6 +300,11 @@ const AdminDashboard = () => {
         if (snap.data().currentBatch) setGlobalBatch(snap.data().currentBatch);
         if (snap.data().earlyBirdActive !== undefined) setGlobalEarlyBird(snap.data().earlyBirdActive);
       }
+
+      const tracksSnap = await getDoc(doc(db, "settings", "tracks"));
+      if (tracksSnap.exists() && tracksSnap.data().items) {
+        setCustomTracks(tracksSnap.data().items);
+      }
     } catch (err) {
       console.error(err);
     }
@@ -310,6 +325,41 @@ const AdminDashboard = () => {
       alert("Failed to save settings");
     } finally {
       setIsSavingSettings(false);
+    }
+  };
+
+  const handleAddTrack = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTrackId || !newTrackName || !newTrackPrice) return;
+    setIsAddingTrack(true);
+    try {
+      const newItems = [...customTracks, { 
+        id: newTrackId.trim().toLowerCase().replace(/\s+/g, '_'), 
+        name: newTrackName.trim(), 
+        price: newTrackPrice.trim() 
+      }];
+      await setDoc(doc(db, "settings", "tracks"), { items: newItems }, { merge: true });
+      setCustomTracks(newItems);
+      setNewTrackId("");
+      setNewTrackName("");
+      setNewTrackPrice("");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to add track");
+    } finally {
+      setIsAddingTrack(false);
+    }
+  };
+
+  const handleDeleteTrack = async (id: string) => {
+    if (!window.confirm("Delete this track?")) return;
+    try {
+      const newItems = customTracks.filter(t => t.id !== id);
+      await setDoc(doc(db, "settings", "tracks"), { items: newItems }, { merge: true });
+      setCustomTracks(newItems);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to delete track");
     }
   };
 
@@ -718,7 +768,7 @@ const AdminDashboard = () => {
         `"${r.name}"`,
         `"${r.email}"`,
         `"${r.phone}"`,
-        `"${trackNames[r.track] || r.track}"`,
+        `"${allTracks[r.track] || r.track}"`,
         `"${r.college}"`,
         `"${r.degree}"`,
         `"${r.cohort}"`,
@@ -943,7 +993,7 @@ const AdminDashboard = () => {
                 <p className="text-xs text-purple-400 font-bold uppercase mb-1">Total</p>
                 <p className="text-3xl font-extrabold text-white">{records.length}</p>
               </motion.div>
-              {Object.entries(trackNames).map(([rawTrack, friendlyName], i) => {
+              {Object.entries(allTracks).map(([rawTrack, friendlyName], i) => {
                 const count = records.filter(r => r.track === rawTrack).length;
                 return (
                   <motion.div
@@ -995,7 +1045,7 @@ const AdminDashboard = () => {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className="px-3 py-1 bg-purple-900/30 border border-purple-500/20 rounded-full text-xs font-bold text-purple-400">
-                              {trackNames[record.track] || record.track}
+                              {allTracks[record.track] || record.track}
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
@@ -1371,7 +1421,7 @@ const AdminDashboard = () => {
 
               <div className="bg-white/5 border border-white/5 rounded-2xl p-4">
                 <p className="text-[10px] text-white/40 uppercase tracking-widest font-bold mb-1">Program Track</p>
-                <p className="text-white text-sm font-bold text-purple-400">{trackNames[selectedStudent.track] || selectedStudent.track}</p>
+                <p className="text-white text-sm font-bold text-purple-400">{allTracks[selectedStudent.track] || selectedStudent.track}</p>
               </div>
 
               <div className="bg-white/5 border border-white/5 rounded-2xl p-4 md:col-span-2">
@@ -1415,7 +1465,7 @@ const AdminDashboard = () => {
                 <div>
                   <label className="block text-xs font-bold text-white/40 uppercase mb-1">Track</label>
                   <select required value={newStudent.track} onChange={e => setNewStudent({ ...newStudent, track: e.target.value })} className="w-full bg-[#050507] border border-white/10 rounded-xl py-2 px-4 text-white focus:outline-none focus:border-purple-500/50">
-                    {Object.entries(trackNames).map(([key, name]) => (
+                    {Object.entries(allTracks).map(([key, name]) => (
                       <option key={key} value={key}>{name}</option>
                     ))}
                   </select>
@@ -1499,6 +1549,52 @@ const AdminDashboard = () => {
               </div>
               <button type="submit" disabled={isSavingSettings} className="px-6 py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold transition-all disabled:opacity-50">
                 {isSavingSettings ? "Saving..." : "Save Settings"}
+              </button>
+            </form>
+          </div>
+
+          <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8">
+            <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2"><Briefcase className="text-purple-400" size={24}/> Manage Custom Tracks</h2>
+            
+            <div className="mb-8">
+              <h3 className="text-sm font-bold text-white/60 uppercase mb-4">Current Custom Tracks</h3>
+              {customTracks.length === 0 ? (
+                <p className="text-white/40 italic">No custom tracks found. Only default tracks will be shown.</p>
+              ) : (
+                <div className="space-y-3">
+                  {customTracks.map(track => (
+                    <div key={track.id} className="flex items-center justify-between bg-[#050507] p-4 rounded-xl border border-white/5">
+                      <div>
+                        <p className="text-white font-bold">{track.name} <span className="text-white/40 font-normal ml-2">({track.price})</span></p>
+                        <p className="text-xs text-white/40 mt-1">ID: {track.id}</p>
+                      </div>
+                      <button onClick={() => handleDeleteTrack(track.id)} className="p-2 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <form onSubmit={handleAddTrack} className="bg-[#050507] p-6 rounded-2xl border border-white/5 space-y-4 max-w-xl">
+              <h3 className="font-bold text-white mb-2">Add New Track</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-white/40 uppercase mb-1">Track Name</label>
+                  <input type="text" required value={newTrackName} onChange={e => { setNewTrackName(e.target.value); if(!newTrackId) setNewTrackId(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, '_')); }} className="w-full bg-white/5 border border-white/10 rounded-xl py-2 px-3 text-white focus:outline-none focus:border-purple-500/50" placeholder="e.g. Data Scientist" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-white/40 uppercase mb-1">Track ID (auto-generated)</label>
+                  <input type="text" required value={newTrackId} onChange={e => setNewTrackId(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl py-2 px-3 text-white focus:outline-none focus:border-purple-500/50 font-mono text-sm" placeholder="e.g. data_science" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-white/40 uppercase mb-1">Price</label>
+                  <input type="text" required value={newTrackPrice} onChange={e => setNewTrackPrice(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl py-2 px-3 text-white focus:outline-none focus:border-purple-500/50" placeholder="e.g. ₹1099" />
+                </div>
+              </div>
+              <button type="submit" disabled={isAddingTrack} className="px-6 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold transition-all disabled:opacity-50 mt-4">
+                {isAddingTrack ? "Adding..." : "Add Track"}
               </button>
             </form>
           </div>

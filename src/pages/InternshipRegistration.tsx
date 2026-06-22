@@ -62,27 +62,21 @@ const InternshipRegistration = () => {
   const [earlyBirdActive, setEarlyBirdActive] = useState<boolean>(true);
   const navigate = useNavigate();
 
-  const trackPricing: Record<string, string> = {
+  const [trackPricing, setTrackPricing] = useState<Record<string, string>>({
     uiux: "₹899",
     ai_automation: "₹899",
     fullstack: "₹1099",
     blockchain: "₹1099",
-    ai_architect: "₹1299",
-    data_science: "₹1099",
-    cybersecurity: "₹1099",
-    cloud_computing: "₹1099"
-  };
+    ai_architect: "₹1299"
+  });
 
-  const trackNames: Record<string, string> = {
+  const [trackNames, setTrackNames] = useState<Record<string, string>>({
     uiux: "UI/UX Designer",
     ai_automation: "AI Automation Engineer",
     fullstack: "Full Stack Developer",
     blockchain: "Blockchain Engineer",
-    ai_architect: "AI Architect",
-    data_science: "Data Scientist",
-    cybersecurity: "Cybersecurity Analyst",
-    cloud_computing: "Cloud & DevOps Engineer"
-  };
+    ai_architect: "AI Architect"
+  });
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -104,6 +98,19 @@ const InternshipRegistration = () => {
         const snap = await getDoc(doc(db, "settings", "general"));
         if (snap.exists() && snap.data().earlyBirdActive !== undefined) {
           setEarlyBirdActive(snap.data().earlyBirdActive);
+        }
+
+        const tracksSnap = await getDoc(doc(db, "settings", "tracks"));
+        if (tracksSnap.exists() && tracksSnap.data().items) {
+          const items = tracksSnap.data().items;
+          const newNames = { ...trackNames };
+          const newPrices = { ...trackPricing };
+          items.forEach((t: any) => {
+            newNames[t.id] = t.name;
+            newPrices[t.id] = t.price;
+          });
+          setTrackNames(newNames);
+          setTrackPricing(newPrices);
         }
       } catch (err) {
         console.error("Failed to fetch settings", err);
@@ -679,11 +686,9 @@ const InternshipRegistration = () => {
                     className="w-full bg-[#13131a] border border-white/10 rounded-xl py-3 pl-11 pr-4 text-white focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all appearance-none"
                   >
                     <option value="" disabled>Select a track...</option>
-                    <option value="uiux">UI/UX Designer</option>
-                    <option value="fullstack">Full stack developer</option>
-                    <option value="ai_architect">AI Architect</option>
-                    <option value="ai_automation">AI Automation Engineer</option>
-                    <option value="blockchain">Blockchain engineer</option>
+                    {Object.entries(trackNames).map(([id, name]) => (
+                      <option key={id} value={id}>{name}</option>
+                    ))}
                   </select>
                 </div>
               </div>
