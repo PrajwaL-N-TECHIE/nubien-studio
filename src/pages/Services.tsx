@@ -10,8 +10,8 @@ const Services = () => {
   return (
     <PageTransition>
       <SEO 
-        title="SaaS & Custom Software Engineering Services | Buildicy"
-        description="Explore our elite software development services. We specialize in building scalable SaaS applications, B2B software architectures, and custom AI platforms."
+        title="SaaS & Custom Software Engineering Services in Coimbatore | Buildicy"
+        description="Explore our elite software development services in Coimbatore. We specialize in building scalable SaaS applications, Web3 smart contracts, AI Chatbots, Predictive Analytics, and Computer Vision."
         canonicalUrl="/services"
         schema={JSON.stringify({
           "@context": "https://schema.org",

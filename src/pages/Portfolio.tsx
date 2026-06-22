@@ -56,8 +56,8 @@ const Portfolio = () => {
   return (
     <PageTransition>
       <SEO 
-        title="Our Work | Custom SaaS & Enterprise Software Projects | Buildicy"
-        description="View our portfolio of custom software applications, B2B SaaS platforms, and enterprise solutions built for high scalability and performance."
+        title="Our Work | Custom SaaS & Enterprise Software Projects in Coimbatore"
+        description="View our portfolio of custom software applications, B2B SaaS platforms, Web3 dApps, and Computer Vision solutions built by Coimbatore's top engineering agency."
         canonicalUrl="/portfolio"
         schema={JSON.stringify({
           "@context": "https://schema.org",

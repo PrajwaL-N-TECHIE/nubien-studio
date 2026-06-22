@@ -9,8 +9,8 @@ const Home = () => {
   return (
     <PageTransition>
       <SEO 
-        title="Buildicy | Elite Custom Software & SaaS Development Agency"
-        description="Buildicy is a premier custom software and SaaS development agency. We engineer high-performance B2B applications, enterprise platforms, and scalable digital architectures."
+        title="Buildicy | Elite Custom Software & SaaS Development Agency in Coimbatore"
+        description="Buildicy is Coimbatore's premier Custom Software and SaaS Development agency. We engineer high-performance B2B applications, AI Automation, Web3 platforms, and Computer Vision solutions."
         canonicalUrl="/"
       />
       <HeroSection />

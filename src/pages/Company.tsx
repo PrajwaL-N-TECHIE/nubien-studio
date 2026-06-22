@@ -8,8 +8,8 @@ const Company = () => {
   return (
     <PageTransition>
       <SEO 
-        title="About Buildicy | Custom Software Engineering Leadership"
-        description="Meet the engineering leadership behind Buildicy. We are a dedicated team of full-stack developers architecting the future of custom SaaS and enterprise software."
+        title="About Buildicy | Top Software Engineering Agency in Coimbatore"
+        description="Meet the engineering leadership behind Buildicy, Coimbatore's top software agency. We are a dedicated team architecting custom SaaS, Web3, and AI Automation platforms."
         canonicalUrl="/company"
         schema={JSON.stringify({
           "@context": "https://schema.org",
