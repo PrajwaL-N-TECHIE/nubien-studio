@@ -1,12 +1,33 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, Bot, CheckCircle2, Search, Briefcase, Target, Loader2, ArrowRight, UserCircle, Send } from "lucide-react";
+import { Sparkles, Bot, CheckCircle2, Search, Briefcase, Target, Loader2, ArrowRight, UserCircle, Send, Copy } from "lucide-react";
 import PageTransition from "@/components/PageTransition";
 import SEO from "@/components/SEO";
 import { toast } from "sonner";
 import Magnetic from "@/components/Magnetic";
 
 const customEase = [0.22, 1, 0.36, 1];
+
+const CopyButton = ({ textToCopy, label }: { textToCopy: string, label: string }) => {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(textToCopy);
+    setCopied(true);
+    toast.success(`Copied ${label}!`);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <button 
+      onClick={handleCopy}
+      className={`text-[10px] px-2.5 py-1.5 flex items-center gap-1.5 rounded-lg transition-colors border ${copied ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-white/5 hover:bg-white/10 text-zinc-300 border-white/10'}`}
+    >
+      {copied ? <CheckCircle2 size={12} /> : <Copy size={12} />}
+      {label}
+    </button>
+  );
+};
 
 interface LeadPitch {
   id: string;
@@ -102,15 +123,41 @@ const AiSdrDashboard = () => {
     }
   };
 
-  const handleCopy = (lead: LeadPitch) => {
-    const content = `To: ${lead.email}\n\n${lead.emailBody}`;
-    navigator.clipboard.writeText(content);
-    toast.success(`Copied pitch for ${lead.name} to clipboard!`);
-  };
+  const [dispatching, setDispatching] = useState(false);
 
-  const handleDispatchAll = () => {
-    toast.success(`Dispatched ${campaignLeads.length} emails into the ether! (Simulated)`);
-    setCampaignLeads([]);
+  const handleDispatchAll = async () => {
+    setDispatching(true);
+    toast.loading(`Dispatching ${campaignLeads.length} emails via Nodemailer...`, { id: 'dispatch' });
+
+    let successCount = 0;
+    for (const lead of campaignLeads) {
+      const match = lead.emailBody.match(/Subject:\s*(.*)\n\n([\s\S]*)/);
+      const subject = match ? match[1].trim() : `Custom software for ${lead.company}`;
+      const body = match ? match[2].trim() : lead.emailBody;
+
+      try {
+        const res = await fetch("http://localhost:3001/api/send-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            to: lead.email,
+            subject: subject,
+            text: body
+          })
+        });
+        if (res.ok) successCount++;
+      } catch (err) {
+        console.error("Failed to send to", lead.email, err);
+      }
+    }
+
+    toast.dismiss('dispatch');
+    if (successCount === 0) {
+      toast.error(`Dispatch Failed! Check backend terminal for Google Login errors.`);
+    } else {
+      toast.success(`Successfully dispatched ${successCount}/${campaignLeads.length} emails!`);
+    }
+    setDispatching(false);
   };
 
   return (
@@ -272,40 +319,48 @@ const AiSdrDashboard = () => {
                       className="flex-grow flex flex-col gap-6"
                     >
                       <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
-                        {campaignLeads.map((lead, idx) => (
-                          <div key={idx} className="bg-[#1A1A24]/40 border border-white/5 rounded-2xl p-5 hover:border-purple-500/30 transition-colors">
-                            <div className="flex items-start justify-between mb-4 pb-4 border-b border-white/5">
-                              <div className="flex items-center gap-4">
-                                <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center flex-shrink-0">
-                                  <UserCircle size={20} className="text-purple-400" />
+                        {campaignLeads.map((lead, idx) => {
+                          const match = lead.emailBody.match(/Subject:\s*(.*)\n\n([\s\S]*)/);
+                          const subject = match ? match[1].trim() : `Quick question for ${lead.name}`;
+                          const body = match ? match[2].trim() : lead.emailBody;
+
+                          return (
+                            <div key={idx} className="bg-[#1A1A24]/40 border border-white/5 rounded-2xl p-5 hover:border-purple-500/30 transition-colors">
+                              <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 pb-4 border-b border-white/5 gap-4">
+                                <div className="flex items-center gap-4">
+                                  <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center flex-shrink-0">
+                                    <UserCircle size={20} className="text-purple-400" />
+                                  </div>
+                                  <div>
+                                    <h4 className="text-white font-bold">{lead.name}</h4>
+                                    <p className="text-xs text-zinc-400">{lead.title} @ {lead.company}</p>
+                                    <p className="text-[10px] text-purple-400 mt-1 font-['DM_Mono']">{lead.email}</p>
+                                  </div>
                                 </div>
-                                <div>
-                                  <h4 className="text-white font-bold">{lead.name}</h4>
-                                  <p className="text-xs text-zinc-400">{lead.title} @ {lead.company}</p>
-                                  <p className="text-[10px] text-purple-400 mt-1 font-['DM_Mono']">{lead.email}</p>
+                                <div className="flex items-center gap-2">
+                                  <CopyButton textToCopy={lead.email} label="Email ID" />
+                                  <CopyButton textToCopy={subject} label="Subject" />
+                                  <CopyButton textToCopy={body} label="Body" />
                                 </div>
                               </div>
-                              <button 
-                                onClick={() => handleCopy(lead)}
-                                className="text-xs px-3 py-1.5 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors border border-white/10"
-                              >
-                                Copy Email
-                              </button>
+                              <div className="text-sm text-zinc-300 whitespace-pre-wrap leading-relaxed font-medium">
+                                <span className="text-zinc-500 font-bold mb-2 block">Subject: {subject}</span>
+                                {body}
+                              </div>
                             </div>
-                            <div className="text-sm text-zinc-300 whitespace-pre-wrap leading-relaxed font-medium">
-                              {lead.emailBody}
-                            </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
 
                       <div className="pt-4 border-t border-white/10">
                         <Magnetic strength={0.1}>
                           <button 
                             onClick={handleDispatchAll}
-                            className="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-colors shadow-[0_0_20px_rgba(168,85,247,0.3)]"
+                            disabled={dispatching}
+                            className="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-colors shadow-[0_0_20px_rgba(168,85,247,0.3)] disabled:opacity-50"
                           >
-                            <Send size={18} /> Approve & Dispatch All
+                            {dispatching ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />} 
+                            {dispatching ? "Dispatching..." : "Approve & Dispatch All"}
                           </button>
                         </Magnetic>
                       </div>

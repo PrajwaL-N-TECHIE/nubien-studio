@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import Groq from 'groq-sdk';
 
 import axios from 'axios';
+import nodemailer from 'nodemailer';
 
 import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
@@ -401,6 +402,41 @@ app.post('/api/generate-campaign', async (req, res) => {
     console.error('Error generating campaign:', error);
     res.write(`data: ${JSON.stringify({ error: 'Internal server error during campaign generation.' })}\n\n`);
     res.end();
+  }
+});
+
+// AI-SDR: Nodemailer Automated Dispatcher
+app.post('/api/send-email', async (req, res) => {
+  try {
+    const { to, subject, text } = req.body;
+
+    if (!to || !subject || !text) {
+      return res.status(400).json({ error: 'Missing to, subject, or text fields' });
+    }
+
+    if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+      return res.status(500).json({ error: 'Gmail credentials not configured in server/.env' });
+    }
+
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_APP_PASSWORD,
+      },
+    });
+
+    await transporter.sendMail({
+      from: `"Buildicy" <${process.env.GMAIL_USER}>`,
+      to,
+      subject,
+      text,
+    });
+
+    res.json({ success: true, message: 'Email dispatched successfully!' });
+  } catch (error) {
+    console.error('Nodemailer Error:', error);
+    res.status(500).json({ error: 'Failed to dispatch email' });
   }
 });
 
