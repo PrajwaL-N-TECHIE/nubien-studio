@@ -126,9 +126,9 @@ const RoiCalculator = () => {
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-bold tracking-widest uppercase mb-6">
               <Calculator size={14} /> SaaS vs Custom Calculator
             </div>
-            <h1 className="text-4xl md:text-6xl font-black text-white mb-6 tracking-tight leading-[1.1]">
+            <h1 className="text-4xl md:text-[3.5rem] font-bold text-white mb-6 tracking-tight leading-[1.1]">
               Stop bleeding cash on <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-purple-600">
                 SaaS subscriptions.
               </span>
             </h1>
@@ -172,7 +172,7 @@ const RoiCalculator = () => {
                           value={tool.name}
                           onChange={(e) => handleUpdateTool(tool.id, 'name', e.target.value)}
                           placeholder="Tool Name (e.g. Shopify)" 
-                          className="w-full bg-[#1A1A24] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/50 transition-colors placeholder:text-zinc-600"
+                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/50 transition-colors placeholder:text-zinc-600"
                         />
                       </div>
                       <div className="w-32 relative">
@@ -182,7 +182,7 @@ const RoiCalculator = () => {
                           value={tool.cost || ''}
                           onChange={(e) => handleUpdateTool(tool.id, 'cost', parseInt(e.target.value) || 0)}
                           placeholder="0" 
-                          className="w-full bg-[#1A1A24] border border-white/10 rounded-xl pl-8 pr-4 py-3 text-white focus:outline-none focus:border-purple-500/50 transition-colors font-['DM_Mono']"
+                          className="w-full bg-white/5 border border-white/10 rounded-xl pl-8 pr-4 py-3 text-white focus:outline-none focus:border-purple-500/50 transition-colors font-['DM_Mono']"
                         />
                       </div>
                       <button 
@@ -212,14 +212,13 @@ const RoiCalculator = () => {
               className="h-full"
             >
               {!isUnlocked ? (
-                <div className="bg-gradient-to-br from-purple-900/40 to-pink-900/20 border border-purple-500/20 rounded-3xl p-8 md:p-12 h-full flex flex-col justify-center relative overflow-hidden group">
-                  <div className="absolute inset-0 backdrop-blur-md bg-[#050507]/40 z-10" />
+                <div className="bg-[#0C0C12]/80 backdrop-blur-2xl border border-white/5 rounded-3xl p-8 md:p-12 h-full flex flex-col justify-center relative overflow-hidden group shadow-2xl">
                   
                   <div className="relative z-20 text-center">
-                    <div className="w-16 h-16 bg-purple-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6 text-purple-400">
+                    <div className="w-16 h-16 bg-purple-500/10 border border-purple-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6 text-purple-400">
                       <Lock size={32} />
                     </div>
-                    <h3 className="text-3xl font-black text-white mb-4">Unlock Your 5-Year Blueprint</h3>
+                    <h3 className="text-3xl font-bold tracking-tight text-white mb-4">Unlock Your Blueprint</h3>
                     <p className="text-zinc-300 mb-8 max-w-sm mx-auto">
                       Enter your email to instantly see exactly how much money you are losing, and exactly how much a custom solution would save you.
                     </p>
@@ -237,7 +236,7 @@ const RoiCalculator = () => {
                         <button 
                           type="submit"
                           disabled={submitting}
-                          className="w-full bg-white text-black font-bold py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-zinc-200 transition-colors disabled:opacity-50"
+                          className="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-colors shadow-[0_0_20px_rgba(168,85,247,0.3)] disabled:opacity-50"
                         >
                           {submitting ? "Calculating..." : "Reveal My Savings"} <ArrowRight size={18} />
                         </button>
