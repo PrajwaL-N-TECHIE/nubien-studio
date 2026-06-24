@@ -287,9 +287,12 @@ const RoiCalculator = () => {
 
                   <div className="mt-8">
                     <Magnetic>
-                      <a href="mailto:prajwal.buildicy@gmail.com?subject=Let's build a custom software ecosystem" className="w-full bg-green-500 hover:bg-green-400 text-black font-bold py-5 rounded-xl flex items-center justify-center gap-2 transition-colors shadow-[0_0_20px_rgba(34,197,94,0.3)]">
+                      <button 
+                        onClick={() => window.dispatchEvent(new CustomEvent("open-scouter"))} 
+                        className="w-full bg-green-500 hover:bg-green-400 text-black font-bold py-5 rounded-xl flex items-center justify-center gap-2 transition-colors shadow-[0_0_20px_rgba(34,197,94,0.3)]"
+                      >
                         <Sparkles size={20} /> Book a Discovery Call
-                      </a>
+                      </button>
                     </Magnetic>
                   </div>
                 </motion.div>
