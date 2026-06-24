@@ -30,6 +30,7 @@ const StudentLogin = lazy(() => import("./pages/StudentLogin"));
 const BuizClient = lazy(() => import("./pages/BuizClient"));
 const BuizHost = lazy(() => import("./pages/BuizHost"));
 const AiSdrDashboard = lazy(() => import("./pages/AiSdrDashboard"));
+const RoiCalculator = lazy(() => import("./pages/RoiCalculator"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -54,6 +55,7 @@ const AnimatedRoutes = () => {
           <Route path="/buiz" element={<BuizClient />} />
           <Route path="/buiz/host" element={<BuizHost />} />
           <Route path="/ai-sdr" element={<AiSdrDashboard />} />
+          <Route path="/roi-calculator" element={<RoiCalculator />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>

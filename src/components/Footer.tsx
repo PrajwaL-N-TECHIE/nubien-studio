@@ -306,6 +306,7 @@ const Footer = () => {
       { name: "Host Buiz Arena", path: "/buiz/host" }
     ],
     Solutions: [
+      { name: "SaaS ROI Calculator", path: "/roi-calculator" },
       { name: "AI Studio", path: "#" },
       { name: "Analytics", path: "#" },
       { name: "Cloud Solutions", path: "#" },

@@ -37,6 +37,7 @@ interface LeadPitch {
   email: string;
   linkedin: string | null;
   emailBody: string;
+  isSent?: boolean;
 }
 
 const AiSdrDashboard = () => {
@@ -130,7 +131,15 @@ const AiSdrDashboard = () => {
     toast.loading(`Dispatching ${campaignLeads.length} emails via Nodemailer...`, { id: 'dispatch' });
 
     let successCount = 0;
+    let skipCount = 0;
+
     for (const lead of campaignLeads) {
+      if (!lead.email || !lead.email.includes('@')) {
+        console.warn(`Skipping ${lead.name}: Invalid email address (${lead.email})`);
+        skipCount++;
+        continue;
+      }
+
       const match = lead.emailBody.match(/Subject:\s*(.*)\n\n([\s\S]*)/);
       const subject = match ? match[1].trim() : `Custom software for ${lead.company}`;
       const body = match ? match[2].trim() : lead.emailBody;
@@ -145,7 +154,10 @@ const AiSdrDashboard = () => {
             text: body
           })
         });
-        if (res.ok) successCount++;
+        if (res.ok) {
+          successCount++;
+          setCampaignLeads(prev => prev.map(l => l.id === lead.id ? { ...l, isSent: true } : l));
+        }
       } catch (err) {
         console.error("Failed to send to", lead.email, err);
       }
@@ -153,9 +165,9 @@ const AiSdrDashboard = () => {
 
     toast.dismiss('dispatch');
     if (successCount === 0) {
-      toast.error(`Dispatch Failed! Check backend terminal for Google Login errors.`);
+      toast.error(`Dispatch Failed! Check backend terminal for errors. ${skipCount > 0 ? `(${skipCount} skipped due to missing emails)` : ''}`);
     } else {
-      toast.success(`Successfully dispatched ${successCount}/${campaignLeads.length} emails!`);
+      toast.success(`Successfully dispatched ${successCount} emails! ${skipCount > 0 ? `(${skipCount} skipped)` : ''}`);
     }
     setDispatching(false);
   };
@@ -338,9 +350,17 @@ const AiSdrDashboard = () => {
                                   </div>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                  <CopyButton textToCopy={lead.email} label="Email ID" />
-                                  <CopyButton textToCopy={subject} label="Subject" />
-                                  <CopyButton textToCopy={body} label="Body" />
+                                  {lead.isSent ? (
+                                    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-green-500/20 text-green-400 rounded-lg text-xs font-bold border border-green-500/30">
+                                      <CheckCircle2 size={14} /> Sent via Gmail
+                                    </div>
+                                  ) : (
+                                    <>
+                                      <CopyButton textToCopy={lead.email} label="Email ID" />
+                                      <CopyButton textToCopy={subject} label="Subject" />
+                                      <CopyButton textToCopy={body} label="Body" />
+                                    </>
+                                  )}
                                 </div>
                               </div>
                               <div className="text-sm text-zinc-300 whitespace-pre-wrap leading-relaxed font-medium">

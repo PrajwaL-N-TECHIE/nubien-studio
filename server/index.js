@@ -76,6 +76,17 @@ async function initDB() {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `);
+
+    await db.exec(`
+      CREATE TABLE IF NOT EXISTS roi_leads (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        email TEXT NOT NULL,
+        monthly_saas_cost INTEGER NOT NULL,
+        estimated_savings INTEGER NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    
     console.log('Database initialized successfully.');
     
     // Attempt to add the column for existing databases (ignores error if it already exists)
@@ -437,6 +448,60 @@ app.post('/api/send-email', async (req, res) => {
   } catch (error) {
     console.error('Nodemailer Error:', error);
     res.status(500).json({ error: 'Failed to dispatch email' });
+  }
+});
+
+// AI-SDR: ROI Calculator Lead Capture & Auto-responder
+app.post('/api/roi-leads', async (req, res) => {
+  try {
+    const { email, monthlySaasCost, estimatedSavings } = req.body;
+
+    if (!email) return res.status(400).json({ error: 'Email is required' });
+
+    // 1. Save Lead to Database
+    await db.run(
+      'INSERT INTO roi_leads (email, monthly_saas_cost, estimated_savings) VALUES (?, ?, ?)',
+      [email, monthlySaasCost || 0, estimatedSavings || 0]
+    );
+
+    // 2. Auto-responder via Nodemailer
+    if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
+      const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: process.env.GMAIL_USER,
+          pass: process.env.GMAIL_APP_PASSWORD,
+        },
+      });
+
+      const emailBody = `Hey!
+
+Thanks for checking out the Buildicy ROI Calculator.
+
+Based on your inputs, you are currently spending $${monthlySaasCost}/month on SaaS subscriptions. Over 5 years, that's a massive $${monthlySaasCost * 60} bleed on your revenue.
+
+A custom Buildicy ecosystem built specifically for your exact workflow costs a flat ~$12,000 one-time fee.
+That means we could save you roughly $${estimatedSavings} over the next 5 years, while giving you absolute ownership of your software.
+
+Are you open to a quick 10-minute chat to see what a custom build would look like?
+
+Best,
+Prajwal
+Founder @ Buildicy`;
+
+      await transporter.sendMail({
+        from: `"Prajwal @ Buildicy" <${process.env.GMAIL_USER}>`,
+        to: email,
+        subject: 'Your Custom Software ROI Blueprint',
+        text: emailBody,
+      });
+    }
+
+    res.json({ success: true, message: 'Lead captured and email sent!' });
+  } catch (error) {
+    console.error('ROI Lead Capture Error:', error);
+    // Even if email fails, we return 200 so the user sees the frontend result
+    res.json({ success: true, warning: 'Lead captured but email failed to send.' });
   }
 });
 
