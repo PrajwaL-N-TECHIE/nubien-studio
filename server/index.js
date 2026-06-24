@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import Groq from 'groq-sdk';
+
 import axios from 'axios';
 
 import sqlite3 from 'sqlite3';
@@ -125,8 +126,8 @@ app.post('/api/register-internship', upload.single('receipt'), async (req, res) 
 app.get('/api/internship/stats', async (req, res) => {
   try {
     const rows = await db.all('SELECT track, COUNT(*) as count FROM internships GROUP BY track');
-    const stats: Record<string, number> = {};
-    rows.forEach((r: any) => { stats[r.track] = r.count; });
+    const stats = {};
+    rows.forEach((r) => { stats[r.track] = r.count; });
     res.json(stats);
   } catch (error) {
     res.status(500).json({ error: 'Database error' });
@@ -271,7 +272,7 @@ End with a soft call to action asking for a quick 10-minute chat.`;
   }
 });
 
-// AI-SDR: Fully Automated Apollo.io Pipeline
+// AI-SDR: Fully Automated Apollo.io Pipeline with Live Streaming
 app.post('/api/generate-campaign', async (req, res) => {
   try {
     const { personaTitle, painPoint } = req.body;
@@ -285,76 +286,121 @@ app.post('/api/generate-campaign', async (req, res) => {
       return res.status(500).json({ error: 'Apollo API key missing in server/.env' });
     }
 
+    // Set headers for Server-Sent Events (SSE) stream
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    
     // 1. Fetch Leads from Apollo
     const apolloData = {
-      api_key: APOLLO_KEY,
       q_keywords: personaTitle,
       person_titles: [personaTitle],
       page: 1,
       per_page: 5 // Keep it small for MVP performance
     };
 
-    const apolloRes = await axios.post('https://api.apollo.io/v1/mixed_people/search', apolloData, {
-      headers: {
-        'Cache-Control': 'no-cache',
-        'Content-Type': 'application/json'
-      }
-    });
+    let apolloRes;
+    try {
+      apolloRes = await axios.post('https://api.apollo.io/v1/mixed_people/api_search', apolloData, {
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Content-Type': 'application/json',
+          'X-Api-Key': APOLLO_KEY
+        }
+      });
+    } catch (apolloErr) {
+      console.error('Apollo Fetch Error:', apolloErr.response?.data || apolloErr.message);
+      res.write(`data: ${JSON.stringify({ error: 'Failed to fetch leads from Apollo API.' })}\n\n`);
+      return res.end();
+    }
 
     const people = apolloRes.data.people || [];
 
     if (people.length === 0) {
-      return res.status(404).json({ error: 'No leads found for that persona.' });
+      res.write(`data: ${JSON.stringify({ error: 'No leads found for that persona.' })}\n\n`);
+      return res.end();
     }
 
-    // 2. Generate Emails for each lead in parallel using Groq
-    const systemPrompt = `You are an elite AI Sales Rep for 'Buildicy', a custom software agency. Write a highly personalized, non-spammy cold email (under 150 words) offering to build custom software for their pain point. End with a call to action.`;
+    // 2. Generate Emails for each lead and stream them immediately
+    const promptPath = path.join(__dirname, 'prompts', 'sdr_system_prompt.jinja');
+    const systemPrompt = fs.readFileSync(promptPath, 'utf-8');
 
-    const generatedLeads = await Promise.all(people.map(async (person) => {
-      const leadName = person.first_name + ' ' + person.last_name;
+    for (const person of people) {
+      const firstName = person.first_name || '';
+      const lastName = person.last_name || '';
+      const leadName = `${firstName} ${lastName}`.trim() || 'Unknown Lead';
       const companyName = person.organization?.name || 'your company';
       const title = person.title || 'Leader';
 
+      // 3. Unlock Real Email via Apollo Match API (Burns 1 Credit)
+      let realEmail = 'No email found (Apollo Free Tier)';
+      try {
+        const matchRes = await axios.post('https://api.apollo.io/v1/people/match', {
+          id: person.id
+        }, {
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Content-Type': 'application/json',
+            'X-Api-Key': APOLLO_KEY
+          }
+        });
+        if (matchRes.data?.person?.email) {
+          realEmail = matchRes.data.person.email;
+        }
+      } catch (matchErr) {
+        console.error(`Failed to unlock email for ${leadName}:`, matchErr.response?.data || matchErr.message);
+      }
+
       const userPrompt = `Write a cold email to ${leadName}, who is the ${title} at ${companyName}. Their likely pain point is: ${painPoint || 'needing scalable custom software'}.`;
 
+      let generatedLead;
       try {
         const chatCompletion = await groq.chat.completions.create({
           messages: [
             { role: 'system', content: systemPrompt },
             { role: 'user', content: userPrompt }
           ],
-          model: 'llama3-8b-8192',
+          model: 'llama-3.1-8b-instant',
           temperature: 0.7,
           max_tokens: 300,
         });
 
         const emailBody = chatCompletion.choices[0]?.message?.content || 'Failed to generate pitch.';
 
-        return {
+        generatedLead = {
           id: person.id,
           name: leadName,
           title: title,
           company: companyName,
+          email: realEmail,
           linkedin: person.linkedin_url,
           emailBody: emailBody
         };
       } catch (err) {
         console.error('Groq generation error for lead:', leadName, err);
-        return {
+        generatedLead = {
           id: person.id,
           name: leadName,
           title: title,
           company: companyName,
+          email: realEmail,
           linkedin: person.linkedin_url,
           emailBody: 'Error: Could not generate pitch due to AI quota limits.'
         };
       }
-    }));
+      
+      // Stream the newly generated lead to the frontend
+      res.write(`data: ${JSON.stringify({ lead: generatedLead })}\n\n`);
+    }
 
-    res.json({ success: true, leads: generatedLeads });
+    // Tell the frontend the stream is complete
+    res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
+    res.end();
+
   } catch (error) {
     console.error('Error generating campaign:', error);
-    res.status(500).json({ error: 'Failed to generate campaign. Verify Apollo API Key.' });
+    res.write(`data: ${JSON.stringify({ error: 'Internal server error during campaign generation.' })}\n\n`);
+    res.end();
   }
 });
 

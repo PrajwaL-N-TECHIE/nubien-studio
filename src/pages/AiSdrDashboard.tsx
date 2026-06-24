@@ -13,6 +13,7 @@ interface LeadPitch {
   name: string;
   title: string;
   company: string;
+  email: string;
   linkedin: string | null;
   emailBody: string;
 }
@@ -49,21 +50,62 @@ const AiSdrDashboard = () => {
         body: JSON.stringify(formData),
       });
 
-      const data = await response.json();
+      if (!response.body) throw new Error("ReadableStream not supported in this browser.");
 
-      if (data.success && data.leads) {
-        setCampaignLeads(data.leads);
-        toast.success(`Successfully drafted ${data.leads.length} pitches!`);
-      } else {
-        toast.error(data.error || "Failed to generate campaign.");
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder("utf-8");
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        
+        let splitIndex;
+        while ((splitIndex = buffer.indexOf('\n\n')) >= 0) {
+          const line = buffer.slice(0, splitIndex);
+          buffer = buffer.slice(splitIndex + 2);
+
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(6));
+              
+              if (data.error) {
+                toast.error(data.error);
+                setLoading(false);
+                setLoadingPhase("");
+                return;
+              }
+
+              if (data.lead) {
+                setCampaignLeads((prev) => [...prev, data.lead]);
+              }
+
+              if (data.done) {
+                toast.success("Campaign generation complete!");
+                setLoading(false);
+                setLoadingPhase("");
+                return;
+              }
+            } catch (err) {
+              console.error("Error parsing stream chunk", err, line);
+            }
+          }
+        }
       }
     } catch (error) {
       console.error(error);
       toast.error("Failed to connect to AI server. Ensure backend is running on port 3001.");
-    } finally {
       setLoading(false);
       setLoadingPhase("");
     }
+  };
+
+  const handleCopy = (lead: LeadPitch) => {
+    const content = `To: ${lead.email}\n\n${lead.emailBody}`;
+    navigator.clipboard.writeText(content);
+    toast.success(`Copied pitch for ${lead.name} to clipboard!`);
   };
 
   const handleDispatchAll = () => {
@@ -232,14 +274,23 @@ const AiSdrDashboard = () => {
                       <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
                         {campaignLeads.map((lead, idx) => (
                           <div key={idx} className="bg-[#1A1A24]/40 border border-white/5 rounded-2xl p-5 hover:border-purple-500/30 transition-colors">
-                            <div className="flex items-center gap-4 mb-4 pb-4 border-b border-white/5">
-                              <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
-                                <UserCircle size={20} className="text-purple-400" />
+                            <div className="flex items-start justify-between mb-4 pb-4 border-b border-white/5">
+                              <div className="flex items-center gap-4">
+                                <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center flex-shrink-0">
+                                  <UserCircle size={20} className="text-purple-400" />
+                                </div>
+                                <div>
+                                  <h4 className="text-white font-bold">{lead.name}</h4>
+                                  <p className="text-xs text-zinc-400">{lead.title} @ {lead.company}</p>
+                                  <p className="text-[10px] text-purple-400 mt-1 font-['DM_Mono']">{lead.email}</p>
+                                </div>
                               </div>
-                              <div>
-                                <h4 className="text-white font-bold">{lead.name}</h4>
-                                <p className="text-xs text-zinc-400">{lead.title} @ {lead.company}</p>
-                              </div>
+                              <button 
+                                onClick={() => handleCopy(lead)}
+                                className="text-xs px-3 py-1.5 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors border border-white/10"
+                              >
+                                Copy Email
+                              </button>
                             </div>
                             <div className="text-sm text-zinc-300 whitespace-pre-wrap leading-relaxed font-medium">
                               {lead.emailBody}
