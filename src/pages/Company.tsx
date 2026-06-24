@@ -22,10 +22,6 @@ const Company = () => {
             {
               "@type": "Person",
               "name": "Prajwal"
-            },
-            {
-              "@type": "Person",
-              "name": "Nuvaaf"
             }
           ],
           "sameAs": [

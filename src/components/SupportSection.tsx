@@ -6,7 +6,6 @@ import { MeshDistortMaterial, Sphere } from "@react-three/drei";
 import { audio } from "@/utils/audio";
 import { usePerformance } from "@/context/PerformanceContext";
 
-import NuvaafImage from "@/assets/nuvaaf.jpg";
 import MayurImage from "@/assets/mayur.jpg";
 
 // Premium Easing Curve
@@ -14,14 +13,12 @@ const customEase = [0.22, 1, 0.36, 1];
 
 // Team images for the support section
 const teamImages = [
-  NuvaafImage,
   MayurImage,
 ];
 
-// Calculated positions for a perfect spreading fan (2 cards)
+// Calculated positions for a perfect spreading fan (1 card centered)
 const fanCards = [
-  { rotate: -5, x: -50, y: 10 },
-  { rotate: 5, x: 50, y: 10 },
+  { rotate: 0, x: 0, y: 10 },
 ];
 
 // --------------------------------------------------------------------------
