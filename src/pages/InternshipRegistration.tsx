@@ -576,10 +576,16 @@ const InternshipRegistration = () => {
         animate={{ opacity: 1, y: 0 }}
         className="text-center max-w-3xl mx-auto mb-16 relative z-10"
       >
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-sm font-medium mb-6">
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-sm font-medium mb-4">
           <Sparkles size={16} />
           <span>Internship Program</span>
         </div>
+        
+        {/* BATCH 2 URGENCY BANNER */}
+        <div className="inline-flex items-center justify-center gap-2 px-4 py-1.5 rounded-full bg-red-500/20 border border-red-500/30 text-red-400 text-xs font-bold tracking-widest uppercase mb-6 animate-pulse">
+          <Radio size={14} className="animate-pulse" /> Batch 2 Applications Now Open
+        </div>
+
         <h1 className="text-4xl md:text-6xl font-extrabold text-white mb-6 tracking-tight">
           Internship <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-purple-600">Application</span>
         </h1>

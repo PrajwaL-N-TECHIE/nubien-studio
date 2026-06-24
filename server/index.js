@@ -422,6 +422,94 @@ app.post('/api/generate-campaign', async (req, res) => {
   }
 });
 
+// AI-SDR: Internship Recruitment Pipeline (Manual Data Input)
+app.post('/api/generate-internship-campaign', async (req, res) => {
+  try {
+    const { rawData } = req.body;
+
+    if (!rawData) {
+      return res.status(400).json({ error: 'Raw student data is required.' });
+    }
+
+    // Set headers for Server-Sent Events (SSE) stream
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+
+    // Parse raw data (assume each line is a student: Name, Email, Notes)
+    const students = rawData.split('\n').filter(line => line.trim().length > 0);
+    
+    if (students.length === 0) {
+      res.write(`data: ${JSON.stringify({ error: 'No valid student data found.' })}\n\n`);
+      return res.end();
+    }
+
+    const promptPath = path.join(__dirname, 'prompts', 'internship_sdr_prompt.jinja');
+    const systemPrompt = fs.readFileSync(promptPath, 'utf-8');
+
+    for (const studentStr of students) {
+      // Basic extraction: try to find an email using regex, treat the rest as notes/name
+      const emailMatch = studentStr.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/);
+      const email = emailMatch ? emailMatch[1] : 'unknown@student.com';
+      const notes = studentStr.replace(email, '').trim() || 'No specific notes provided.';
+      
+      // Try to guess a name (first word before a space or comma)
+      const nameMatch = notes.match(/^([a-zA-Z]+)/);
+      const name = nameMatch ? nameMatch[1] : 'Student';
+
+      const userPrompt = `Write a cold email to this student to recruit them for the Batch 2 Internship. Student info/notes: ${notes}. Email: ${email}.`;
+
+      let generatedLead;
+      try {
+        const chatCompletion = await groq.chat.completions.create({
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt }
+          ],
+          model: 'llama-3.1-8b-instant',
+          temperature: 0.7,
+          max_tokens: 300,
+        });
+
+        const emailBody = chatCompletion.choices[0]?.message?.content || 'Failed to generate pitch.';
+
+        generatedLead = {
+          id: Math.random().toString(36).substring(7),
+          name: name,
+          title: 'Student',
+          company: 'University',
+          email: email,
+          linkedin: null,
+          emailBody: emailBody
+        };
+      } catch (err) {
+        console.error('Groq generation error for student:', name, err);
+        generatedLead = {
+          id: Math.random().toString(36).substring(7),
+          name: name,
+          title: 'Student',
+          company: 'University',
+          email: email,
+          linkedin: null,
+          emailBody: 'Error: Could not generate pitch due to AI quota limits.'
+        };
+      }
+      
+      // Stream the newly generated lead to the frontend
+      res.write(`data: ${JSON.stringify({ lead: generatedLead })}\n\n`);
+    }
+
+    // Tell the frontend the stream is complete
+    res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
+    res.end();
+
+  } catch (error) {
+    console.error('Error generating internship campaign:', error);
+    res.write(`data: ${JSON.stringify({ error: 'Internal server error during campaign generation.' })}\n\n`);
+    res.end();
+  }
+});
+
 // AI-SDR: Nodemailer Automated Dispatcher
 app.post('/api/send-email', async (req, res) => {
   try {

@@ -45,31 +45,40 @@ const AiSdrDashboard = () => {
   const [campaignLeads, setCampaignLeads] = useState<LeadPitch[]>([]);
   const [loadingPhase, setLoadingPhase] = useState("");
   
+  const [campaignType, setCampaignType] = useState<'b2b' | 'internship'>('b2b');
+  
   const [formData, setFormData] = useState({
     personaTitle: "",
-    painPoint: ""
+    painPoint: "",
+    rawStudentData: ""
   });
 
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.personaTitle) {
+    if (campaignType === 'b2b' && !formData.personaTitle) {
       toast.error("Persona Title is required (e.g., 'CTO').");
+      return;
+    }
+    if (campaignType === 'internship' && !formData.rawStudentData) {
+      toast.error("Raw student data is required.");
       return;
     }
 
     setLoading(true);
     setCampaignLeads([]);
-    setLoadingPhase("Connecting to Apollo.io...");
+    setLoadingPhase(campaignType === 'b2b' ? "Connecting to Apollo.io..." : "Parsing Student Data...");
 
     try {
-      // Small artificial delay for dramatic cinematic effect on loading phases
-      setTimeout(() => setLoadingPhase("Scraping high-value leads..."), 1500);
+      setTimeout(() => setLoadingPhase(campaignType === 'b2b' ? "Scraping high-value leads..." : "Analyzing student profiles..."), 1500);
       setTimeout(() => setLoadingPhase("Routing leads through Groq LLaMA-3..."), 3500);
 
-      const response = await fetch("http://localhost:3001/api/generate-campaign", {
+      const endpoint = campaignType === 'b2b' ? "http://localhost:3001/api/generate-campaign" : "http://localhost:3001/api/generate-internship-campaign";
+      const payload = campaignType === 'b2b' ? { personaTitle: formData.personaTitle, painPoint: formData.painPoint } : { rawData: formData.rawStudentData };
+
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       if (!response.body) throw new Error("ReadableStream not supported in this browser.");
@@ -219,35 +228,68 @@ const AiSdrDashboard = () => {
             >
               <div className="bg-[#0C0C12]/80 backdrop-blur-3xl border border-white/10 rounded-[32px] p-8 shadow-2xl sticky top-32">
                 <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                  <Target size={20} className="text-purple-400" /> Define Target Persona
+                  <Target size={20} className="text-purple-400" /> Define Campaign
                 </h2>
+                
+                <div className="flex bg-[#1A1A24] rounded-xl p-1 mb-6">
+                  <button
+                    type="button"
+                    onClick={() => setCampaignType('b2b')}
+                    className={`flex-1 py-2 text-sm font-bold rounded-lg transition-colors ${campaignType === 'b2b' ? 'bg-purple-600 text-white' : 'text-zinc-500 hover:text-white'}`}
+                  >
+                    B2B Sales
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCampaignType('internship')}
+                    className={`flex-1 py-2 text-sm font-bold rounded-lg transition-colors ${campaignType === 'internship' ? 'bg-purple-600 text-white' : 'text-zinc-500 hover:text-white'}`}
+                  >
+                    Internships
+                  </button>
+                </div>
 
                 <form onSubmit={handleGenerate} className="space-y-6">
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold tracking-wider text-zinc-500 uppercase">Persona Title</label>
-                    <div className="relative">
-                      <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" />
-                      <input 
+                  {campaignType === 'b2b' ? (
+                    <>
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold tracking-wider text-zinc-500 uppercase">Persona Title</label>
+                        <div className="relative">
+                          <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" />
+                          <input 
+                            required
+                            type="text" 
+                            value={formData.personaTitle}
+                            onChange={e => setFormData({...formData, personaTitle: e.target.value})}
+                            placeholder='e.g. "SaaS Founder" or "CTO"'
+                            className="w-full bg-[#1A1A24]/50 border border-white/10 rounded-xl py-3 pl-11 pr-4 text-white placeholder-zinc-600 focus:outline-none focus:border-purple-500/50 transition-colors"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold tracking-wider text-zinc-500 uppercase">Angle / Pain Point</label>
+                        <textarea 
+                          rows={3}
+                          value={formData.painPoint}
+                          onChange={e => setFormData({...formData, painPoint: e.target.value})}
+                          placeholder="e.g. They need to reduce cloud costs by refactoring legacy code."
+                          className="w-full bg-[#1A1A24]/50 border border-white/10 rounded-xl p-4 text-white placeholder-zinc-600 focus:outline-none focus:border-purple-500/50 transition-colors resize-none"
+                        />
+                      </div>
+                    </>
+                  ) : (
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold tracking-wider text-zinc-500 uppercase">Raw Student Data</label>
+                      <textarea 
                         required
-                        type="text" 
-                        value={formData.personaTitle}
-                        onChange={e => setFormData({...formData, personaTitle: e.target.value})}
-                        placeholder='e.g. "SaaS Founder" or "CTO"'
-                        className="w-full bg-[#1A1A24]/50 border border-white/10 rounded-xl py-3 pl-11 pr-4 text-white placeholder-zinc-600 focus:outline-none focus:border-purple-500/50 transition-colors"
+                        rows={8}
+                        value={formData.rawStudentData}
+                        onChange={e => setFormData({...formData, rawStudentData: e.target.value})}
+                        placeholder="Paste student data here. One student per line.&#10;e.g. rahul@college.edu - Knows React but struggling to get interviews."
+                        className="w-full bg-[#1A1A24]/50 border border-white/10 rounded-xl p-4 text-white placeholder-zinc-600 focus:outline-none focus:border-purple-500/50 transition-colors resize-none custom-scrollbar"
                       />
                     </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold tracking-wider text-zinc-500 uppercase">Angle / Pain Point</label>
-                    <textarea 
-                      rows={3}
-                      value={formData.painPoint}
-                      onChange={e => setFormData({...formData, painPoint: e.target.value})}
-                      placeholder="e.g. They need to reduce cloud costs by refactoring legacy code."
-                      className="w-full bg-[#1A1A24]/50 border border-white/10 rounded-xl p-4 text-white placeholder-zinc-600 focus:outline-none focus:border-purple-500/50 transition-colors resize-none"
-                    />
-                  </div>
+                  )}
 
                   <Magnetic strength={0.2}>
                     <button 
