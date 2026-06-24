@@ -451,7 +451,7 @@ app.post('/api/generate-internship-campaign', async (req, res) => {
       // Split by dashes, assuming Format: Name - Email - Notes/Headline
       const parts = studentStr.split('-').map(s => s.trim());
       
-      let name = 'Student';
+      let name = '';
       let email = 'unknown@student.com';
       let notes = studentStr;
 
@@ -471,7 +471,8 @@ app.post('/api/generate-internship-campaign', async (req, res) => {
         }
       }
 
-      const userPrompt = `Write a cold email to this student to recruit them for the Batch 2 AI Architect Cohort. \nStudent info/notes: Name: ${name}, Email: ${email}, Headline: ${notes}`;
+      const nameStr = name ? `Name: ${name}, ` : '';
+      const userPrompt = `Write a cold email to this student to recruit them for the Batch 2 AI Architect Cohort. \nStudent info/notes: ${nameStr}Email: ${email}, Headline: ${notes}`;
 
       let generatedLead;
       try {
