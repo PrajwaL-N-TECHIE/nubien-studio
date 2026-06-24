@@ -14,11 +14,21 @@ interface SaasTool {
   cost: number;
 }
 
+const currencies = [
+  { code: 'USD', symbol: '$', rate: 1 },
+  { code: 'EUR', symbol: '€', rate: 0.93 },
+  { code: 'GBP', symbol: '£', rate: 0.79 },
+  { code: 'INR', symbol: '₹', rate: 83.5 }
+];
+
 const RoiCalculator = () => {
+  const [currencyCode, setCurrencyCode] = useState('USD');
+  const activeCurrency = currencies.find(c => c.code === currencyCode) || currencies[0];
+
   const [tools, setTools] = useState<SaasTool[]>([
-    { id: '1', name: 'Shopify / Webflow', cost: 299 },
-    { id: '2', name: 'Zapier / Make', cost: 100 },
-    { id: '3', name: 'Airtable / CRM', cost: 150 },
+    { id: '1', name: 'Shopify / Webflow', cost: Math.round(299 * activeCurrency.rate) },
+    { id: '2', name: 'Zapier / Make', cost: Math.round(100 * activeCurrency.rate) },
+    { id: '3', name: 'Airtable / CRM', cost: Math.round(150 * activeCurrency.rate) },
   ]);
 
   const [email, setEmail] = useState("");
@@ -27,8 +37,27 @@ const RoiCalculator = () => {
 
   const totalMonthly = tools.reduce((acc, tool) => acc + tool.cost, 0);
   const total5Year = totalMonthly * 60;
-  const customBuildCost = 12000; // Flat estimated fee
+  
+  // DYNAMIC ROI ENGINE
+  const baseBuildCostUsd = 5000;
+  const perToolCostUsd = 1500;
+  const customBuildCostUsd = baseBuildCostUsd + (tools.length * perToolCostUsd);
+  const customBuildCost = Math.round(customBuildCostUsd * activeCurrency.rate);
+  
   const estimatedSavings = total5Year - customBuildCost;
+  const breakEvenMonths = totalMonthly > 0 ? Math.ceil(customBuildCost / totalMonthly) : 0;
+
+  const handleCurrencyChange = (newCode: string) => {
+    const newCurrency = currencies.find(c => c.code === newCode) || currencies[0];
+    
+    // Update the existing tools costs to reflect the new currency roughly
+    setTools(tools.map(t => ({
+      ...t,
+      cost: Math.round((t.cost / activeCurrency.rate) * newCurrency.rate)
+    })));
+
+    setCurrencyCode(newCode);
+  };
 
   const handleAddTool = () => {
     setTools([...tools, { id: Date.now().toString(), name: '', cost: 0 }]);
@@ -64,7 +93,10 @@ const RoiCalculator = () => {
         body: JSON.stringify({
           email,
           monthlySaasCost: totalMonthly,
-          estimatedSavings
+          estimatedSavings,
+          currency: activeCurrency.code,
+          currencySymbol: activeCurrency.symbol,
+          customBuildCost
         })
       });
 
@@ -147,7 +179,18 @@ const RoiCalculator = () => {
               className="bg-[#0A0A0F] border border-white/5 rounded-3xl p-6 md:p-8"
             >
               <div className="flex items-center justify-between mb-8">
-                <h2 className="text-2xl font-bold text-white">Your Tech Stack</h2>
+                <div className="flex items-center gap-4">
+                  <h2 className="text-2xl font-bold text-white">Your Tech Stack</h2>
+                  <select 
+                    value={currencyCode}
+                    onChange={(e) => handleCurrencyChange(e.target.value)}
+                    className="bg-[#1A1A24] border border-white/10 text-xs font-bold text-zinc-300 rounded-lg px-2 py-1 outline-none focus:border-purple-500/50 cursor-pointer"
+                  >
+                    {currencies.map(c => (
+                      <option key={c.code} value={c.code}>{c.code} ({c.symbol})</option>
+                    ))}
+                  </select>
+                </div>
                 <button 
                   onClick={handleAddTool}
                   className="flex items-center gap-2 text-sm font-bold text-purple-400 hover:text-purple-300 transition-colors"
@@ -176,7 +219,7 @@ const RoiCalculator = () => {
                         />
                       </div>
                       <div className="w-32 relative">
-                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500">$</span>
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 font-bold">{activeCurrency.symbol}</span>
                         <input 
                           type="number" 
                           value={tool.cost || ''}
@@ -199,7 +242,7 @@ const RoiCalculator = () => {
               <div className="pt-6 border-t border-white/5 flex items-end justify-between">
                 <div>
                   <p className="text-sm text-zinc-400 mb-1">Total Monthly Cost</p>
-                  <p className="text-3xl font-black text-white font-['DM_Mono']">${totalMonthly.toLocaleString()}<span className="text-lg text-zinc-500 font-medium">/mo</span></p>
+                  <p className="text-3xl font-black text-white font-['DM_Mono']">{activeCurrency.symbol}{totalMonthly.toLocaleString()}<span className="text-lg text-zinc-500 font-medium">/mo</span></p>
                 </div>
               </div>
             </motion.div>
@@ -262,7 +305,7 @@ const RoiCalculator = () => {
                     <div>
                       <p className="text-zinc-400 mb-2 font-medium">If you keep your SaaS stack for 5 years:</p>
                       <p className="text-4xl md:text-5xl font-bold tracking-tight text-red-400 font-['DM_Mono']">
-                        ${total5Year.toLocaleString()}
+                        {activeCurrency.symbol}{total5Year.toLocaleString()}
                       </p>
                       <p className="text-sm text-zinc-500 mt-1">Total sunk cost. $0 equity.</p>
                     </div>
@@ -272,16 +315,16 @@ const RoiCalculator = () => {
                     <div>
                       <p className="text-zinc-400 mb-2 font-medium">Estimated 1-Time Buildicy Custom Build:</p>
                       <p className="text-4xl md:text-5xl font-bold tracking-tight text-white font-['DM_Mono']">
-                        ~${customBuildCost.toLocaleString()}
+                        ~{activeCurrency.symbol}{customBuildCost.toLocaleString()}
                       </p>
-                      <p className="text-sm text-zinc-500 mt-1">You own the code forever.</p>
+                      <p className="text-sm text-zinc-500 mt-1">You own the code forever. Break-even in <strong className="text-white">{breakEvenMonths} months</strong>.</p>
                     </div>
                   </div>
 
                   <div className="mt-10 bg-green-500/10 border border-green-500/20 rounded-2xl p-6 md:p-8">
                     <p className="text-green-400 font-medium mb-1">Your 5-Year Savings</p>
                     <p className="text-5xl md:text-6xl font-bold tracking-tight text-green-400 font-['DM_Mono'] drop-shadow-[0_0_15px_rgba(74,222,128,0.3)]">
-                      +${Math.max(0, estimatedSavings).toLocaleString()}
+                      +{activeCurrency.symbol}{Math.max(0, estimatedSavings).toLocaleString()}
                     </p>
                   </div>
 

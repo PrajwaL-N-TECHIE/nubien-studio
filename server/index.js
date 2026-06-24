@@ -95,8 +95,14 @@ async function initDB() {
     } catch (e) {
       // Column already exists, ignore
     }
+
+    try {
+      await db.exec("ALTER TABLE roi_leads ADD COLUMN currency TEXT DEFAULT 'USD'");
+    } catch (e) {
+      // Column already exists, ignore
+    }
   } catch (err) {
-    console.error('Error creating internships table:', err);
+    console.error('Error creating databases tables:', err);
   }
 }
 
@@ -454,14 +460,14 @@ app.post('/api/send-email', async (req, res) => {
 // AI-SDR: ROI Calculator Lead Capture & Auto-responder
 app.post('/api/roi-leads', async (req, res) => {
   try {
-    const { email, monthlySaasCost, estimatedSavings } = req.body;
+    const { email, monthlySaasCost, estimatedSavings, currency, currencySymbol, customBuildCost } = req.body;
 
     if (!email) return res.status(400).json({ error: 'Email is required' });
 
     // 1. Save Lead to Database
     await db.run(
-      'INSERT INTO roi_leads (email, monthly_saas_cost, estimated_savings) VALUES (?, ?, ?)',
-      [email, monthlySaasCost || 0, estimatedSavings || 0]
+      'INSERT INTO roi_leads (email, monthly_saas_cost, estimated_savings, currency) VALUES (?, ?, ?, ?)',
+      [email, monthlySaasCost || 0, estimatedSavings || 0, currency || 'USD']
     );
 
     // 2. Auto-responder via Nodemailer
@@ -478,10 +484,10 @@ app.post('/api/roi-leads', async (req, res) => {
 
 Thanks for checking out the Buildicy ROI Calculator.
 
-Based on your inputs, you are currently spending $${monthlySaasCost}/month on SaaS subscriptions. Over 5 years, that's a massive $${monthlySaasCost * 60} bleed on your revenue.
+Based on your inputs, you are currently spending ${currencySymbol}${monthlySaasCost}/month on SaaS subscriptions. Over 5 years, that's a massive ${currencySymbol}${monthlySaasCost * 60} bleed on your revenue.
 
-A custom Buildicy ecosystem built specifically for your exact workflow costs a flat ~$12,000 one-time fee.
-That means we could save you roughly $${estimatedSavings} over the next 5 years, while giving you absolute ownership of your software.
+A custom Buildicy ecosystem built specifically for your exact workflow would cost an estimated ${currencySymbol}${customBuildCost} one-time fee.
+That means we could save you roughly ${currencySymbol}${estimatedSavings} over the next 5 years, while giving you absolute ownership of your software.
 
 Are you open to a quick 10-minute chat to see what a custom build would look like?
 
