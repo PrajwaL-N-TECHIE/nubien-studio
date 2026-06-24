@@ -72,7 +72,8 @@ const AiSdrDashboard = () => {
       setTimeout(() => setLoadingPhase(campaignType === 'b2b' ? "Scraping high-value leads..." : "Analyzing student profiles..."), 1500);
       setTimeout(() => setLoadingPhase("Routing leads through Groq LLaMA-3..."), 3500);
 
-      const endpoint = campaignType === 'b2b' ? "http://localhost:3001/api/generate-campaign" : "http://localhost:3001/api/generate-internship-campaign";
+      const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      const endpoint = campaignType === 'b2b' ? `${baseUrl}/api/generate-campaign` : `${baseUrl}/api/generate-internship-campaign`;
       const payload = campaignType === 'b2b' ? { personaTitle: formData.personaTitle, painPoint: formData.painPoint } : { rawData: formData.rawStudentData };
 
       const response = await fetch(endpoint, {
@@ -154,7 +155,8 @@ const AiSdrDashboard = () => {
       const body = match ? match[2].trim() : lead.emailBody;
 
       try {
-        const res = await fetch("http://localhost:3001/api/send-email", {
+        const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+        const res = await fetch(`${baseUrl}/api/send-email`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
