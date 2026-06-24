@@ -252,7 +252,7 @@ const RoiCalculator = () => {
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.5, ease: customEase }}
-                  className="bg-gradient-to-br from-[#0A0A0F] to-[#1A1A24] border border-green-500/30 rounded-3xl p-8 md:p-10 h-full flex flex-col shadow-[0_0_50px_rgba(34,197,94,0.1)]"
+                  className="bg-[#0C0C12]/80 backdrop-blur-2xl border border-white/5 rounded-3xl p-8 md:p-12 h-full flex flex-col shadow-[0_0_50px_rgba(168,85,247,0.05)]"
                 >
                   <div className="flex items-center gap-3 text-green-400 font-bold mb-8">
                     <CheckCircle2 size={24} /> Results Unlocked
@@ -261,7 +261,7 @@ const RoiCalculator = () => {
                   <div className="space-y-8 flex-grow">
                     <div>
                       <p className="text-zinc-400 mb-2 font-medium">If you keep your SaaS stack for 5 years:</p>
-                      <p className="text-4xl font-black text-red-400 font-['DM_Mono']">
+                      <p className="text-4xl md:text-5xl font-bold tracking-tight text-red-400 font-['DM_Mono']">
                         ${total5Year.toLocaleString()}
                       </p>
                       <p className="text-sm text-zinc-500 mt-1">Total sunk cost. $0 equity.</p>
@@ -271,27 +271,27 @@ const RoiCalculator = () => {
 
                     <div>
                       <p className="text-zinc-400 mb-2 font-medium">Estimated 1-Time Buildicy Custom Build:</p>
-                      <p className="text-4xl font-black text-white font-['DM_Mono']">
+                      <p className="text-4xl md:text-5xl font-bold tracking-tight text-white font-['DM_Mono']">
                         ~${customBuildCost.toLocaleString()}
                       </p>
                       <p className="text-sm text-zinc-500 mt-1">You own the code forever.</p>
                     </div>
                   </div>
 
-                  <div className="mt-10 bg-green-500/10 border border-green-500/20 rounded-2xl p-6">
+                  <div className="mt-10 bg-green-500/10 border border-green-500/20 rounded-2xl p-6 md:p-8">
                     <p className="text-green-400 font-medium mb-1">Your 5-Year Savings</p>
-                    <p className="text-5xl font-black text-green-400 font-['DM_Mono']">
+                    <p className="text-5xl md:text-6xl font-bold tracking-tight text-green-400 font-['DM_Mono'] drop-shadow-[0_0_15px_rgba(74,222,128,0.3)]">
                       +${Math.max(0, estimatedSavings).toLocaleString()}
                     </p>
                   </div>
 
-                  <a href="mailto:prajwal.buildicy@gmail.com?subject=Let's build a custom software ecosystem" className="mt-8 block">
+                  <div className="mt-8">
                     <Magnetic>
-                      <div className="w-full bg-green-500 hover:bg-green-400 text-black font-bold py-5 rounded-xl flex items-center justify-center gap-2 transition-colors shadow-[0_0_20px_rgba(34,197,94,0.3)]">
+                      <a href="mailto:prajwal.buildicy@gmail.com?subject=Let's build a custom software ecosystem" className="w-full bg-green-500 hover:bg-green-400 text-black font-bold py-5 rounded-xl flex items-center justify-center gap-2 transition-colors shadow-[0_0_20px_rgba(34,197,94,0.3)]">
                         <Sparkles size={20} /> Book a Discovery Call
-                      </div>
+                      </a>
                     </Magnetic>
-                  </a>
+                  </div>
                 </motion.div>
               )}
             </motion.div>
