@@ -460,7 +460,7 @@ app.post('/api/send-email', async (req, res) => {
 // AI-SDR: ROI Calculator Lead Capture & Auto-responder
 app.post('/api/roi-leads', async (req, res) => {
   try {
-    const { email, monthlySaasCost, estimatedSavings, currency, currencySymbol, customBuildCost } = req.body;
+    const { email, monthlySaasCost, estimatedSavings, currency, currencySymbol, customBuildCost, retained5Year } = req.body;
 
     if (!email) return res.status(400).json({ error: 'Email is required' });
 
@@ -487,7 +487,7 @@ Thanks for checking out the Buildicy ROI Calculator.
 Based on your inputs, you are currently spending ${currencySymbol}${monthlySaasCost}/month on SaaS subscriptions. Over 5 years, that's a massive ${currencySymbol}${monthlySaasCost * 60} bleed on your revenue.
 
 A custom Buildicy ecosystem built specifically for your exact workflow would cost an estimated ${currencySymbol}${customBuildCost} one-time fee.
-That means we could save you roughly ${currencySymbol}${estimatedSavings} over the next 5 years, while giving you absolute ownership of your software.
+${retained5Year > 0 ? `Even after retaining your core 3rd-party API costs (${currencySymbol}${retained5Year} over 5 years), we` : 'We'} could save you roughly ${currencySymbol}${estimatedSavings} over the next 5 years, while giving you absolute ownership of your software.
 
 Are you open to a quick 10-minute chat to see what a custom build would look like?
 

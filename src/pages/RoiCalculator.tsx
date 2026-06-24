@@ -12,6 +12,7 @@ interface SaasTool {
   id: string;
   name: string;
   cost: number;
+  action: 'replace' | 'integrate';
 }
 
 const currencies = [
@@ -26,9 +27,10 @@ const RoiCalculator = () => {
   const activeCurrency = currencies.find(c => c.code === currencyCode) || currencies[0];
 
   const [tools, setTools] = useState<SaasTool[]>([
-    { id: '1', name: 'Shopify / Webflow', cost: Math.round(299 * activeCurrency.rate) },
-    { id: '2', name: 'Zapier / Make', cost: Math.round(100 * activeCurrency.rate) },
-    { id: '3', name: 'Airtable / CRM', cost: Math.round(150 * activeCurrency.rate) },
+    { id: '1', name: 'Shopify / Webflow', cost: Math.round(299 * activeCurrency.rate), action: 'replace' },
+    { id: '2', name: 'Zapier / Make', cost: Math.round(100 * activeCurrency.rate), action: 'replace' },
+    { id: '3', name: 'Airtable / CRM', cost: Math.round(150 * activeCurrency.rate), action: 'replace' },
+    { id: '4', name: 'Gemini / OpenAI', cost: Math.round(200 * activeCurrency.rate), action: 'integrate' },
   ]);
 
   const [email, setEmail] = useState("");
@@ -36,7 +38,10 @@ const RoiCalculator = () => {
   const [submitting, setSubmitting] = useState(false);
 
   const totalMonthly = tools.reduce((acc, tool) => acc + tool.cost, 0);
+  const retainedMonthly = tools.filter(t => t.action === 'integrate').reduce((acc, tool) => acc + tool.cost, 0);
+  
   const total5Year = totalMonthly * 60;
+  const retained5Year = retainedMonthly * 60;
   
   // DYNAMIC ROI ENGINE
   const baseBuildCostUsd = 5000;
@@ -44,8 +49,10 @@ const RoiCalculator = () => {
   const customBuildCostUsd = baseBuildCostUsd + (tools.length * perToolCostUsd);
   const customBuildCost = Math.round(customBuildCostUsd * activeCurrency.rate);
   
-  const estimatedSavings = total5Year - customBuildCost;
-  const breakEvenMonths = totalMonthly > 0 ? Math.ceil(customBuildCost / totalMonthly) : 0;
+  const estimatedSavings = total5Year - customBuildCost - retained5Year;
+  const buildPlusRetainedMonthly = retainedMonthly > 0 ? retainedMonthly : 1; // avoid division by zero
+  const monthlySavings = totalMonthly - retainedMonthly;
+  const breakEvenMonths = monthlySavings > 0 ? Math.ceil(customBuildCost / monthlySavings) : 0;
 
   const handleCurrencyChange = (newCode: string) => {
     const newCurrency = currencies.find(c => c.code === newCode) || currencies[0];
@@ -60,14 +67,14 @@ const RoiCalculator = () => {
   };
 
   const handleAddTool = () => {
-    setTools([...tools, { id: Date.now().toString(), name: '', cost: 0 }]);
+    setTools([...tools, { id: Date.now().toString(), name: '', cost: 0, action: 'replace' }]);
   };
 
   const handleRemoveTool = (id: string) => {
     setTools(tools.filter(t => t.id !== id));
   };
 
-  const handleUpdateTool = (id: string, field: 'name' | 'cost', value: string | number) => {
+  const handleUpdateTool = (id: string, field: keyof SaasTool, value: string | number) => {
     setTools(tools.map(t => {
       if (t.id === id) {
         return { ...t, [field]: value };
@@ -96,7 +103,8 @@ const RoiCalculator = () => {
           estimatedSavings,
           currency: activeCurrency.code,
           currencySymbol: activeCurrency.symbol,
-          customBuildCost
+          customBuildCost,
+          retained5Year
         })
       });
 
@@ -209,7 +217,7 @@ const RoiCalculator = () => {
                       exit={{ opacity: 0, height: 0 }}
                       className="flex items-center gap-4"
                     >
-                      <div className="flex-grow">
+                      <div className="flex-grow flex flex-col gap-2">
                         <input 
                           type="text" 
                           value={tool.name}
@@ -217,8 +225,16 @@ const RoiCalculator = () => {
                           placeholder="Tool Name (e.g. Shopify)" 
                           className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/50 transition-colors placeholder:text-zinc-600"
                         />
+                        <select
+                          value={tool.action}
+                          onChange={(e) => handleUpdateTool(tool.id, 'action', e.target.value)}
+                          className={`w-full text-xs font-bold rounded-lg px-3 py-1.5 outline-none cursor-pointer border ${tool.action === 'replace' ? 'bg-red-500/10 text-red-400 border-red-500/20' : 'bg-blue-500/10 text-blue-400 border-blue-500/20'}`}
+                        >
+                          <option value="replace" className="bg-[#1A1A24] text-white">Action: Replace (Cost drops to $0)</option>
+                          <option value="integrate" className="bg-[#1A1A24] text-white">Action: Integrate via API (Keep base cost)</option>
+                        </select>
                       </div>
-                      <div className="w-32 relative">
+                      <div className="w-32 relative self-start mt-1">
                         <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 font-bold">{activeCurrency.symbol}</span>
                         <input 
                           type="number" 
@@ -230,7 +246,7 @@ const RoiCalculator = () => {
                       </div>
                       <button 
                         onClick={() => handleRemoveTool(tool.id)}
-                        className="p-3 text-zinc-500 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-colors"
+                        className="p-3 text-zinc-500 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-colors self-start mt-1"
                       >
                         <Trash2 size={18} />
                       </button>
@@ -317,8 +333,21 @@ const RoiCalculator = () => {
                       <p className="text-4xl md:text-5xl font-bold tracking-tight text-white font-['DM_Mono']">
                         ~{activeCurrency.symbol}{customBuildCost.toLocaleString()}
                       </p>
-                      <p className="text-sm text-zinc-500 mt-1">You own the code forever. Break-even in <strong className="text-white">{breakEvenMonths} months</strong>.</p>
+                      <p className="text-sm text-zinc-500 mt-1">You own the code forever. {breakEvenMonths > 0 ? `Break-even in  ${breakEvenMonths} months.` : 'Immediate ROI.'}</p>
                     </div>
+
+                    {retained5Year > 0 && (
+                      <>
+                        <div className="h-[1px] w-full bg-white/10" />
+                        <div>
+                          <p className="text-zinc-400 mb-2 font-medium">Retained 3rd-Party API Costs (5 Yrs):</p>
+                          <p className="text-3xl font-bold tracking-tight text-blue-400 font-['DM_Mono']">
+                            -{activeCurrency.symbol}{retained5Year.toLocaleString()}
+                          </p>
+                          <p className="text-sm text-zinc-500 mt-1">Cost of tools integrated via API (e.g. Gemini, Stripe).</p>
+                        </div>
+                      </>
+                    )}
                   </div>
 
                   <div className="mt-10 bg-green-500/10 border border-green-500/20 rounded-2xl p-6 md:p-8">
