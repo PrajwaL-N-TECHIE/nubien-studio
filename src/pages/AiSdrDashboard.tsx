@@ -285,7 +285,7 @@ const AiSdrDashboard = () => {
                         rows={8}
                         value={formData.rawStudentData}
                         onChange={e => setFormData({...formData, rawStudentData: e.target.value})}
-                        placeholder="Paste student data here. One student per line.&#10;Format: [Email] - [LinkedIn Headline]&#10;e.g. rahul@college.edu - Final Year CS Student | Aspiring SDE at SRM"
+                        placeholder="Paste student data here. One student per line.&#10;Format: [Name] - [Email] - [LinkedIn Headline]&#10;e.g. Mizbha - mizbha@college.edu - Final Year CS Student | Aspiring AI Engineer"
                         className="w-full bg-[#1A1A24]/50 border border-white/10 rounded-xl p-4 text-white placeholder-zinc-600 focus:outline-none focus:border-purple-500/50 transition-colors resize-none custom-scrollbar"
                       />
                     </div>

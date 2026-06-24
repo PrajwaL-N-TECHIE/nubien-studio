@@ -448,16 +448,30 @@ app.post('/api/generate-internship-campaign', async (req, res) => {
     const systemPrompt = fs.readFileSync(promptPath, 'utf-8');
 
     for (const studentStr of students) {
-      // Basic extraction: try to find an email using regex, treat the rest as notes/name
-      const emailMatch = studentStr.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/);
-      const email = emailMatch ? emailMatch[1] : 'unknown@student.com';
-      const notes = studentStr.replace(email, '').trim() || 'No specific notes provided.';
+      // Split by dashes, assuming Format: Name - Email - Notes/Headline
+      const parts = studentStr.split('-').map(s => s.trim());
       
-      // Try to guess a name (first word before a space or comma)
-      const nameMatch = notes.match(/^([a-zA-Z]+)/);
-      const name = nameMatch ? nameMatch[1] : 'Student';
+      let name = 'Student';
+      let email = 'unknown@student.com';
+      let notes = studentStr;
 
-      const userPrompt = `Write a cold email to this student to recruit them for the Batch 2 Internship. Student info/notes: ${notes}. Email: ${email}.`;
+      if (parts.length >= 2) {
+        // Assume first part is Name, second is Email or vice versa
+        // Let's find the email among the parts
+        const emailIndex = parts.findIndex(p => /([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/.test(p));
+        
+        if (emailIndex !== -1) {
+          email = parts[emailIndex].match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/)[1];
+          // If email is at index 1, index 0 is probably the name
+          if (emailIndex > 0) {
+            name = parts[0];
+          }
+          // Remove name and email from notes
+          notes = parts.filter((_, idx) => idx !== emailIndex && idx !== 0).join(' - ') || 'No specific notes provided.';
+        }
+      }
+
+      const userPrompt = `Write a cold email to this student to recruit them for the Batch 2 AI Architect Cohort. \nStudent info/notes: Name: ${name}, Email: ${email}, Headline: ${notes}`;
 
       let generatedLead;
       try {
