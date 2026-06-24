@@ -448,8 +448,8 @@ app.post('/api/generate-internship-campaign', async (req, res) => {
     const systemPrompt = fs.readFileSync(promptPath, 'utf-8');
 
     for (const studentStr of students) {
-      // Split by dashes, assuming Format: Name - Email - Notes/Headline
-      const parts = studentStr.split('-').map(s => s.trim());
+      // Split by pipe, assuming Format: Name | Email | Notes/Headline
+      const parts = studentStr.split('|').map(s => s.trim());
       
       let name = 'Student';
       let email = 'unknown@student.com';
@@ -467,7 +467,7 @@ app.post('/api/generate-internship-campaign', async (req, res) => {
             name = parts[0];
           }
           // Remove name and email from notes
-          notes = parts.filter((_, idx) => idx !== emailIndex && idx !== 0).join(' - ') || 'No specific notes provided.';
+          notes = parts.filter((_, idx) => idx !== emailIndex && idx !== 0).join(' | ') || 'No specific notes provided.';
         }
       }
 
