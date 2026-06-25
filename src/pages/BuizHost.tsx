@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, Play, Trophy, Copy, CheckCircle2, Target, StopCircle, Plus, Lock, Trash2, Save } from 'lucide-react';
+import { Users, Play, Trophy, Copy, CheckCircle2, Target, StopCircle, Plus, Lock, Trash2, Save, Eye, EyeOff } from 'lucide-react';
 import { db } from '@/lib/firebase';
 import { doc, setDoc, onSnapshot, collection, updateDoc, getDocs, deleteDoc, addDoc } from 'firebase/firestore';
 
@@ -39,6 +39,7 @@ const BuizHost = () => {
   // Login state
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loginError, setLoginError] = useState('');
 
   // Host config state
@@ -223,6 +224,15 @@ const BuizHost = () => {
     }
   };
 
+  const deleteQuizHistory = async (historyId: string) => {
+    try {
+      await deleteDoc(doc(db, "buiz_history", historyId));
+      setQuizHistory(quizHistory.filter(h => h.id !== historyId));
+    } catch (err) {
+      console.error("Failed to delete history", err);
+    }
+  };
+
   const launchSavedQuiz = async (quiz: any) => {
     const newPin = Math.floor(100000 + Math.random() * 900000).toString();
     try {
@@ -363,15 +373,22 @@ const BuizHost = () => {
                 className="w-full bg-[#1A1A24]/50 border border-white/10 rounded-xl px-5 py-4 text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500/50 transition-colors"
               />
             </div>
-            <div>
+            <div className="relative">
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 required
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-[#1A1A24]/50 border border-white/10 rounded-xl px-5 py-4 text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500/50 transition-colors"
+                className="w-full bg-[#1A1A24]/50 border border-white/10 rounded-xl px-5 py-4 pr-12 text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500/50 transition-colors"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white transition-colors"
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
             </div>
             {loginError && <p className="text-red-400 text-sm font-bold text-center">{loginError}</p>}
             <button
@@ -467,7 +484,16 @@ const BuizHost = () => {
                     <div key={hist.id} className="bg-white/5 border border-white/10 rounded-xl p-4 flex flex-col gap-3 hover:bg-white/10 transition-colors">
                       <div className="flex items-center justify-between">
                         <h3 className="font-bold text-white">{hist.quizName}</h3>
-                        <p className="text-xs text-zinc-400 font-mono">{new Date(hist.date).toLocaleString()}</p>
+                        <div className="flex items-center gap-3">
+                          <p className="text-xs text-zinc-400 font-mono">{new Date(hist.date).toLocaleString()}</p>
+                          <button
+                            onClick={() => deleteQuizHistory(hist.id)}
+                            className="p-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors"
+                            title="Delete History"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
                       </div>
                       <div className="flex items-center gap-2 flex-wrap">
                         {hist.winners && hist.winners.map((w: any, idx: number) => (
