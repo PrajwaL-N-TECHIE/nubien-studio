@@ -24,11 +24,12 @@ const BuizClient = () => {
   
   // Game State
   const [currentQIndex, setCurrentQIndex] = useState(0);
+  const [questionStatus, setQuestionStatus] = useState<'answering' | 'revealed'>('answering');
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
   const [timeLeft, setTimeLeft] = useState(20);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
-  const [showFeedback, setShowFeedback] = useState<'correct' | 'incorrect' | null>(null);
+  const [showFeedback, setShowFeedback] = useState<'correct' | 'incorrect' | 'waiting' | null>(null);
 
   // Listen to room status once joined
   useEffect(() => {
@@ -37,10 +38,24 @@ const BuizClient = () => {
     const unsubscribe = onSnapshot(doc(db, "buiz_rooms", pin), (docSnap) => {
       if (docSnap.exists()) {
         const data = docSnap.data();
-        if (data.status === 'playing' && roomStatus === 'waiting') {
-          // Game just started!
-          setQuestions(data.questions || []);
-          setRoomStatus('playing');
+        if (data.status === 'playing') {
+          if (roomStatus === 'waiting') {
+            setQuestions(data.questions || []);
+            setRoomStatus('playing');
+          }
+          // Sync with Host
+          if (data.currentQIndex !== undefined && data.currentQIndex !== currentQIndex) {
+            setCurrentQIndex(data.currentQIndex);
+            setSelectedOption(null);
+            setShowFeedback(null);
+            setTimeLeft(20);
+          }
+          if (data.questionStatus !== undefined && data.questionStatus !== questionStatus) {
+            setQuestionStatus(data.questionStatus);
+            if (data.questionStatus === 'revealed') {
+              handleHostReveal();
+            }
+          }
         } else if (data.status === 'finished') {
           setRoomStatus('finished');
         }
@@ -51,13 +66,12 @@ const BuizClient = () => {
     });
 
     return () => unsubscribe();
-  }, [pin, roomStatus]);
+  }, [pin, roomStatus, currentQIndex, questionStatus]);
 
   // Timer logic for playing
   useEffect(() => {
-    if (roomStatus !== 'playing' || showFeedback || currentQIndex >= questions.length) return;
+    if (roomStatus !== 'playing' || questionStatus === 'revealed' || currentQIndex >= questions.length) return;
     
-    setTimeLeft(20);
     const timer = setInterval(() => {
       setTimeLeft(prev => {
         if (prev <= 6 && prev > 1) {
@@ -65,7 +79,6 @@ const BuizClient = () => {
         }
         if (prev <= 1) {
           clearInterval(timer);
-          handleTimeUp();
           return 0;
         }
         return prev - 1;
@@ -73,7 +86,7 @@ const BuizClient = () => {
     }, 1000);
     
     return () => clearInterval(timer);
-  }, [currentQIndex, roomStatus, showFeedback, questions.length]);
+  }, [currentQIndex, roomStatus, questionStatus, questions.length]);
 
   const joinRoom = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -125,52 +138,53 @@ const BuizClient = () => {
     }
   };
 
-  const handleTimeUp = () => {
-    handleAnswer(-1); // -1 means missed
+  const handleAnswer = (selectedIdx: number) => {
+    if (questionStatus === 'revealed' || selectedOption !== null) return;
+    setSelectedOption(selectedIdx);
+    setShowFeedback('waiting');
+    
+    // Optimistically update progress so host sees they answered
+    const progress = (currentQIndex + 1) / questions.length;
+    updatePlayerScore(score, streak, progress);
   };
 
-  const handleAnswer = (selectedIdx: number) => {
-    if (showFeedback) return;
-    setSelectedOption(selectedIdx);
-    
-    const q = questions[currentQIndex];
-    const isCorrect = selectedIdx === q.answer;
-    
-    let newScore = score;
-    let newStreak = streak;
-    
-    if (isCorrect) {
-      setShowFeedback('correct');
-      playCorrectSound();
-      // Base points 1000, max time bonus 1000 based on timeLeft/20, streak multiplier
-      const timeBonus = Math.floor((timeLeft / 20) * 1000);
-      newStreak += 1;
-      const streakBonus = newStreak > 2 ? (newStreak * 100) : 0;
-      const earned = 1000 + timeBonus + streakBonus;
-      newScore += earned;
-    } else {
-      setShowFeedback('incorrect');
-      playIncorrectSound();
-      newStreak = 0;
-    }
-    
-    setScore(newScore);
-    setStreak(newStreak);
-    
-    const progress = (currentQIndex + 1) / questions.length;
-    updatePlayerScore(newScore, newStreak, progress);
-    
-    // Move to next question after delay
-    setTimeout(() => {
-      setShowFeedback(null);
-      setSelectedOption(null);
-      if (currentQIndex + 1 < questions.length) {
-        setCurrentQIndex(prev => prev + 1);
-      } else {
-        setRoomStatus('finished');
-      }
-    }, 2000);
+  const handleHostReveal = () => {
+    // We need fresh state for score, streak, selectedOption, so we use a ref or depend on them in the effect.
+    // However, since handleHostReveal is called inside the useEffect which depends on selectedOption, we can access it directly.
+    // Wait, the useEffect closure might have stale state. 
+    // We will evaluate the score based on the current state variable values when the reveal happens.
   };
+
+  // When questionStatus changes to revealed, we evaluate the score
+  useEffect(() => {
+    if (questionStatus === 'revealed' && roomStatus === 'playing') {
+      const q = questions[currentQIndex];
+      const isCorrect = selectedOption === q?.answer;
+      
+      let newScore = score;
+      let newStreak = streak;
+      
+      if (isCorrect) {
+        setShowFeedback('correct');
+        playCorrectSound();
+        const timeBonus = Math.floor((timeLeft / 20) * 1000);
+        newStreak += 1;
+        const streakBonus = newStreak > 2 ? (newStreak * 100) : 0;
+        const earned = 1000 + timeBonus + streakBonus;
+        newScore += earned;
+      } else {
+        setShowFeedback('incorrect');
+        playIncorrectSound();
+        newStreak = 0;
+      }
+      
+      setScore(newScore);
+      setStreak(newStreak);
+      
+      const progress = (currentQIndex + 1) / questions.length;
+      updatePlayerScore(newScore, newStreak, progress);
+    }
+  }, [questionStatus]);
 
   if (roomStatus === 'setup') {
     return (
@@ -289,6 +303,9 @@ const BuizClient = () => {
         {showFeedback === 'incorrect' && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-red-500/20 z-0 pointer-events-none" />
         )}
+        {showFeedback === 'waiting' && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-purple-500/10 z-0 pointer-events-none" />
+        )}
       </AnimatePresence>
       
       {/* Top HUD */}
@@ -330,13 +347,26 @@ const BuizClient = () => {
       <div className="flex-1 flex flex-col p-4 md:p-6 max-w-4xl mx-auto w-full relative z-10 mt-8">
         
         <div className="bg-[#0C0C12]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-10 mb-8 shadow-2xl text-center relative">
-          {showFeedback && (
+          {showFeedback === 'correct' && (
             <motion.div 
               initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
               className="absolute -top-6 left-1/2 -translate-x-1/2 bg-black border border-white/10 rounded-full p-2"
             >
-              {showFeedback === 'correct' ? <CheckCircle2 size={40} className="text-green-500" /> : <XCircle size={40} className="text-red-500" />}
+              <CheckCircle2 size={40} className="text-green-500" />
             </motion.div>
+          )}
+          {showFeedback === 'incorrect' && (
+            <motion.div 
+              initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+              className="absolute -top-6 left-1/2 -translate-x-1/2 bg-black border border-white/10 rounded-full p-2"
+            >
+              <XCircle size={40} className="text-red-500" />
+            </motion.div>
+          )}
+          {showFeedback === 'waiting' && (
+            <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-purple-600/90 text-white px-4 py-1 rounded-full text-sm font-bold animate-pulse whitespace-nowrap">
+              Waiting for Host...
+            </div>
           )}
           <h2 className="text-2xl md:text-4xl font-black text-white leading-tight mt-4">{q.question}</h2>
         </div>
@@ -348,7 +378,7 @@ const BuizClient = () => {
             let bgClass = "bg-[#1A1A24]/60 hover:bg-[#1A1A24] border-white/10 text-white";
             let letterBg = "bg-white/10";
             
-            if (showFeedback) {
+            if (questionStatus === 'revealed') {
               if (idx === q.answer) {
                 bgClass = "bg-green-500 text-white border-green-400 shadow-[0_0_30px_rgba(34,197,94,0.3)]";
                 letterBg = "bg-green-600 border border-green-400";
@@ -359,16 +389,19 @@ const BuizClient = () => {
                 bgClass = "bg-white/5 border-white/10 text-white/30 opacity-50";
                 letterBg = "bg-white/5 border border-white/10";
               }
+            } else if (selectedOption === idx) {
+              bgClass = "bg-purple-600 text-white border-purple-400";
+              letterBg = "bg-purple-700 border border-purple-400";
             }
 
             return (
               <motion.button
                 key={idx}
-                whileHover={!showFeedback ? { scale: 1.01, x: 5 } : {}}
-                whileTap={!showFeedback ? { scale: 0.98 } : {}}
-                disabled={!!showFeedback}
+                whileHover={questionStatus === 'answering' && selectedOption === null ? { scale: 1.01, x: 5 } : {}}
+                whileTap={questionStatus === 'answering' && selectedOption === null ? { scale: 0.98 } : {}}
+                disabled={questionStatus === 'revealed' || selectedOption !== null}
                 onClick={() => handleAnswer(idx)}
-                className={`p-5 md:p-6 rounded-2xl border font-bold text-lg md:text-xl transition-all flex items-center text-left shadow-lg ${bgClass} disabled:cursor-not-allowed w-full`}
+                className={`p-5 md:p-6 rounded-2xl border font-bold text-lg md:text-xl transition-all flex items-center text-left shadow-lg ${bgClass} ${questionStatus === 'revealed' || selectedOption !== null ? 'cursor-not-allowed' : 'cursor-pointer'} w-full`}
               >
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm md:text-base mr-4 shrink-0 transition-colors ${letterBg}`}>
                   {String.fromCharCode(65 + idx)}

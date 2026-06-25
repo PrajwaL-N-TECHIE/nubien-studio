@@ -30,6 +30,11 @@ const BuizHost = () => {
   const [players, setPlayers] = useState<Player[]>([]);
   const [copied, setCopied] = useState(false);
 
+  // Host Paced Game State
+  const [currentQIndex, setCurrentQIndex] = useState(0);
+  const [questionStatus, setQuestionStatus] = useState<'answering' | 'revealed'>('answering');
+  const [roomQuestions, setRoomQuestions] = useState<any[]>([]);
+
   // Login state
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -45,9 +50,11 @@ const BuizHost = () => {
   const [cqOptions, setCqOptions] = useState(['', '', '', '']);
   const [cqAnswer, setCqAnswer] = useState(0);
 
-  // Saved Quizzes State
+  // Saved Quizzes & History State
   const [quizName, setQuizName] = useState('');
   const [savedQuizzes, setSavedQuizzes] = useState<any[]>([]);
+  const [quizHistory, setQuizHistory] = useState<any[]>([]);
+  const [setupTab, setSetupTab] = useState<'saved' | 'history'>('saved');
 
   useEffect(() => {
     if (!pin) return;
@@ -74,6 +81,13 @@ const BuizHost = () => {
           const quizzes: any[] = [];
           snap.forEach(doc => quizzes.push({ id: doc.id, ...doc.data() }));
           setSavedQuizzes(quizzes);
+
+          const histSnap = await getDocs(collection(db, 'buiz_history'));
+          const history: any[] = [];
+          histSnap.forEach(doc => history.push({ id: doc.id, ...doc.data() }));
+          // sort by date descending
+          history.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+          setQuizHistory(history);
         } catch (err) {
           console.error("Failed to fetch saved quizzes", err);
         }
@@ -100,9 +114,12 @@ const BuizHost = () => {
         status: 'waiting',
         hostId: 'admin',
         questions: finalPayload,
+        currentQIndex: 0,
+        questionStatus: 'answering',
         createdAt: new Date()
       });
 
+      setRoomQuestions(finalPayload);
       setPin(newPin);
       setStatus('waiting');
     } catch (err) {
@@ -159,9 +176,12 @@ const BuizHost = () => {
         status: 'waiting',
         hostId: 'admin',
         questions: quiz.questions,
+        currentQIndex: 0,
+        questionStatus: 'answering',
         createdAt: new Date()
       });
 
+      setRoomQuestions(quiz.questions);
       setPin(newPin);
       setStatus('waiting');
     } catch (err) {
@@ -214,11 +234,34 @@ const BuizHost = () => {
 
   const startGame = async () => {
     if (!pin) return;
+    setCurrentQIndex(0);
+    setQuestionStatus('answering');
     await updateDoc(doc(db, "buiz_rooms", pin), {
       status: 'playing',
+      currentQIndex: 0,
+      questionStatus: 'answering',
       startedAt: new Date()
     });
     setStatus('playing');
+  };
+
+  const handleNextState = async () => {
+    if (!pin) return;
+    if (questionStatus === 'answering') {
+      setQuestionStatus('revealed');
+      await updateDoc(doc(db, "buiz_rooms", pin), { questionStatus: 'revealed' });
+    } else {
+      if (currentQIndex + 1 < roomQuestions.length) {
+        setCurrentQIndex(prev => prev + 1);
+        setQuestionStatus('answering');
+        await updateDoc(doc(db, "buiz_rooms", pin), {
+          currentQIndex: currentQIndex + 1,
+          questionStatus: 'answering'
+        });
+      } else {
+        endGame();
+      }
+    }
   };
 
   const endGame = async () => {
@@ -232,6 +275,19 @@ const BuizHost = () => {
     setTimeout(() => setPodiumPhase(1), 1000);
     setTimeout(() => setPodiumPhase(2), 4000);
     setTimeout(() => setPodiumPhase(3), 8000);
+    
+    // Save to history
+    try {
+      const top3 = players.slice(0, 3).map(p => ({ name: p.name, score: p.score }));
+      await addDoc(collection(db, "buiz_history"), {
+        quizName: quizName || 'Quick Session',
+        date: new Date().toISOString(),
+        winners: top3,
+        totalPlayers: players.length
+      });
+    } catch (e) {
+      console.error("Failed to save history", e);
+    }
   };
 
   const copyPin = () => {
@@ -319,35 +375,77 @@ const BuizHost = () => {
             <Plus size={24} /> Create New Quiz Session
           </button>
 
+          <div className="flex gap-4 mb-4 border-b border-white/10 pb-2">
+            <button 
+              onClick={() => setSetupTab('saved')} 
+              className={`text-lg font-bold pb-2 transition-colors border-b-2 ${setupTab === 'saved' ? 'text-white border-purple-500' : 'text-zinc-500 border-transparent hover:text-zinc-300'}`}
+            >
+              Saved Quizzes
+            </button>
+            <button 
+              onClick={() => setSetupTab('history')} 
+              className={`text-lg font-bold pb-2 transition-colors border-b-2 ${setupTab === 'history' ? 'text-white border-purple-500' : 'text-zinc-500 border-transparent hover:text-zinc-300'}`}
+            >
+              Quiz History
+            </button>
+          </div>
+
           <div>
-            <h2 className="text-lg font-bold text-white mb-4">Saved Quizzes</h2>
-            {savedQuizzes.length === 0 ? (
-              <p className="text-zinc-500 text-center py-8 border border-white/5 rounded-xl bg-white/[0.02]">No saved quizzes yet. Create one above!</p>
+            {setupTab === 'saved' ? (
+              savedQuizzes.length === 0 ? (
+                <p className="text-zinc-500 text-center py-8 border border-white/5 rounded-xl bg-white/[0.02]">No saved quizzes yet. Create one above!</p>
+              ) : (
+                <div className="space-y-3 max-h-64 overflow-y-auto pr-2">
+                  {savedQuizzes.map(quiz => (
+                    <div key={quiz.id} className="bg-white/5 border border-white/10 rounded-xl p-4 flex items-center justify-between hover:bg-white/10 transition-colors">
+                      <div>
+                        <h3 className="font-bold text-white text-lg">{quiz.name}</h3>
+                        <p className="text-xs text-zinc-400 font-mono mt-1">{quiz.questions?.length || 0} Questions • {new Date(quiz.createdAt).toLocaleDateString()}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => launchSavedQuiz(quiz)}
+                          className="px-4 py-2 bg-green-500/20 hover:bg-green-500/30 text-green-400 rounded-lg font-bold transition-colors text-sm flex items-center gap-2"
+                        >
+                          <Play fill="currentColor" size={14} /> Launch
+                        </button>
+                        <button
+                          onClick={() => deleteSavedQuiz(quiz.id)}
+                          className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )
             ) : (
-              <div className="space-y-3 max-h-64 overflow-y-auto pr-2">
-                {savedQuizzes.map(quiz => (
-                  <div key={quiz.id} className="bg-white/5 border border-white/10 rounded-xl p-4 flex items-center justify-between hover:bg-white/10 transition-colors">
-                    <div>
-                      <h3 className="font-bold text-white text-lg">{quiz.name}</h3>
-                      <p className="text-xs text-zinc-400 font-mono mt-1">{quiz.questions?.length || 0} Questions • {new Date(quiz.createdAt).toLocaleDateString()}</p>
+              quizHistory.length === 0 ? (
+                <p className="text-zinc-500 text-center py-8 border border-white/5 rounded-xl bg-white/[0.02]">No quiz history found.</p>
+              ) : (
+                <div className="space-y-3 max-h-64 overflow-y-auto pr-2">
+                  {quizHistory.map(hist => (
+                    <div key={hist.id} className="bg-white/5 border border-white/10 rounded-xl p-4 flex flex-col gap-3 hover:bg-white/10 transition-colors">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-bold text-white">{hist.quizName}</h3>
+                        <p className="text-xs text-zinc-400 font-mono">{new Date(hist.date).toLocaleString()}</p>
+                      </div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {hist.winners && hist.winners.map((w: any, idx: number) => (
+                          <div key={idx} className="bg-black/30 border border-white/10 px-3 py-1 rounded-lg flex items-center gap-2 text-sm">
+                            <span className={idx === 0 ? 'text-yellow-400' : idx === 1 ? 'text-zinc-300' : 'text-orange-400'}>
+                              #{idx + 1}
+                            </span>
+                            <span className="text-white font-bold">{w.name}</span>
+                            <span className="text-purple-400 font-mono">{w.score}</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => launchSavedQuiz(quiz)}
-                        className="px-4 py-2 bg-green-500/20 hover:bg-green-500/30 text-green-400 rounded-lg font-bold transition-colors text-sm flex items-center gap-2"
-                      >
-                        <Play fill="currentColor" size={14} /> Launch
-                      </button>
-                      <button
-                        onClick={() => deleteSavedQuiz(quiz.id)}
-                        className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )
             )}
           </div>
         </motion.div>
@@ -613,10 +711,14 @@ const BuizHost = () => {
 
             {status === 'playing' && (
               <button
-                onClick={endGame}
-                className="px-8 py-4 bg-red-600/20 hover:bg-red-600 text-red-500 hover:text-white border border-red-500/30 rounded-2xl font-bold text-lg transition-all flex items-center gap-2"
+                onClick={handleNextState}
+                className={`px-8 py-4 rounded-2xl font-black text-xl transition-all shadow-[0_0_30px_rgba(0,0,0,0.5)] flex items-center gap-2 ${
+                  questionStatus === 'answering' 
+                    ? 'bg-blue-600 hover:bg-blue-500 text-white' 
+                    : (currentQIndex + 1 >= roomQuestions.length ? 'bg-red-600 hover:bg-red-500 text-white' : 'bg-green-600 hover:bg-green-500 text-white')
+                }`}
               >
-                <StopCircle size={20} /> Force End
+                {questionStatus === 'answering' ? 'Reveal Answer' : (currentQIndex + 1 >= roomQuestions.length ? 'End Quiz' : 'Next Question')}
               </button>
             )}
           </div>
@@ -654,59 +756,63 @@ const BuizHost = () => {
                 </AnimatePresence>
               </div>
             ) : (
-              <div className="space-y-3 overflow-y-auto pr-4 flex-1">
-                <AnimatePresence>
-                  {players.map((p, index) => (
-                    <motion.div
-                      key={p.id}
-                      layout
-                      initial={{ opacity: 0, scale: 0.9, x: -20 }}
-                      animate={{ opacity: 1, scale: 1, x: 0 }}
-                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                      className={`flex items-center justify-between p-4 rounded-2xl border ${status !== 'waiting' && index === 0 ? 'bg-yellow-500/10 border-yellow-500/30' :
-                        status !== 'waiting' && index === 1 ? 'bg-zinc-300/10 border-zinc-300/30' :
-                          status !== 'waiting' && index === 2 ? 'bg-orange-500/10 border-orange-500/30' :
-                            'bg-white/5 border-white/10'
-                        }`}
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black text-lg ${status !== 'waiting' && index === 0 ? 'bg-yellow-500 text-black' :
-                          status !== 'waiting' && index === 1 ? 'bg-zinc-300 text-black' :
-                            status !== 'waiting' && index === 2 ? 'bg-orange-500 text-black' :
-                              'bg-white/10 text-white/50'
-                          }`}>
-                          {index + 1}
-                        </div>
-                        {p.avatar && (
-                          <div className="w-12 h-12 bg-white/5 rounded-full p-1 border border-white/10 shrink-0">
-                            <img src={p.avatar} alt="Avatar" className="w-full h-full object-contain" />
+              <div className="flex-1 flex flex-col">
+                {/* Host Question View */}
+                {roomQuestions[currentQIndex] && (
+                  <>
+                    <div className="flex justify-between items-center mb-6">
+                      <span className="bg-white/10 px-4 py-1.5 rounded-full text-white/70 font-bold text-sm">
+                        Question {currentQIndex + 1} of {roomQuestions.length}
+                      </span>
+                      <span className={`px-4 py-1.5 rounded-full font-bold text-sm ${questionStatus === 'answering' ? 'bg-yellow-500/20 text-yellow-400 animate-pulse' : 'bg-green-500/20 text-green-400'}`}>
+                        {questionStatus === 'answering' ? 'Students Answering...' : 'Answer Revealed'}
+                      </span>
+                    </div>
+                    
+                    <div className="bg-[#1A1A24] border border-white/10 rounded-2xl p-8 mb-8 text-center shadow-xl">
+                      <h2 className="text-3xl font-black text-white">{roomQuestions[currentQIndex].question}</h2>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1">
+                      {roomQuestions[currentQIndex].options.map((opt: string, idx: number) => {
+                        const isCorrect = idx === roomQuestions[currentQIndex].answer;
+                        let bgClass = "bg-white/5 border-white/10 text-white/50";
+                        
+                        if (questionStatus === 'revealed') {
+                          if (isCorrect) {
+                            bgClass = "bg-green-500/20 border-green-500 text-green-400 font-bold shadow-[0_0_20px_rgba(34,197,94,0.2)]";
+                          } else {
+                            bgClass = "bg-white/5 border-white/10 text-white/20 opacity-50";
+                          }
+                        } else {
+                          bgClass = "bg-white/10 border-white/20 text-white";
+                        }
+                        
+                        return (
+                          <div key={idx} className={`p-6 rounded-xl border text-xl flex items-center transition-all ${bgClass}`}>
+                            <div className="w-10 h-10 rounded-full flex items-center justify-center font-black bg-black/20 mr-4 shrink-0">
+                              {String.fromCharCode(65 + idx)}
+                            </div>
+                            <span>{opt}</span>
                           </div>
-                        )}
-                        <div>
-                          <p className={`font-bold text-lg ${status !== 'waiting' && index < 3 ? 'text-white' : 'text-zinc-300'}`}>{p.name}</p>
-                          <div className="flex items-center gap-2 mt-1">
-                            {p.streak >= 3 && (
-                              <span className="text-[10px] font-black uppercase tracking-wider bg-orange-500/20 text-orange-400 px-2 py-0.5 rounded flex items-center gap-1">
-                                🔥 {p.streak} Streak
-                              </span>
-                            )}
-                            <span className="text-xs text-white/40 font-mono">Progress: {Math.round((p.progress || 0) * 100)}%</span>
+                        );
+                      })}
+                    </div>
+                    
+                    <div className="mt-8 pt-6 border-t border-white/10">
+                      <h3 className="text-sm font-bold text-white/50 uppercase tracking-widest mb-4">Top Players</h3>
+                      <div className="flex gap-4 overflow-x-auto pb-2">
+                        {players.slice(0, 5).map((p, idx) => (
+                          <div key={p.id} className="bg-white/5 border border-white/10 px-4 py-2 rounded-lg flex items-center gap-3 shrink-0">
+                            <span className="text-zinc-500 font-bold">#{idx + 1}</span>
+                            <span className="text-white font-bold">{p.name}</span>
+                            <span className="text-purple-400 font-mono font-bold">{p.score}</span>
                           </div>
-                        </div>
+                        ))}
                       </div>
-                      <div className="text-right">
-                        <p className={`font-black text-2xl font-mono ${status !== 'waiting' && index === 0 ? 'text-yellow-400' :
-                          status !== 'waiting' && index === 1 ? 'text-zinc-300' :
-                            status !== 'waiting' && index === 2 ? 'text-orange-400' :
-                              'text-white'
-                          }`}>
-                          {p.score.toLocaleString()}
-                        </p>
-                        <p className="text-xs text-white/30 uppercase font-bold tracking-widest mt-1">Points</p>
-                      </div>
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
+                    </div>
+                  </>
+                )}
               </div>
             )}
           </div>
@@ -729,8 +835,8 @@ const BuizHost = () => {
               <div className="pt-6 border-t border-purple-500/20">
                 <p className="text-xs text-purple-300/70 font-bold uppercase tracking-widest mb-2">Current Mode</p>
                 <div className="bg-black/40 rounded-xl p-4 border border-white/5">
-                  <p className="font-bold text-white text-sm mb-1">Player Paced (Quizizz Style)</p>
-                  <p className="text-xs text-zinc-500">Students answer on their own devices asynchronously. Faster answers yield higher scores.</p>
+                  <p className="font-bold text-white text-sm mb-1">Host Paced (Kahoot Style)</p>
+                  <p className="text-xs text-zinc-500">Host controls the question flow. Students answer in real-time on their devices.</p>
                 </div>
               </div>
             </div>
