@@ -34,6 +34,7 @@ const BuizHost = () => {
   const [currentQIndex, setCurrentQIndex] = useState(0);
   const [questionStatus, setQuestionStatus] = useState<'answering' | 'revealed'>('answering');
   const [roomQuestions, setRoomQuestions] = useState<any[]>([]);
+  const [timeLeft, setTimeLeft] = useState(20);
 
   // Login state
   const [email, setEmail] = useState('');
@@ -72,6 +73,60 @@ const BuizHost = () => {
 
     return () => unsubscribe();
   }, [pin]);
+
+  // 1. Host Timer Logic (Max 20s per question)
+  useEffect(() => {
+    if (status === 'playing' && questionStatus === 'answering') {
+      setTimeLeft(20);
+      const timer = setInterval(() => {
+        setTimeLeft(prev => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            // Time's up! Force reveal
+            setQuestionStatus('revealed');
+            if (pin) updateDoc(doc(db, "buiz_rooms", pin), { questionStatus: 'revealed' });
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [status, questionStatus, pin]);
+
+  // 2. Dynamic Skip (If all players answered early)
+  useEffect(() => {
+    if (status === 'playing' && questionStatus === 'answering' && players.length > 0 && roomQuestions.length > 0) {
+      const targetProgress = (currentQIndex + 1) / roomQuestions.length;
+      // Use a small epsilon for float comparison just in case, though they should be exact
+      const answeredCount = players.filter(p => (p.progress || 0) >= targetProgress - 0.001).length;
+      
+      if (answeredCount === players.length) {
+        // Everyone has answered! Skip the timer and reveal
+        setQuestionStatus('revealed');
+        if (pin) updateDoc(doc(db, "buiz_rooms", pin), { questionStatus: 'revealed' });
+      }
+    }
+  }, [players, status, questionStatus, currentQIndex, roomQuestions.length, pin]);
+
+  // 3. Auto-Advance to Next Question
+  useEffect(() => {
+    if (status === 'playing' && questionStatus === 'revealed') {
+      const timer = setTimeout(() => {
+        if (currentQIndex + 1 < roomQuestions.length) {
+          setCurrentQIndex(prev => prev + 1);
+          setQuestionStatus('answering');
+          if (pin) updateDoc(doc(db, "buiz_rooms", pin), {
+            currentQIndex: currentQIndex + 1,
+            questionStatus: 'answering'
+          });
+        } else {
+          endGame();
+        }
+      }, 5000); // 5 seconds to view answers/leaderboard
+      return () => clearTimeout(timer);
+    }
+  }, [questionStatus, status, currentQIndex, roomQuestions.length, pin]);
 
   useEffect(() => {
     if (status === 'setup') {
@@ -245,24 +300,7 @@ const BuizHost = () => {
     setStatus('playing');
   };
 
-  const handleNextState = async () => {
-    if (!pin) return;
-    if (questionStatus === 'answering') {
-      setQuestionStatus('revealed');
-      await updateDoc(doc(db, "buiz_rooms", pin), { questionStatus: 'revealed' });
-    } else {
-      if (currentQIndex + 1 < roomQuestions.length) {
-        setCurrentQIndex(prev => prev + 1);
-        setQuestionStatus('answering');
-        await updateDoc(doc(db, "buiz_rooms", pin), {
-          currentQIndex: currentQIndex + 1,
-          questionStatus: 'answering'
-        });
-      } else {
-        endGame();
-      }
-    }
-  };
+  // handleNextState removed since it's fully automatic now
 
   const endGame = async () => {
     if (!pin) return;
@@ -711,14 +749,10 @@ const BuizHost = () => {
 
             {status === 'playing' && (
               <button
-                onClick={handleNextState}
-                className={`px-8 py-4 rounded-2xl font-black text-xl transition-all shadow-[0_0_30px_rgba(0,0,0,0.5)] flex items-center gap-2 ${
-                  questionStatus === 'answering' 
-                    ? 'bg-blue-600 hover:bg-blue-500 text-white' 
-                    : (currentQIndex + 1 >= roomQuestions.length ? 'bg-red-600 hover:bg-red-500 text-white' : 'bg-green-600 hover:bg-green-500 text-white')
-                }`}
+                onClick={endGame}
+                className="px-8 py-4 bg-red-600/20 hover:bg-red-600 text-red-500 hover:text-white border border-red-500/30 rounded-2xl font-bold text-lg transition-all flex items-center gap-2"
               >
-                {questionStatus === 'answering' ? 'Reveal Answer' : (currentQIndex + 1 >= roomQuestions.length ? 'End Quiz' : 'Next Question')}
+                <StopCircle size={20} /> Force End
               </button>
             )}
           </div>
@@ -764,9 +798,16 @@ const BuizHost = () => {
                       <span className="bg-white/10 px-4 py-1.5 rounded-full text-white/70 font-bold text-sm">
                         Question {currentQIndex + 1} of {roomQuestions.length}
                       </span>
-                      <span className={`px-4 py-1.5 rounded-full font-bold text-sm ${questionStatus === 'answering' ? 'bg-yellow-500/20 text-yellow-400 animate-pulse' : 'bg-green-500/20 text-green-400'}`}>
-                        {questionStatus === 'answering' ? 'Students Answering...' : 'Answer Revealed'}
-                      </span>
+                      <div className="flex gap-3 items-center">
+                        {questionStatus === 'answering' && (
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black text-lg ${timeLeft <= 5 ? 'bg-red-500 text-white animate-pulse' : 'bg-white/10 text-white'}`}>
+                            {timeLeft}
+                          </div>
+                        )}
+                        <span className={`px-4 py-1.5 rounded-full font-bold text-sm ${questionStatus === 'answering' ? 'bg-yellow-500/20 text-yellow-400 animate-pulse' : 'bg-green-500/20 text-green-400'}`}>
+                          {questionStatus === 'answering' ? `Waiting for answers (${players.filter(p => (p.progress || 0) >= (currentQIndex + 1) / roomQuestions.length).length}/${players.length})` : 'Answer Revealed'}
+                        </span>
+                      </div>
                     </div>
                     
                     <div className="bg-[#1A1A24] border border-white/10 rounded-2xl p-8 mb-8 text-center shadow-xl">
