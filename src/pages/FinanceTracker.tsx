@@ -175,7 +175,16 @@ const FinanceTracker = () => {
   };
 
   // Calculations & Filtering
-  const { totalRevenue, totalExpenses, netBalance, chartData, filteredTransactions } = useMemo(() => {
+  const { 
+    totalRevenue, 
+    totalExpenses, 
+    netBalance, 
+    chartData, 
+    filteredTransactions,
+    incomeByCategory,
+    expenseByCategory,
+    profitMargin
+  } = useMemo(() => {
     let rev = 0;
     let exp = 0;
 
