@@ -4,7 +4,7 @@ import { Lock, Eye, EyeOff, TrendingUp, TrendingDown, DollarSign, Plus, Trash2, 
 import { db, auth } from '@/lib/firebase';
 import { collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
 import confetti from 'canvas-confetti';
 
 interface Transaction {
@@ -23,6 +23,7 @@ const CATEGORIES = {
   debit: ['Software Subscriptions', 'Salaries', 'Marketing', 'Hosting/AWS', 'Legal/Taxes', 'Internship Works', 'Other Expense']
 };
 const ALL_CATEGORIES = [...CATEGORIES.credit, ...CATEGORIES.debit];
+const CHART_COLORS = ['#8b5cf6', '#10b981', '#ec4899', '#3b82f6', '#f59e0b', '#ef4444', '#06b6d4'];
 
 const FinanceTracker = () => {
   const [status, setStatus] = useState<'login' | 'dashboard'>('login');
@@ -214,11 +215,41 @@ const FinanceTracker = () => {
     });
 
     const bal = rev - exp;
+    const margin = rev > 0 ? ((rev - exp) / rev) * 100 : 0;
+
+    // Group for pie charts
+    const incCategoryMap: Record<string, number> = {};
+    const expCategoryMap: Record<string, number> = {};
+    
+    filteredTx.forEach(t => {
+      if (t.type === 'credit') {
+        incCategoryMap[t.category] = (incCategoryMap[t.category] || 0) + t.amount;
+      } else {
+        expCategoryMap[t.category] = (expCategoryMap[t.category] || 0) + t.amount;
+      }
+    });
+
+    const incomeByCategory = Object.entries(incCategoryMap)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value);
+
+    const expenseByCategory = Object.entries(expCategoryMap)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value);
 
     // Sort chart data chronologically
     const sortedChart = Object.values(monthlyMap).sort((a, b) => a.name.localeCompare(b.name));
 
-    return { totalRevenue: rev, totalExpenses: exp, netBalance: bal, chartData: sortedChart, filteredTransactions: filteredTx };
+    return { 
+      totalRevenue: rev, 
+      totalExpenses: exp, 
+      netBalance: bal, 
+      profitMargin: margin,
+      chartData: sortedChart, 
+      filteredTransactions: filteredTx,
+      incomeByCategory,
+      expenseByCategory
+    };
   }, [transactions, timeframe, filterCategory]);
 
   const formatCurrency = (amount: number) => {
@@ -554,7 +585,133 @@ const FinanceTracker = () => {
                   </div>
                 ))
               )}
+          </div>
+        </div>
+
+        {/* Advanced Visualizations Row 2 */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8">
+          {/* Income Breakdown */}
+          <div className="bg-[#0C0C12]/80 backdrop-blur-md border border-white/10 rounded-3xl p-6 md:p-8">
+            <h3 className="text-xl font-bold text-white mb-6">Income Distribution</h3>
+            <div className="h-[250px] w-full relative">
+              {incomeByCategory.length === 0 ? (
+                <div className="w-full h-full flex items-center justify-center border border-dashed border-white/10 rounded-2xl">
+                  <p className="text-zinc-500">No income data.</p>
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={incomeByCategory} innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
+                      {incomeByCategory.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      formatter={(value: number) => formatCurrency(value)}
+                      contentStyle={{ backgroundColor: '#000', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }} 
+                    />
+                    <Legend verticalAlign="bottom" height={36} />
+                  </PieChart>
+                </ResponsiveContainer>
+              )}
             </div>
+          </div>
+
+          {/* Expense Breakdown */}
+          <div className="bg-[#0C0C12]/80 backdrop-blur-md border border-white/10 rounded-3xl p-6 md:p-8">
+            <h3 className="text-xl font-bold text-white mb-6">Expense Breakdown</h3>
+            <div className="h-[250px] w-full relative">
+              {expenseByCategory.length === 0 ? (
+                <div className="w-full h-full flex items-center justify-center border border-dashed border-white/10 rounded-2xl">
+                  <p className="text-zinc-500">No expense data.</p>
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={expenseByCategory} innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
+                      {expenseByCategory.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      formatter={(value: number) => formatCurrency(value)}
+                      contentStyle={{ backgroundColor: '#000', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }} 
+                    />
+                    <Legend verticalAlign="bottom" height={36} />
+                  </PieChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+          </div>
+
+          {/* Profit Margin */}
+          <div className="bg-[#0C0C12]/80 backdrop-blur-md border border-white/10 rounded-3xl p-6 md:p-8 flex flex-col justify-center items-center text-center relative overflow-hidden">
+            <div className={`absolute -top-20 -right-20 w-40 h-40 rounded-full blur-[60px] ${profitMargin >= 30 ? 'bg-green-500/20' : profitMargin >= 10 ? 'bg-yellow-500/20' : 'bg-red-500/20'}`} />
+            
+            <h3 className="text-xl font-bold text-white mb-2 z-10">Net Profit Margin</h3>
+            <p className="text-zinc-400 text-sm mb-6 z-10">Health Indicator</p>
+            
+            <div className="h-[150px] w-full relative z-10">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={[{ value: profitMargin > 0 ? profitMargin : 0 }, { value: profitMargin > 0 ? 100 - profitMargin : 100 }]}
+                    startAngle={180}
+                    endAngle={0}
+                    innerRadius={70}
+                    outerRadius={90}
+                    dataKey="value"
+                    stroke="none"
+                  >
+                    <Cell fill={profitMargin >= 30 ? '#22c55e' : profitMargin >= 10 ? '#eab308' : '#ef4444'} />
+                    <Cell fill="rgba(255,255,255,0.05)" />
+                  </Pie>
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="absolute inset-0 flex flex-col items-center justify-end pb-4">
+                <span className={`text-5xl font-black ${profitMargin >= 30 ? 'text-green-400' : profitMargin >= 10 ? 'text-yellow-400' : 'text-red-400'}`}>
+                  {profitMargin.toFixed(1)}%
+                </span>
+              </div>
+            </div>
+            
+            <div className="mt-4 z-10 w-full flex justify-between text-xs font-bold uppercase tracking-wider text-zinc-500">
+              <span>Critical</span>
+              <span>Healthy</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Row 3: Category Bar Comparison */}
+        <div className="mt-8 bg-[#0C0C12]/80 backdrop-blur-md border border-white/10 rounded-3xl p-6 md:p-8">
+          <h3 className="text-xl font-bold text-white mb-6">Income vs Expenses (Monthly)</h3>
+          <div className="h-[400px] w-full">
+            {chartData.length === 0 ? (
+              <div className="w-full h-full flex items-center justify-center border border-dashed border-white/10 rounded-2xl">
+                <p className="text-zinc-500">No data available.</p>
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                  <XAxis dataKey="name" stroke="rgba(255,255,255,0.3)" tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 12 }} axisLine={false} tickLine={false} />
+                  <YAxis 
+                    stroke="rgba(255,255,255,0.3)" 
+                    tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 12 }} 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tickFormatter={(val) => currency === 'USD' ? `$${val}` : `₹${val}`}
+                  />
+                  <Tooltip 
+                    formatter={(value: number) => formatCurrency(value)}
+                    contentStyle={{ backgroundColor: '#0C0C12', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#fff' }} 
+                  />
+                  <Legend verticalAlign="top" height={36} />
+                  <Bar dataKey="Income" fill="#22c55e" radius={[4, 4, 0, 0]} maxBarSize={50} />
+                  <Bar dataKey="Expenses" fill="#ef4444" radius={[4, 4, 0, 0]} maxBarSize={50} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
           </div>
         </div>
 
