@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, Eye, EyeOff, TrendingUp, TrendingDown, DollarSign, Plus, Trash2, Calendar, Activity, Filter, ArrowUpRight, ArrowDownRight, Hash, Edit2, Download } from 'lucide-react';
+import { Lock, Eye, EyeOff, TrendingUp, TrendingDown, DollarSign, Plus, Trash2, Calendar, Activity, Filter, ArrowUpRight, ArrowDownRight, Hash, Edit2, Download, Search } from 'lucide-react';
 import { db, auth } from '@/lib/firebase';
 import { collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { signInWithEmailAndPassword } from 'firebase/auth';
@@ -41,6 +41,7 @@ const FinanceTracker = () => {
   const [viewingTransaction, setViewingTransaction] = useState<Transaction | null>(null);
   const [celebration, setCelebration] = useState<number | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Filters
   const [timeframe, setTimeframe] = useState<'all' | 'year' | 'month'>('month');
@@ -209,6 +210,18 @@ const FinanceTracker = () => {
       // Category Filter
       if (filterCategory !== 'All' && t.category !== filterCategory) return;
 
+      // Search Filter
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        if (
+          !t.description.toLowerCase().includes(query) && 
+          !t.source_destination.toLowerCase().includes(query) &&
+          !t.category.toLowerCase().includes(query)
+        ) {
+          return;
+        }
+      }
+
       filteredTx.push(t);
 
       // Aggregates
@@ -259,7 +272,7 @@ const FinanceTracker = () => {
       incomeByCategory,
       expenseByCategory
     };
-  }, [transactions, timeframe, filterCategory]);
+  }, [transactions, timeframe, filterCategory, searchQuery]);
 
   const formatCurrency = (amount: number) => {
     const val = currency === 'USD' ? amount / 83.5 : amount;
@@ -541,7 +554,21 @@ const FinanceTracker = () => {
 
           {/* Ledger */}
           <div className="bg-[#0C0C12]/80 backdrop-blur-md border border-white/10 rounded-3xl p-6 md:p-8 flex flex-col h-[500px] xl:h-[550px]">
-            <h3 className="text-xl font-bold text-white mb-6">Ledger</h3>
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-white">Ledger</h3>
+            </div>
+            
+            <div className="relative mb-4 shrink-0">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" size={16} />
+              <input
+                type="text"
+                placeholder="Search transactions..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500/50 transition-colors"
+              />
+            </div>
+
             <div className="flex-1 overflow-y-auto pr-2 space-y-3 custom-scrollbar">
               {filteredTransactions.length === 0 ? (
                 <div className="text-center py-10">
