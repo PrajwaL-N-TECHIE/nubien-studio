@@ -189,44 +189,46 @@ const Portfolio = () => {
                 onClick={() => window.open(project.link, '_blank')}
                 className={`group relative rounded-[32px] overflow-hidden bg-[#0C0C12] border border-white/5 hover:border-purple-500/30 transition-colors duration-500 flex flex-col min-h-[400px] md:min-h-[500px] cursor-pointer ${project.span}`}
               >
-                {/* Image Background */}
-                <div className="absolute inset-0 w-full h-full overflow-hidden">
-                  <LazyImage
-                    src={project.image}
-                    alt={project.title}
-                    aspectRatio="h-full w-full"
-                    className="opacity-60 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700 ease-[0.22,1,0.36,1]"
-                  />
-                  {/* Heavy dark gradient overlay so text is always readable */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#050507] via-[#050507]/60 to-transparent" />
+                {/* Top Content Area */}
+                <div className="relative z-10 p-8 md:p-10 flex flex-col flex-grow">
+                  <div className="flex justify-between items-start mb-8">
+                    <div className="px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-bold tracking-widest uppercase text-zinc-400">
+                      {project.client}
+                    </div>
+                    <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-purple-600 group-hover:border-purple-500 transition-colors duration-500 cursor-pointer">
+                      <ExternalLink size={16} className="text-zinc-400 group-hover:text-white transition-colors" />
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="text-3xl md:text-4xl font-bold text-white mb-4 tracking-tight group-hover:text-purple-400 transition-colors duration-500">
+                      {project.title}
+                    </h3>
+                    <p className="text-zinc-400 text-sm md:text-base font-medium max-w-md leading-relaxed mb-6">
+                      {project.description}
+                    </p>
+
+                    {/* Tech Stack Tags */}
+                    <div className="flex flex-wrap gap-2">
+                      {project.tags.map((tag, i) => (
+                        <span key={i} className="px-3 py-1.5 rounded-lg bg-[#12121A] border border-white/5 text-[11px] font-bold text-zinc-500 uppercase tracking-wider">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
                 </div>
 
-                {/* Floating Top Bar */}
-                <div className="relative z-10 p-8 flex justify-between items-start">
-                  <div className="px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-xs font-bold tracking-widest uppercase text-white">
-                    {project.client}
-                  </div>
-                  <div className="w-10 h-10 rounded-full bg-white/5 backdrop-blur-md border border-white/10 flex items-center justify-center group-hover:bg-purple-600 group-hover:border-purple-500 transition-colors duration-500 cursor-pointer">
-                    <ExternalLink size={16} className="text-white group-hover:scale-110 transition-transform duration-500" />
-                  </div>
-                </div>
-
-                {/* Bottom Content Area */}
-                <div className="relative z-10 mt-auto p-8 pt-20">
-                  <h3 className="text-3xl md:text-4xl font-bold text-white mb-4 tracking-tight group-hover:text-purple-300 transition-colors duration-500">
-                    {project.title}
-                  </h3>
-                  <p className="text-zinc-400 text-sm md:text-base font-medium max-w-md leading-relaxed mb-6">
-                    {project.description}
-                  </p>
-
-                  {/* Tech Stack Tags */}
-                  <div className="flex flex-wrap gap-2">
-                    {project.tags.map((tag, i) => (
-                      <span key={i} className="px-3 py-1.5 rounded-lg bg-[#12121A]/80 backdrop-blur-md border border-white/5 text-[11px] font-bold text-zinc-300 uppercase tracking-wider">
-                        {tag}
-                      </span>
-                    ))}
+                {/* Bottom Image Area */}
+                <div className="px-4 pb-4 md:px-8 md:pb-8 mt-auto">
+                  <div className="relative h-64 md:h-80 w-full rounded-2xl overflow-hidden bg-[#1A1A1E] border border-white/5 shadow-2xl">
+                    <LazyImage
+                      src={project.image}
+                      alt={project.title}
+                      aspectRatio="h-full w-full"
+                      className="group-hover:scale-105 transition-transform duration-700 ease-[0.22,1,0.36,1] object-cover object-top opacity-90 group-hover:opacity-100"
+                    />
+                    <div className="absolute inset-0 bg-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 mix-blend-overlay" />
                   </div>
                 </div>
               </motion.div>
