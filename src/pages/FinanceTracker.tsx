@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, Eye, EyeOff, TrendingUp, TrendingDown, DollarSign, Plus, Trash2, Calendar, Activity, Filter, ArrowUpRight, ArrowDownRight, Hash } from 'lucide-react';
+import { Lock, Eye, EyeOff, TrendingUp, TrendingDown, DollarSign, Plus, Trash2, Calendar, Activity, Filter, ArrowUpRight, ArrowDownRight, Hash, Edit2, Download } from 'lucide-react';
 import { db, auth } from '@/lib/firebase';
-import { collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import confetti from 'canvas-confetti';
@@ -39,6 +39,7 @@ const FinanceTracker = () => {
   const [isAdding, setIsAdding] = useState(false);
   const [viewingTransaction, setViewingTransaction] = useState<Transaction | null>(null);
   const [celebration, setCelebration] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   // Filters
   const [timeframe, setTimeframe] = useState<'all' | 'year' | 'month'>('month');
@@ -86,24 +87,56 @@ const FinanceTracker = () => {
     try {
       const baseAmount = currency === 'USD' ? parseFloat(amount) * 83.5 : parseFloat(amount);
 
-      await addDoc(collection(db, "finance_transactions"), {
-        type,
-        amount: baseAmount,
-        category,
-        description: hideDescription ? 'Internship Income' : description,
-        source_destination: source,
-        date,
-        createdAt: new Date().toISOString()
-      });
+      if (editingId) {
+        await updateDoc(doc(db, "finance_transactions", editingId), {
+          type,
+          amount: baseAmount,
+          category,
+          description: hideDescription ? 'Internship Income' : description,
+          source_destination: source,
+          date
+        });
+      } else {
+        await addDoc(collection(db, "finance_transactions"), {
+          type,
+          amount: baseAmount,
+          category,
+          description: hideDescription ? 'Internship Income' : description,
+          source_destination: source,
+          date,
+          createdAt: new Date().toISOString()
+        });
+      }
       setIsAdding(false);
+      setEditingId(null);
       setAmount('');
       setDescription('');
       setSource('');
       setDate(new Date().toISOString().split('T')[0]);
     } catch (err) {
-      console.error("Failed to add transaction", err);
-      alert("Failed to add transaction. Check Firebase permissions.");
+      console.error("Failed to add/update transaction", err);
+      alert("Failed to save transaction. Check Firebase permissions.");
     }
+  };
+
+  const handleEdit = (t: Transaction) => {
+    setEditingId(t.id);
+    setType(t.type);
+    setAmount(currency === 'USD' ? (t.amount / 83.5).toString() : t.amount.toString());
+    setCategory(t.category);
+    setDescription(t.description);
+    setSource(t.source_destination);
+    setDate(t.date);
+    setIsAdding(true);
+  };
+
+  const handleOpenAdd = () => {
+    setEditingId(null);
+    setAmount('');
+    setDescription('');
+    setSource('');
+    setDate(new Date().toISOString().split('T')[0]);
+    setIsAdding(true);
   };
 
   const handleDelete = async (id: string) => {
@@ -114,6 +147,30 @@ const FinanceTracker = () => {
         console.error("Failed to delete", err);
       }
     }
+  };
+
+  const handleExportCSV = () => {
+    if (filteredTransactions.length === 0) return;
+    
+    const headers = ['Date', 'Type', 'Category', 'Description', 'Source/Destination', 'Amount (INR)'];
+    const rows = filteredTransactions.map(t => [
+      t.date,
+      t.type.toUpperCase(),
+      t.category,
+      `"${t.description.replace(/"/g, '""')}"`,
+      `"${t.source_destination.replace(/"/g, '""')}"`,
+      t.amount
+    ]);
+    
+    const csvContent = [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `Finance_Report_${timeframe}_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   // Calculations & Filtering
@@ -272,20 +329,30 @@ const FinanceTracker = () => {
         {/* Header */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-8">
           <div>
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 bg-purple-500/20 rounded-xl flex items-center justify-center border border-purple-500/30 shadow-[0_0_15px_rgba(168,85,247,0.3)]">
-                <Activity className="text-purple-400" size={20} />
-              </div>
-              <h1 className="text-4xl font-black text-white tracking-tight">Finance Ops</h1>
-            </div>
-            <p className="text-zinc-400">High-level enterprise expenditure and revenue tracking.</p>
+            <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight mb-2 flex items-center gap-3">
+              <span className="bg-purple-600/20 p-2 rounded-xl text-purple-400">
+                <Activity size={32} />
+              </span>
+              Finance Ops
+            </h1>
+            <p className="text-zinc-400 text-lg">High-level enterprise expenditure and revenue tracking.</p>
           </div>
-          <button
-            onClick={() => setIsAdding(true)}
-            className="px-6 py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold transition-all shadow-[0_0_20px_rgba(168,85,247,0.4)] flex items-center gap-2"
-          >
-            <Plus size={20} /> New Transaction
-          </button>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={handleExportCSV}
+              className="px-6 py-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-2xl font-bold transition-all shadow-lg flex items-center gap-2 group"
+            >
+              <Download size={20} className="text-zinc-400 group-hover:text-white transition-colors" />
+              <span className="hidden sm:inline">Export</span>
+            </button>
+            <button
+              onClick={handleOpenAdd}
+              className="px-6 py-4 bg-purple-600 hover:bg-purple-500 text-white rounded-2xl font-bold transition-all shadow-[0_0_20px_rgba(168,85,247,0.4)] flex items-center gap-2 group"
+            >
+              <Plus size={20} className="group-hover:rotate-90 transition-transform" />
+              New Transaction
+            </button>
+          </div>
         </div>
 
         {/* Filters Bar */}
@@ -447,13 +514,21 @@ const FinanceTracker = () => {
                     onClick={() => setViewingTransaction(t)}
                     className="bg-white/5 border border-white/10 rounded-2xl p-4 flex gap-4 group relative overflow-hidden hover:bg-white/10 transition-colors cursor-pointer"
                   >
-                    {/* Delete overlay on hover */}
-                    <button
-                      onClick={(e) => { e.stopPropagation(); handleDelete(t.id); }}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-2.5 bg-red-500 text-white rounded-xl transition-all hover:bg-red-600 shadow-lg z-10 translate-x-4 group-hover:translate-x-0"
-                    >
-                      <Trash2 size={16} />
-                    </button>
+                    {/* Action overlay on hover */}
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 flex gap-2 transition-all shadow-lg z-10 translate-x-4 group-hover:translate-x-0">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleEdit(t); }}
+                        className="p-2.5 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors"
+                      >
+                        <Edit2 size={16} />
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleDelete(t.id); }}
+                        className="p-2.5 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
 
                     <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border ${t.type === 'credit' ? 'bg-green-500/10 border-green-500/20 text-green-400' : 'bg-red-500/10 border-red-500/20 text-red-400'}`}>
                       {t.type === 'credit' ? <ArrowUpRight size={20} /> : <ArrowDownRight size={20} />}
@@ -582,7 +657,7 @@ const FinanceTracker = () => {
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               className="relative z-10 w-full max-w-lg bg-[#0C0C12] border border-white/10 rounded-3xl shadow-2xl p-8"
             >
-              <h2 className="text-2xl font-black text-white mb-6">Log Transaction</h2>
+              <h2 className="text-2xl font-black text-white mb-6">{editingId ? 'Edit Transaction' : 'Log Transaction'}</h2>
               <form onSubmit={handleAddTransaction} className="space-y-5">
 
                 <div className="flex gap-4">
@@ -680,7 +755,7 @@ const FinanceTracker = () => {
                     type="submit"
                     className="flex-1 py-4 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold transition-all shadow-[0_0_20px_rgba(168,85,247,0.4)]"
                   >
-                    Save Record
+                    {editingId ? 'Update Record' : 'Save Record'}
                   </button>
                 </div>
               </form>
