@@ -587,6 +587,7 @@ const FinanceTracker = () => {
               )}
           </div>
         </div>
+        </div>
 
         {/* Advanced Visualizations Row 2 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8">
