@@ -71,8 +71,9 @@ const FinanceTracker = () => {
       await signInWithEmailAndPassword(auth, email, password);
       setStatus('dashboard');
       setLoginError('');
-    } catch (err) {
-      setLoginError('Invalid secure credentials');
+    } catch (err: any) {
+      console.error("Login failed:", err);
+      setLoginError(`Error: ${err.message || 'Invalid secure credentials'}`);
     }
   };
 
