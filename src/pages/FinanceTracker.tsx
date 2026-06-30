@@ -36,6 +36,7 @@ const FinanceTracker = () => {
   // Dashboard State
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isAdding, setIsAdding] = useState(false);
+  const [viewingTransaction, setViewingTransaction] = useState<Transaction | null>(null);
 
   // Filters
   const [timeframe, setTimeframe] = useState<'all' | 'year' | 'month'>('month');
@@ -407,10 +408,14 @@ const FinanceTracker = () => {
                 </div>
               ) : (
                 filteredTransactions.map((t) => (
-                  <div key={t.id} className="bg-white/5 border border-white/10 rounded-2xl p-4 flex gap-4 group relative overflow-hidden hover:bg-white/10 transition-colors">
+                  <div 
+                    key={t.id} 
+                    onClick={() => setViewingTransaction(t)}
+                    className="bg-white/5 border border-white/10 rounded-2xl p-4 flex gap-4 group relative overflow-hidden hover:bg-white/10 transition-colors cursor-pointer"
+                  >
                     {/* Delete overlay on hover */}
                     <button
-                      onClick={() => handleDelete(t.id)}
+                      onClick={(e) => { e.stopPropagation(); handleDelete(t.id); }}
                       className="absolute right-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-2.5 bg-red-500 text-white rounded-xl transition-all hover:bg-red-600 shadow-lg z-10 translate-x-4 group-hover:translate-x-0"
                     >
                       <Trash2 size={16} />
@@ -445,6 +450,86 @@ const FinanceTracker = () => {
         </div>
 
       </div>
+
+      {/* View Transaction Modal */}
+      <AnimatePresence>
+        {viewingTransaction && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => setViewingTransaction(null)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative z-10 w-full max-w-md bg-[#0C0C12] border border-white/10 rounded-3xl shadow-2xl p-8"
+            >
+              <div className="flex justify-between items-start mb-6">
+                <div>
+                  <h2 className="text-2xl font-black text-white">Transaction Details</h2>
+                  <p className="text-zinc-500 text-sm mt-1 font-mono">ID: {viewingTransaction.id}</p>
+                </div>
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border ${viewingTransaction.type === 'credit' ? 'bg-green-500/10 border-green-500/20 text-green-400' : 'bg-red-500/10 border-red-500/20 text-red-400'}`}>
+                  {viewingTransaction.type === 'credit' ? <ArrowUpRight size={24} /> : <ArrowDownRight size={24} />}
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1">Description</label>
+                  <p className="text-white font-medium text-lg">{viewingTransaction.description}</p>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1">Amount</label>
+                    <p className={`font-black text-2xl ${viewingTransaction.type === 'credit' ? 'text-green-400' : 'text-red-400'}`}>
+                      {viewingTransaction.type === 'credit' ? '+' : '-'}{formatCurrency(viewingTransaction.amount)}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1">Date</label>
+                    <p className="text-white font-medium text-lg">{viewingTransaction.date}</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1">Category</label>
+                    <span className="px-3 py-1.5 rounded-lg text-xs font-bold text-white uppercase tracking-wider bg-white/10 border border-white/5 inline-block">
+                      {viewingTransaction.category}
+                    </span>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1">
+                      {viewingTransaction.category.includes('Internship') ? 'Intern Name' : viewingTransaction.type === 'credit' ? 'Received From' : 'Paid To'}
+                    </label>
+                    <p className="text-white font-medium">{viewingTransaction.source_destination}</p>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1">Recorded On</label>
+                  <p className="text-zinc-400 text-sm font-mono">{new Date(viewingTransaction.createdAt).toLocaleString()}</p>
+                </div>
+
+                <div className="pt-2">
+                  <button
+                    onClick={() => setViewingTransaction(null)}
+                    className="w-full py-4 bg-white/5 hover:bg-white/10 text-white rounded-xl font-bold transition-all border border-white/10"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Add Transaction Modal */}
       <AnimatePresence>
