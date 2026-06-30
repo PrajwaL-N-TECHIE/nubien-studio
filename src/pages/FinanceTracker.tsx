@@ -278,14 +278,14 @@ const FinanceTracker = () => {
             <select
               value={filterCategory}
               onChange={(e) => setFilterCategory(e.target.value)}
-              className="w-full md:w-48 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-purple-500/50 appearance-none font-medium"
+              className="w-full md:w-48 bg-[#1A1A24] border border-white/10 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-purple-500/50 font-medium"
             >
-              <option value="All">All Categories</option>
-              <optgroup label="Income">
-                {CATEGORIES.credit.map(c => <option key={c} value={c}>{c}</option>)}
+              <option value="All" className="bg-[#0C0C12]">All Categories</option>
+              <optgroup label="Income" className="bg-[#0C0C12] text-purple-400">
+                {CATEGORIES.credit.map(c => <option key={c} value={c} className="text-white">{c}</option>)}
               </optgroup>
-              <optgroup label="Expenses">
-                {CATEGORIES.debit.map(c => <option key={c} value={c}>{c}</option>)}
+              <optgroup label="Expenses" className="bg-[#0C0C12] text-purple-400">
+                {CATEGORIES.debit.map(c => <option key={c} value={c} className="text-white">{c}</option>)}
               </optgroup>
             </select>
 
@@ -511,10 +511,10 @@ const FinanceTracker = () => {
                     <select
                       value={category}
                       onChange={(e) => setCategory(e.target.value)}
-                      className="w-full bg-[#1A1A24]/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/50 appearance-none"
+                      className="w-full bg-[#1A1A24] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/50"
                     >
                       {CATEGORIES[type].map(cat => (
-                        <option key={cat} value={cat}>{cat}</option>
+                        <option key={cat} value={cat} className="bg-[#0C0C12]">{cat}</option>
                       ))}
                     </select>
                   </div>
