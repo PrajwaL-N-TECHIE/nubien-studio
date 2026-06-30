@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Lock, Eye, EyeOff, TrendingUp, TrendingDown, DollarSign, Plus, Trash2, Calendar, Activity, Filter, ArrowUpRight, ArrowDownRight, Hash } from 'lucide-react';
-import { db, auth } from '@/lib/firebase';
 import { collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import confetti from 'canvas-confetti';
 
 interface Transaction {
   id: string;
@@ -37,6 +37,7 @@ const FinanceTracker = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isAdding, setIsAdding] = useState(false);
   const [viewingTransaction, setViewingTransaction] = useState<Transaction | null>(null);
+  const [celebration, setCelebration] = useState<number | null>(null);
 
   // Filters
   const [timeframe, setTimeframe] = useState<'all' | 'year' | 'month'>('month');
@@ -169,6 +170,37 @@ const FinanceTracker = () => {
       maximumFractionDigits: 0
     }).format(val);
   };
+
+  // Milestone Celebration Check
+  useEffect(() => {
+    if (totalRevenue > 0) {
+      const MILESTONES = [10000, 25000, 50000, 100000, 250000, 500000, 1000000];
+      const celebrated = JSON.parse(localStorage.getItem('buildicy_finance_milestones') || '[]');
+      
+      for (let ms of [...MILESTONES].reverse()) {
+        if (totalRevenue >= ms && !celebrated.includes(ms)) {
+          setCelebration(ms);
+          
+          const duration = 5 * 1000;
+          const animationEnd = Date.now() + duration;
+          const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 9999 };
+
+          const interval: any = setInterval(function() {
+            const timeLeft = animationEnd - Date.now();
+            if (timeLeft <= 0) {
+              return clearInterval(interval);
+            }
+            const particleCount = 50 * (timeLeft / duration);
+            confetti({ ...defaults, particleCount, origin: { x: Math.random(), y: Math.random() - 0.2 } });
+          }, 250);
+
+          celebrated.push(ms);
+          localStorage.setItem('buildicy_finance_milestones', JSON.stringify(celebrated));
+          break; 
+        }
+      }
+    }
+  }, [totalRevenue]);
 
 
   if (status === 'login') {
@@ -650,6 +682,48 @@ const FinanceTracker = () => {
                   </button>
                 </div>
               </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+      {/* Milestone Celebration Modal */}
+      <AnimatePresence>
+        {celebration && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+              onClick={() => setCelebration(null)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.5, y: 50 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative z-10 w-full max-w-md bg-gradient-to-br from-[#0C0C12] to-[#1A1A24] border border-green-500/30 rounded-3xl shadow-[0_0_100px_rgba(34,197,94,0.15)] p-10 text-center overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 w-40 h-40 bg-green-500/10 rounded-full blur-[40px]" />
+              <div className="absolute bottom-0 left-0 w-40 h-40 bg-green-500/10 rounded-full blur-[40px]" />
+              
+              <div className="relative z-10">
+                <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-green-500/50 rotate-3">
+                  <TrendingUp className="text-white" size={40} />
+                </div>
+                <h2 className="text-4xl font-black text-white mb-2 tracking-tight">Milestone Unlocked!</h2>
+                <p className="text-zinc-400 text-lg mb-8">
+                  Incredible work! You've successfully surpassed <br/>
+                  <span className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-300 mt-3 block">{formatCurrency(celebration)}</span>
+                  <span className="text-sm uppercase tracking-widest text-zinc-500 font-bold mt-2 block">in Gross Revenue</span>
+                </p>
+                
+                <button
+                  onClick={() => setCelebration(null)}
+                  className="w-full py-4 bg-white text-black hover:bg-zinc-200 rounded-xl font-black transition-all text-lg shadow-[0_0_30px_rgba(255,255,255,0.2)]"
+                >
+                  Keep Grinding
+                </button>
+              </div>
             </motion.div>
           </div>
         )}
