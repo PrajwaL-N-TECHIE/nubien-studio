@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Lock, Eye, EyeOff, TrendingUp, TrendingDown, DollarSign, Plus, Trash2, Calendar, Target, Activity } from 'lucide-react';
-import { db } from '@/lib/firebase';
+import { db, auth } from '@/lib/firebase';
 import { collection, addDoc, getDocs, deleteDoc, doc, onSnapshot, query, orderBy } from 'firebase/firestore';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
 
 interface Transaction {
@@ -56,12 +57,13 @@ const FinanceTracker = () => {
     }
   }, [status]);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email === 'admin@buildicy.com' && password === 'admin@123') {
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
       setStatus('dashboard');
       setLoginError('');
-    } else {
+    } catch (err) {
       setLoginError('Invalid secure credentials');
     }
   };

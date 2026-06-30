@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Users, Play, Trophy, Copy, CheckCircle2, Target, StopCircle, Plus, Lock, Trash2, Save, Eye, EyeOff } from 'lucide-react';
-import { db } from '@/lib/firebase';
+import { db, auth } from '@/lib/firebase';
 import { doc, setDoc, onSnapshot, collection, updateDoc, getDocs, deleteDoc, addDoc } from 'firebase/firestore';
-
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import { QUESTIONS } from '@/data/questions';
 
 interface CustomQuestion {
@@ -287,13 +287,14 @@ const BuizHost = () => {
     setCqAnswer(0);
   };
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email === 'admin@buildicy.com' && password === 'admin@123') {
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
       setStatus('setup');
       setLoginError('');
-    } else {
-      setLoginError('Invalid credentials');
+    } catch (err) {
+      setLoginError('Invalid secure credentials');
     }
   };
 
