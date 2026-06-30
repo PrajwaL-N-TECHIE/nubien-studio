@@ -18,7 +18,7 @@ interface Transaction {
 }
 
 const CATEGORIES = {
-  credit: ['Client Payment', 'Investment', 'SaaS Subscription', 'Other Income'],
+  credit: ['Client Payment', 'Investment', 'SaaS Subscription', 'Internship', 'Other Income'],
   debit: ['Software Subscriptions', 'Salaries', 'Marketing', 'Hosting/AWS', 'Legal/Taxes', 'Other Expense']
 };
 
