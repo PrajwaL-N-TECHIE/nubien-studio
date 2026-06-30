@@ -76,7 +76,8 @@ const FinanceTracker = () => {
 
   const handleAddTransaction = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!amount || !description || !source) return;
+    const isInternship = category.includes('Internship');
+    if (!amount || (!description && !isInternship) || !source) return;
 
     try {
       const baseAmount = currency === 'USD' ? parseFloat(amount) * 83.5 : parseFloat(amount);
@@ -85,7 +86,7 @@ const FinanceTracker = () => {
         type,
         amount: baseAmount,
         category,
-        description,
+        description: isInternship ? (type === 'credit' ? 'Internship Income' : 'Internship Expense') : description,
         source_destination: source,
         date,
         createdAt: new Date().toISOString()
@@ -534,17 +535,19 @@ const FinanceTracker = () => {
                   />
                 </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-zinc-400 uppercase tracking-widest mb-2">Description</label>
-                  <input
-                    type="text"
-                    required
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    placeholder="e.g. June Retainer"
-                    className="w-full bg-[#1A1A24]/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500/50"
-                  />
-                </div>
+                {!category.includes('Internship') && (
+                  <div>
+                    <label className="block text-xs font-bold text-zinc-400 uppercase tracking-widest mb-2">Description</label>
+                    <input
+                      type="text"
+                      required
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      placeholder="e.g. June Retainer"
+                      className="w-full bg-[#1A1A24]/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500/50"
+                    />
+                  </div>
+                )}
 
                 <div className="flex gap-4 pt-2">
                   <button
