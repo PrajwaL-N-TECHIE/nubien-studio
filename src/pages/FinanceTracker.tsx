@@ -19,14 +19,14 @@ interface Transaction {
 
 const CATEGORIES = {
   credit: ['Client Payment', 'Investment', 'SaaS Subscription', 'Internship', 'Other Income'],
-  debit: ['Software Subscriptions', 'Salaries', 'Employee Payout', 'Marketing', 'Hosting/AWS', 'Legal/Taxes', 'Internship Works', 'Other Expense']
+  debit: ['Software Subscriptions', 'Salaries', 'Marketing', 'Hosting/AWS', 'Legal/Taxes', 'Internship Works', 'Other Expense']
 };
 const ALL_CATEGORIES = [...CATEGORIES.credit, ...CATEGORIES.debit];
 
 const FinanceTracker = () => {
   const [status, setStatus] = useState<'login' | 'dashboard'>('login');
   const [currency, setCurrency] = useState<'INR' | 'USD'>('INR');
-  
+
   // Login State
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -36,7 +36,7 @@ const FinanceTracker = () => {
   // Dashboard State
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isAdding, setIsAdding] = useState(false);
-  
+
   // Filters
   const [timeframe, setTimeframe] = useState<'all' | 'year' | 'month'>('month');
   const [filterCategory, setFilterCategory] = useState<string>('All');
@@ -81,7 +81,7 @@ const FinanceTracker = () => {
 
     try {
       const baseAmount = currency === 'USD' ? parseFloat(amount) * 83.5 : parseFloat(amount);
-      
+
       await addDoc(collection(db, "finance_transactions"), {
         type,
         amount: baseAmount,
@@ -116,7 +116,7 @@ const FinanceTracker = () => {
   const { totalRevenue, totalExpenses, netBalance, chartData, filteredTransactions } = useMemo(() => {
     let rev = 0;
     let exp = 0;
-    
+
     const now = new Date();
     const currentYear = now.getFullYear().toString();
     const currentMonth = now.toISOString().substring(0, 7);
@@ -233,7 +233,7 @@ const FinanceTracker = () => {
       <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-purple-600/10 rounded-full blur-[150px] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto relative z-10">
-        
+
         {/* Header */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-8">
           <div>
@@ -261,7 +261,7 @@ const FinanceTracker = () => {
               <span className="text-sm font-bold uppercase tracking-widest">Filters</span>
             </div>
             <div className="h-6 w-px bg-white/10 hidden md:block"></div>
-            
+
             <div className="bg-white/5 border border-white/10 rounded-lg p-1 flex">
               {(['all', 'year', 'month'] as const).map(tf => (
                 <button
@@ -291,13 +291,13 @@ const FinanceTracker = () => {
             </select>
 
             <div className="bg-white/5 border border-white/10 rounded-xl p-1 flex">
-              <button 
+              <button
                 onClick={() => setCurrency('INR')}
                 className={`px-4 py-1.5 rounded-lg font-bold text-sm transition-all ${currency === 'INR' ? 'bg-purple-600 text-white' : 'text-zinc-500 hover:text-white'}`}
               >
                 INR
               </button>
-              <button 
+              <button
                 onClick={() => setCurrency('USD')}
                 className={`px-4 py-1.5 rounded-lg font-bold text-sm transition-all ${currency === 'USD' ? 'bg-purple-600 text-white' : 'text-zinc-500 hover:text-white'}`}
               >
@@ -319,7 +319,7 @@ const FinanceTracker = () => {
             </div>
             <p className="text-3xl font-black text-white tracking-tight truncate">{formatCurrency(netBalance)}</p>
           </div>
-          
+
           <div className="bg-[#0C0C12]/80 backdrop-blur-md border border-white/10 rounded-3xl p-6 relative overflow-hidden group hover:border-green-500/50 transition-colors">
             <div className="flex items-center justify-between mb-4">
               <div className="w-10 h-10 bg-green-500/10 rounded-xl flex items-center justify-center border border-green-500/20">
@@ -362,7 +362,7 @@ const FinanceTracker = () => {
                 <span className="flex items-center gap-2 text-red-400"><div className="w-2 h-2 rounded-full bg-red-500" /> Expenses</span>
               </div>
             </div>
-            
+
             <div className="h-[400px] w-full mt-auto">
               {chartData.length === 0 ? (
                 <div className="w-full h-full flex items-center justify-center border border-dashed border-white/10 rounded-2xl">
@@ -373,18 +373,18 @@ const FinanceTracker = () => {
                   <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
                     <defs>
                       <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#22c55e" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="#22c55e" stopOpacity={0}/>
+                        <stop offset="5%" stopColor="#22c55e" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
                       </linearGradient>
                       <linearGradient id="colorExpense" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
+                        <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
-                    <XAxis dataKey="name" stroke="#ffffff30" tick={{fill: '#ffffff50', fontSize: 12}} axisLine={false} tickLine={false} dy={10} />
-                    <YAxis stroke="#ffffff30" tick={{fill: '#ffffff50', fontSize: 12}} axisLine={false} tickLine={false} tickFormatter={(val) => currency === 'USD' ? `$${(val / 83.5).toFixed(0)}` : `₹${val}`} dx={-10} />
-                    <Tooltip 
+                    <XAxis dataKey="name" stroke="#ffffff30" tick={{ fill: '#ffffff50', fontSize: 12 }} axisLine={false} tickLine={false} dy={10} />
+                    <YAxis stroke="#ffffff30" tick={{ fill: '#ffffff50', fontSize: 12 }} axisLine={false} tickLine={false} tickFormatter={(val) => currency === 'USD' ? `$${(val / 83.5).toFixed(0)}` : `₹${val}`} dx={-10} />
+                    <Tooltip
                       contentStyle={{ backgroundColor: '#1A1A24', borderColor: '#ffffff10', borderRadius: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }}
                       itemStyle={{ fontWeight: 'bold' }}
                       labelStyle={{ color: '#a1a1aa', marginBottom: '8px' }}
@@ -409,7 +409,7 @@ const FinanceTracker = () => {
                 filteredTransactions.map((t) => (
                   <div key={t.id} className="bg-white/5 border border-white/10 rounded-2xl p-4 flex gap-4 group relative overflow-hidden hover:bg-white/10 transition-colors">
                     {/* Delete overlay on hover */}
-                    <button 
+                    <button
                       onClick={() => handleDelete(t.id)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-2.5 bg-red-500 text-white rounded-xl transition-all hover:bg-red-600 shadow-lg z-10 translate-x-4 group-hover:translate-x-0"
                     >
@@ -427,7 +427,7 @@ const FinanceTracker = () => {
                           {t.type === 'credit' ? '+' : '-'}{formatCurrency(t.amount)}
                         </p>
                       </div>
-                      
+
                       <div className="flex items-center justify-between mt-2">
                         <span className="px-2 py-0.5 rounded text-[10px] font-bold text-zinc-400 uppercase tracking-wider bg-black/40 border border-white/5 truncate max-w-[120px]">
                           {t.category}
@@ -450,9 +450,9 @@ const FinanceTracker = () => {
       <AnimatePresence>
         {isAdding && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div 
-              initial={{ opacity: 0 }} 
-              animate={{ opacity: 1 }} 
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               className="absolute inset-0 bg-black/60 backdrop-blur-sm"
               onClick={() => setIsAdding(false)}
@@ -465,7 +465,7 @@ const FinanceTracker = () => {
             >
               <h2 className="text-2xl font-black text-white mb-6">Log Transaction</h2>
               <form onSubmit={handleAddTransaction} className="space-y-5">
-                
+
                 <div className="flex gap-4">
                   <button
                     type="button"
