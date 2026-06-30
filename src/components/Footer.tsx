@@ -304,7 +304,7 @@ const Footer = () => {
       { name: "Blog", path: "#" },
       { name: "Admin Portal", path: "/admin" },
       { name: "Host Buiz Arena", path: "/buiz/host" },
-      { name: "Finance & Expenses", path: "/finance" }
+      { name: "Internal Portal", path: "/finance" }
     ],
     Solutions: [
       { name: "SaaS ROI Calculator", path: "/roi-calculator" },
