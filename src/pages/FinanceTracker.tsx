@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, Eye, EyeOff, TrendingUp, TrendingDown, DollarSign, Plus, Trash2, Calendar, Target, Activity } from 'lucide-react';
+import { Lock, Eye, EyeOff, TrendingUp, TrendingDown, DollarSign, Plus, Trash2, Calendar, Activity, Filter, ArrowUpRight, ArrowDownRight, Hash } from 'lucide-react';
 import { db, auth } from '@/lib/firebase';
-import { collection, addDoc, getDocs, deleteDoc, doc, onSnapshot, query, orderBy } from 'firebase/firestore';
+import { collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
 interface Transaction {
   id: string;
@@ -21,6 +21,7 @@ const CATEGORIES = {
   credit: ['Client Payment', 'Investment', 'SaaS Subscription', 'Internship', 'Other Income'],
   debit: ['Software Subscriptions', 'Salaries', 'Marketing', 'Hosting/AWS', 'Legal/Taxes', 'Other Expense']
 };
+const ALL_CATEGORIES = [...CATEGORIES.credit, ...CATEGORIES.debit];
 
 const FinanceTracker = () => {
   const [status, setStatus] = useState<'login' | 'dashboard'>('login');
@@ -36,6 +37,10 @@ const FinanceTracker = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isAdding, setIsAdding] = useState(false);
   
+  // Filters
+  const [timeframe, setTimeframe] = useState<'all' | 'year' | 'month'>('month');
+  const [filterCategory, setFilterCategory] = useState<string>('All');
+
   // New Transaction Form State
   const [type, setType] = useState<'credit' | 'debit'>('credit');
   const [amount, setAmount] = useState('');
@@ -106,30 +111,37 @@ const FinanceTracker = () => {
     }
   };
 
-  // Calculations
-  const currentMonthPrefix = new Date().toISOString().substring(0, 7); // "YYYY-MM"
-
-  const { totalBalance, monthlyCredit, monthlyDebit, chartData } = useMemo(() => {
-    let balance = 0;
-    let mCredit = 0;
-    let mDebit = 0;
+  // Calculations & Filtering
+  const { totalRevenue, totalExpenses, netBalance, chartData, filteredTransactions } = useMemo(() => {
+    let rev = 0;
+    let exp = 0;
     
+    const now = new Date();
+    const currentYear = now.getFullYear().toString();
+    const currentMonth = now.toISOString().substring(0, 7);
+
     // Group for charts
     const monthlyMap: Record<string, { name: string, Income: number, Expenses: number }> = {};
+    const filteredTx: Transaction[] = [];
 
     transactions.forEach(t => {
       const isCredit = t.type === 'credit';
       const val = t.amount;
       const monthStr = t.date.substring(0, 7);
+      const yearStr = t.date.substring(0, 4);
+
+      // Timeframe Filter
+      if (timeframe === 'month' && monthStr !== currentMonth) return;
+      if (timeframe === 'year' && yearStr !== currentYear) return;
+
+      // Category Filter
+      if (filterCategory !== 'All' && t.category !== filterCategory) return;
+
+      filteredTx.push(t);
 
       // Aggregates
-      if (isCredit) balance += val;
-      else balance -= val;
-
-      if (monthStr === currentMonthPrefix) {
-        if (isCredit) mCredit += val;
-        else mDebit += val;
-      }
+      if (isCredit) rev += val;
+      else exp += val;
 
       // Chart Data
       if (!monthlyMap[monthStr]) {
@@ -139,11 +151,13 @@ const FinanceTracker = () => {
       else monthlyMap[monthStr].Expenses += val;
     });
 
+    const bal = rev - exp;
+
     // Sort chart data chronologically
     const sortedChart = Object.values(monthlyMap).sort((a, b) => a.name.localeCompare(b.name));
 
-    return { totalBalance: balance, monthlyCredit: mCredit, monthlyDebit: mDebit, chartData: sortedChart };
-  }, [transactions, currentMonthPrefix]);
+    return { totalRevenue: rev, totalExpenses: exp, netBalance: bal, chartData: sortedChart, filteredTransactions: filteredTx };
+  }, [transactions, timeframe, filterCategory]);
 
   const formatCurrency = (amount: number) => {
     const val = currency === 'USD' ? amount / 83.5 : amount;
@@ -158,15 +172,15 @@ const FinanceTracker = () => {
   if (status === 'login') {
     return (
       <div className="min-h-screen bg-[#050507] flex flex-col items-center justify-center p-6 relative overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-green-600/10 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-600/10 rounded-full blur-[120px] pointer-events-none" />
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-[#0C0C12]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-10 max-w-md w-full relative z-10 shadow-[0_0_50px_rgba(34,197,94,0.15)]"
+          className="bg-[#0C0C12]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-10 max-w-md w-full relative z-10 shadow-[0_0_50px_rgba(168,85,247,0.15)]"
         >
-          <div className="w-16 h-16 bg-green-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-green-500/30">
-            <Lock className="text-green-400" size={32} />
+          <div className="w-16 h-16 bg-purple-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-purple-500/30">
+            <Lock className="text-purple-400" size={32} />
           </div>
           <h1 className="text-3xl font-black text-white mb-2 text-center">Finance Secure Login</h1>
           <p className="text-zinc-400 text-center mb-8 text-sm">Enterprise Level Encrypted Finance Dashboard</p>
@@ -179,7 +193,7 @@ const FinanceTracker = () => {
                 placeholder="Admin Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-[#1A1A24]/50 border border-white/10 rounded-xl px-5 py-4 text-white placeholder-zinc-500 focus:outline-none focus:border-green-500/50 transition-colors"
+                className="w-full bg-[#1A1A24]/50 border border-white/10 rounded-xl px-5 py-4 text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500/50 transition-colors"
               />
             </div>
             <div className="relative">
@@ -189,7 +203,7 @@ const FinanceTracker = () => {
                 placeholder="Secure Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-[#1A1A24]/50 border border-white/10 rounded-xl px-5 py-4 pr-12 text-white placeholder-zinc-500 focus:outline-none focus:border-green-500/50 transition-colors"
+                className="w-full bg-[#1A1A24]/50 border border-white/10 rounded-xl px-5 py-4 pr-12 text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500/50 transition-colors"
               />
               <button
                 type="button"
@@ -202,7 +216,7 @@ const FinanceTracker = () => {
             {loginError && <p className="text-red-400 text-sm font-bold text-center">{loginError}</p>}
             <button
               type="submit"
-              className="w-full py-4 mt-4 bg-green-600 hover:bg-green-500 text-white rounded-xl font-bold text-lg transition-all shadow-[0_0_20px_rgba(34,197,94,0.4)]"
+              className="w-full py-4 mt-4 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold text-lg transition-all shadow-[0_0_20px_rgba(168,85,247,0.4)]"
             >
               Access Vault
             </button>
@@ -214,24 +228,68 @@ const FinanceTracker = () => {
 
   return (
     <div className="min-h-screen bg-[#050507] pt-24 pb-12 px-6 md:px-12 relative overflow-hidden">
-      <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-green-600/10 rounded-full blur-[150px] pointer-events-none" />
+      <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-purple-600/10 rounded-full blur-[150px] pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-purple-600/10 rounded-full blur-[150px] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto relative z-10">
         
         {/* Header */}
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-12">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-8">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 bg-green-500/20 rounded-xl flex items-center justify-center border border-green-500/30">
-                <Activity className="text-green-400" size={20} />
+              <div className="w-10 h-10 bg-purple-500/20 rounded-xl flex items-center justify-center border border-purple-500/30 shadow-[0_0_15px_rgba(168,85,247,0.3)]">
+                <Activity className="text-purple-400" size={20} />
               </div>
               <h1 className="text-4xl font-black text-white tracking-tight">Finance Ops</h1>
             </div>
             <p className="text-zinc-400">High-level enterprise expenditure and revenue tracking.</p>
           </div>
-          <div className="flex flex-col md:flex-row items-center gap-4">
-            <div className="bg-[#0C0C12]/80 backdrop-blur-md border border-white/10 rounded-xl p-1 flex">
+          <button
+            onClick={() => setIsAdding(true)}
+            className="px-6 py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold transition-all shadow-[0_0_20px_rgba(168,85,247,0.4)] flex items-center gap-2"
+          >
+            <Plus size={20} /> New Transaction
+          </button>
+        </div>
+
+        {/* Filters Bar */}
+        <div className="bg-[#0C0C12]/80 backdrop-blur-xl border border-white/10 rounded-2xl p-4 mb-10 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-4 w-full md:w-auto">
+            <div className="flex items-center gap-2 text-zinc-400">
+              <Filter size={18} />
+              <span className="text-sm font-bold uppercase tracking-widest">Filters</span>
+            </div>
+            <div className="h-6 w-px bg-white/10 hidden md:block"></div>
+            
+            <div className="bg-white/5 border border-white/10 rounded-lg p-1 flex">
+              {(['all', 'year', 'month'] as const).map(tf => (
+                <button
+                  key={tf}
+                  onClick={() => setTimeframe(tf)}
+                  className={`px-4 py-1.5 rounded-md text-xs font-bold uppercase tracking-wider transition-all ${timeframe === tf ? 'bg-purple-600 text-white shadow-md' : 'text-zinc-400 hover:text-white'}`}
+                >
+                  {tf === 'all' ? 'All Time' : tf === 'year' ? 'This Year' : 'This Month'}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
+            <select
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value)}
+              className="w-full md:w-48 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-purple-500/50 appearance-none font-medium"
+            >
+              <option value="All">All Categories</option>
+              <optgroup label="Income">
+                {CATEGORIES.credit.map(c => <option key={c} value={c}>{c}</option>)}
+              </optgroup>
+              <optgroup label="Expenses">
+                {CATEGORIES.debit.map(c => <option key={c} value={c}>{c}</option>)}
+              </optgroup>
+            </select>
+
+            <div className="bg-white/5 border border-white/10 rounded-xl p-1 flex">
               <button 
                 onClick={() => setCurrency('INR')}
                 className={`px-4 py-1.5 rounded-lg font-bold text-sm transition-all ${currency === 'INR' ? 'bg-purple-600 text-white' : 'text-zinc-500 hover:text-white'}`}
@@ -245,114 +303,138 @@ const FinanceTracker = () => {
                 USD
               </button>
             </div>
-            <button
-              onClick={() => setIsAdding(true)}
-              className="px-6 py-3 bg-green-600 hover:bg-green-500 text-white rounded-xl font-bold transition-all shadow-[0_0_20px_rgba(34,197,94,0.3)] flex items-center gap-2"
-            >
-              <Plus size={20} /> New Transaction
-            </button>
           </div>
         </div>
 
-        {/* KPIs */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-          <div className="bg-[#0C0C12]/80 backdrop-blur-md border border-white/10 rounded-3xl p-8 relative overflow-hidden group hover:border-green-500/50 transition-colors">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/5 rounded-full blur-[40px]" />
-            <div className="flex items-center gap-4 mb-4">
-              <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10">
-                <DollarSign className="text-green-400" size={24} />
+        {/* 4-Card KPIs */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+          <div className="bg-[#0C0C12]/80 backdrop-blur-md border border-white/10 rounded-3xl p-6 relative overflow-hidden group hover:border-purple-500/50 transition-colors">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 rounded-full blur-[40px]" />
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center border border-white/10">
+                <DollarSign className="text-purple-400" size={20} />
               </div>
-              <h3 className="text-zinc-400 font-bold uppercase tracking-widest text-sm">Net Balance</h3>
+              <span className="text-[10px] font-bold text-purple-400 uppercase tracking-widest bg-purple-500/10 px-2 py-1 rounded-lg">Net Balance</span>
             </div>
-            <p className="text-5xl font-black text-white tracking-tight">{formatCurrency(totalBalance)}</p>
+            <p className="text-3xl font-black text-white tracking-tight truncate">{formatCurrency(netBalance)}</p>
           </div>
           
-          <div className="bg-[#0C0C12]/80 backdrop-blur-md border border-white/10 rounded-3xl p-8 relative overflow-hidden group hover:border-purple-500/50 transition-colors">
-            <div className="flex items-center gap-4 mb-4">
-              <div className="w-12 h-12 bg-purple-500/10 rounded-2xl flex items-center justify-center border border-purple-500/20">
-                <TrendingUp className="text-purple-400" size={24} />
+          <div className="bg-[#0C0C12]/80 backdrop-blur-md border border-white/10 rounded-3xl p-6 relative overflow-hidden group hover:border-green-500/50 transition-colors">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-10 h-10 bg-green-500/10 rounded-xl flex items-center justify-center border border-green-500/20">
+                <TrendingUp className="text-green-400" size={20} />
               </div>
-              <div>
-                <h3 className="text-zinc-400 font-bold uppercase tracking-widest text-sm">Monthly Revenue</h3>
-                <p className="text-xs text-purple-400 font-mono mt-0.5">Current Month</p>
-              </div>
+              <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Gross Revenue</span>
             </div>
-            <p className="text-4xl font-black text-white tracking-tight">{formatCurrency(monthlyCredit)}</p>
+            <p className="text-3xl font-black text-white tracking-tight truncate">{formatCurrency(totalRevenue)}</p>
           </div>
 
-          <div className="bg-[#0C0C12]/80 backdrop-blur-md border border-white/10 rounded-3xl p-8 relative overflow-hidden group hover:border-red-500/50 transition-colors">
-            <div className="flex items-center gap-4 mb-4">
-              <div className="w-12 h-12 bg-red-500/10 rounded-2xl flex items-center justify-center border border-red-500/20">
-                <TrendingDown className="text-red-400" size={24} />
+          <div className="bg-[#0C0C12]/80 backdrop-blur-md border border-white/10 rounded-3xl p-6 relative overflow-hidden group hover:border-red-500/50 transition-colors">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-10 h-10 bg-red-500/10 rounded-xl flex items-center justify-center border border-red-500/20">
+                <TrendingDown className="text-red-400" size={20} />
               </div>
-              <div>
-                <h3 className="text-zinc-400 font-bold uppercase tracking-widest text-sm">Monthly Burn</h3>
-                <p className="text-xs text-red-400 font-mono mt-0.5">Current Month</p>
-              </div>
+              <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Gross Expenses</span>
             </div>
-            <p className="text-4xl font-black text-white tracking-tight">{formatCurrency(monthlyDebit)}</p>
+            <p className="text-3xl font-black text-white tracking-tight truncate">{formatCurrency(totalExpenses)}</p>
+          </div>
+
+          <div className="bg-[#0C0C12]/80 backdrop-blur-md border border-white/10 rounded-3xl p-6 relative overflow-hidden group hover:border-blue-500/50 transition-colors">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-10 h-10 bg-blue-500/10 rounded-xl flex items-center justify-center border border-blue-500/20">
+                <Hash className="text-blue-400" size={20} />
+              </div>
+              <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Transaction Vol</span>
+            </div>
+            <p className="text-3xl font-black text-white tracking-tight">{filteredTransactions.length}</p>
           </div>
         </div>
 
         {/* Chart & Table Area */}
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
           {/* Chart */}
-          <div className="xl:col-span-2 bg-[#0C0C12]/80 backdrop-blur-md border border-white/10 rounded-3xl p-6 md:p-8">
-            <h3 className="text-xl font-bold text-white mb-6">Cash Flow Analytics</h3>
-            <div className="h-[400px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
-                  <XAxis dataKey="name" stroke="#ffffff50" tick={{fill: '#ffffff50'}} axisLine={false} tickLine={false} />
-                  <YAxis stroke="#ffffff50" tick={{fill: '#ffffff50'}} axisLine={false} tickLine={false} tickFormatter={(val) => currency === 'USD' ? `$${(val / 83.5).toFixed(0)}` : `₹${val}`} />
-                  <Tooltip 
-                    contentStyle={{ backgroundColor: '#0C0C12', borderColor: '#ffffff20', borderRadius: '12px' }}
-                    itemStyle={{ fontWeight: 'bold' }}
-                  />
-                  <Legend wrapperStyle={{ paddingTop: '20px' }} />
-                  <Bar dataKey="Income" fill="#a855f7" radius={[4, 4, 0, 0]} maxBarSize={50} />
-                  <Bar dataKey="Expenses" fill="#ef4444" radius={[4, 4, 0, 0]} maxBarSize={50} />
-                </BarChart>
-              </ResponsiveContainer>
+          <div className="xl:col-span-2 bg-[#0C0C12]/80 backdrop-blur-md border border-white/10 rounded-3xl p-6 md:p-8 flex flex-col">
+            <div className="flex items-center justify-between mb-8">
+              <h3 className="text-xl font-bold text-white">Cash Flow Trend</h3>
+              <div className="flex gap-4 text-xs font-bold tracking-widest uppercase">
+                <span className="flex items-center gap-2 text-green-400"><div className="w-2 h-2 rounded-full bg-green-500" /> Income</span>
+                <span className="flex items-center gap-2 text-red-400"><div className="w-2 h-2 rounded-full bg-red-500" /> Expenses</span>
+              </div>
+            </div>
+            
+            <div className="h-[400px] w-full mt-auto">
+              {chartData.length === 0 ? (
+                <div className="w-full h-full flex items-center justify-center border border-dashed border-white/10 rounded-2xl">
+                  <p className="text-zinc-500">No data available for the selected filters.</p>
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#22c55e" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="#22c55e" stopOpacity={0}/>
+                      </linearGradient>
+                      <linearGradient id="colorExpense" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
+                    <XAxis dataKey="name" stroke="#ffffff30" tick={{fill: '#ffffff50', fontSize: 12}} axisLine={false} tickLine={false} dy={10} />
+                    <YAxis stroke="#ffffff30" tick={{fill: '#ffffff50', fontSize: 12}} axisLine={false} tickLine={false} tickFormatter={(val) => currency === 'USD' ? `$${(val / 83.5).toFixed(0)}` : `₹${val}`} dx={-10} />
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: '#1A1A24', borderColor: '#ffffff10', borderRadius: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }}
+                      itemStyle={{ fontWeight: 'bold' }}
+                      labelStyle={{ color: '#a1a1aa', marginBottom: '8px' }}
+                    />
+                    <Area type="monotone" dataKey="Income" stroke="#22c55e" strokeWidth={3} fillOpacity={1} fill="url(#colorIncome)" />
+                    <Area type="monotone" dataKey="Expenses" stroke="#ef4444" strokeWidth={3} fillOpacity={1} fill="url(#colorExpense)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              )}
             </div>
           </div>
 
           {/* Ledger */}
-          <div className="bg-[#0C0C12]/80 backdrop-blur-md border border-white/10 rounded-3xl p-6 md:p-8 flex flex-col h-[500px] xl:h-auto">
-            <h3 className="text-xl font-bold text-white mb-6">Recent Ledger</h3>
-            <div className="flex-1 overflow-y-auto pr-2 space-y-3">
-              {transactions.length === 0 ? (
+          <div className="bg-[#0C0C12]/80 backdrop-blur-md border border-white/10 rounded-3xl p-6 md:p-8 flex flex-col h-[500px] xl:h-[550px]">
+            <h3 className="text-xl font-bold text-white mb-6">Ledger</h3>
+            <div className="flex-1 overflow-y-auto pr-2 space-y-3 custom-scrollbar">
+              {filteredTransactions.length === 0 ? (
                 <div className="text-center py-10">
-                  <p className="text-zinc-500">No transactions recorded yet.</p>
+                  <p className="text-zinc-500">No transactions match your filters.</p>
                 </div>
               ) : (
-                transactions.map((t) => (
-                  <div key={t.id} className="bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col gap-3 group relative overflow-hidden">
+                filteredTransactions.map((t) => (
+                  <div key={t.id} className="bg-white/5 border border-white/10 rounded-2xl p-4 flex gap-4 group relative overflow-hidden hover:bg-white/10 transition-colors">
                     {/* Delete overlay on hover */}
                     <button 
                       onClick={() => handleDelete(t.id)}
-                      className="absolute right-3 top-3 opacity-0 group-hover:opacity-100 p-2 bg-red-500/20 text-red-400 rounded-lg transition-all hover:bg-red-500/40 z-10"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-2.5 bg-red-500 text-white rounded-xl transition-all hover:bg-red-600 shadow-lg z-10 translate-x-4 group-hover:translate-x-0"
                     >
                       <Trash2 size={16} />
                     </button>
 
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <p className="text-white font-bold">{t.description}</p>
-                        <p className="text-zinc-400 text-sm mt-0.5">{t.source_destination}</p>
-                      </div>
-                      <p className={`font-black text-lg ${t.type === 'credit' ? 'text-green-400' : 'text-red-400'}`}>
-                        {t.type === 'credit' ? '+' : '-'}{formatCurrency(t.amount)}
-                      </p>
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border ${t.type === 'credit' ? 'bg-green-500/10 border-green-500/20 text-green-400' : 'bg-red-500/10 border-red-500/20 text-red-400'}`}>
+                      {t.type === 'credit' ? <ArrowUpRight size={20} /> : <ArrowDownRight size={20} />}
                     </div>
-                    
-                    <div className="flex items-center gap-2 justify-between">
-                      <span className="px-2.5 py-1 rounded-lg bg-black/40 border border-white/5 text-[10px] font-bold text-zinc-300 uppercase tracking-wider truncate max-w-[150px]">
-                        {t.category}
-                      </span>
-                      <span className="text-xs text-zinc-500 font-mono flex items-center gap-1">
-                        <Calendar size={12} /> {t.date}
-                      </span>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-start mb-1">
+                        <p className="text-white font-bold truncate pr-4">{t.description}</p>
+                        <p className={`font-black whitespace-nowrap ${t.type === 'credit' ? 'text-green-400' : 'text-white'}`}>
+                          {t.type === 'credit' ? '+' : '-'}{formatCurrency(t.amount)}
+                        </p>
+                      </div>
+                      
+                      <div className="flex items-center justify-between mt-2">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold text-zinc-400 uppercase tracking-wider bg-black/40 border border-white/5 truncate max-w-[120px]">
+                          {t.category}
+                        </span>
+                        <span className="text-xs text-zinc-500 font-mono">
+                          {t.date}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 ))
