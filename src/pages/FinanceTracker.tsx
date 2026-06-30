@@ -521,13 +521,15 @@ const FinanceTracker = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-zinc-400 uppercase tracking-widest mb-2">{type === 'credit' ? 'Received From' : 'Paid To'}</label>
+                  <label className="block text-xs font-bold text-zinc-400 uppercase tracking-widest mb-2">
+                    {category === 'Internship' ? 'Intern Name' : type === 'credit' ? 'Received From' : 'Paid To'}
+                  </label>
                   <input
                     type="text"
                     required
                     value={source}
                     onChange={(e) => setSource(e.target.value)}
-                    placeholder={type === 'credit' ? "e.g. Client X" : "e.g. AWS"}
+                    placeholder={category === 'Internship' ? "e.g. John Doe" : type === 'credit' ? "e.g. Client X" : "e.g. AWS"}
                     className="w-full bg-[#1A1A24]/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500/50"
                   />
                 </div>
