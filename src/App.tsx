@@ -33,6 +33,8 @@ const AiSdrDashboard = lazy(() => import("./pages/AiSdrDashboard"));
 const RoiCalculator = lazy(() => import("./pages/RoiCalculator"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
+const FinanceTracker = lazy(() => import("./pages/FinanceTracker"));
+
 const queryClient = new QueryClient();
 
 // We MUST extract the routes into a separate component so we can use `useLocation()`
@@ -56,6 +58,7 @@ const AnimatedRoutes = () => {
           <Route path="/buiz/host" element={<BuizHost />} />
           <Route path="/ai-sdr" element={<AiSdrDashboard />} />
           <Route path="/roi-calculator" element={<RoiCalculator />} />
+          <Route path="/finance" element={<FinanceTracker />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
@@ -65,7 +68,7 @@ const AnimatedRoutes = () => {
 
 const GlobalLayout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
-  const isStandaloneRoute = location.pathname.includes('/student-dashboard') || location.pathname.includes('/student-login') || location.pathname.includes('/admin') || location.pathname.includes('/buiz');
+  const isStandaloneRoute = location.pathname.includes('/student-dashboard') || location.pathname.includes('/student-login') || location.pathname.includes('/admin') || location.pathname.includes('/buiz') || location.pathname.includes('/finance');
 
   return (
     <div className="bg-[#050507] min-h-screen flex flex-col text-white">
