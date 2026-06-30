@@ -13,40 +13,104 @@ const customEase = [0.22, 1, 0.36, 1];
 const projects = [
   {
     id: 1,
-    title: "Aura Neural Engine",
-    client: "Enterprise AI SaaS",
-    description: "A complete visual overhaul and front-end architecture rebuild for a leading predictive analytics firm.",
-    image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1600&auto=format&fit=crop",
-    tags: ["React", "WebGL", "Python"],
-    span: "col-span-1 lg:col-span-2", // Spans two columns
+    title: "Kubrut",
+    client: "Web App",
+    description: "Modern web application providing tailored solutions.",
+    image: "https://image.thum.io/get/width/1200/crop/800/https://kubrut.vercel.app",
+    tags: ["React", "Vite", "Tailwind"],
+    span: "col-span-1 lg:col-span-2",
+    link: "https://kubrut.vercel.app"
   },
   {
     id: 2,
-    title: "Nexus Web3",
-    client: "DeFi Protocol",
-    description: "Cinematic landing experience and dashboard for a decentralized exchange.",
-    image: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=800&auto=format&fit=crop",
-    tags: ["Next.js", "Three.js"],
-    span: "col-span-1", // Spans one column
+    title: "Lilo Technologies",
+    client: "Corporate Website",
+    description: "Professional corporate presence with dynamic UI.",
+    image: "https://image.thum.io/get/width/1200/crop/800/https://lilotechnologies.vercel.app",
+    tags: ["Next.js", "Framer Motion"],
+    span: "col-span-1",
+    link: "https://lilotechnologies.vercel.app"
   },
   {
     id: 3,
-    title: "Vanguard OS",
-    client: "Fintech Startup",
-    description: "Responsive web application designed to handle high-frequency trading data in real-time.",
-    image: "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?q=80&w=800&auto=format&fit=crop",
-    tags: ["TypeScript", "Framer Motion"],
-    span: "col-span-1", // Spans one column
+    title: "RS Technologies",
+    client: "Tech Agency",
+    description: "Innovative technology agency portfolio.",
+    image: "https://image.thum.io/get/width/1200/crop/800/https://rstechnologies.vercel.app",
+    tags: ["Web3", "React"],
+    span: "col-span-1",
+    link: "https://rstechnologies.vercel.app"
   },
   {
     id: 4,
-    title: "Onyx Digital",
-    client: "Luxury E-Commerce",
-    description: "An award-winning headless storefront pushing the boundaries of browser performance.",
-    image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=1600&auto=format&fit=crop",
-    tags: ["Shopify Plus", "React", "GSAP"],
-    span: "col-span-1 lg:col-span-2", // Spans two columns
+    title: "TutionOS",
+    client: "EdTech Platform",
+    description: "Comprehensive operating system for tuition centers.",
+    image: "https://image.thum.io/get/width/1200/crop/800/https://tutionos.vercel.app",
+    tags: ["EdTech", "SaaS", "Dashboard"],
+    span: "col-span-1",
+    link: "https://tutionos.vercel.app"
   },
+  {
+    id: 5,
+    title: "ClientSyncOS",
+    client: "CRM System",
+    description: "Advanced client management and synchronization tool.",
+    image: "https://image.thum.io/get/width/1200/crop/800/https://clientsyncos.vercel.app",
+    tags: ["CRM", "Enterprise", "React"],
+    span: "col-span-1",
+    link: "https://clientsyncos.vercel.app"
+  },
+  {
+    id: 6,
+    title: "BizzBrain",
+    client: "AI Platform",
+    description: "AI-powered business intelligence and analytics.",
+    image: "https://image.thum.io/get/width/1200/crop/800/https://bizzbrainn.vercel.app",
+    tags: ["AI", "Analytics", "SaaS"],
+    span: "col-span-1 lg:col-span-2",
+    link: "https://bizzbrainn.vercel.app"
+  },
+  {
+    id: 7,
+    title: "Web2Gether",
+    client: "Social Networking",
+    description: "Connecting people through modern web interfaces.",
+    image: "https://image.thum.io/get/width/1200/crop/800/https://web-2-gether.vercel.app/",
+    tags: ["Social", "Real-time", "WebRTC"],
+    span: "col-span-1",
+    link: "https://web-2-gether.vercel.app/"
+  },
+  {
+    id: 8,
+    title: "Campus Aid Buddy",
+    client: "University Tool",
+    description: "Student assistance and campus management system.",
+    image: "https://image.thum.io/get/width/1200/crop/800/https://campus-aid-buddy-s6eo.vercel.app/",
+    tags: ["Education", "Management", "UI/UX"],
+    span: "col-span-1",
+    link: "https://campus-aid-buddy-s6eo.vercel.app/"
+  },
+  {
+    id: 9,
+    title: "VibeStay",
+    client: "Hospitality",
+    description: "Accommodation booking and hospitality management.",
+    image: "https://image.thum.io/get/width/1200/crop/800/https://vibestayy.netlify.app",
+    tags: ["Booking", "Travel", "React"],
+    span: "col-span-1 lg:col-span-2",
+    link: "https://vibestayy.netlify.app"
+  },
+  {
+    id: 10,
+    title: "Chain Split",
+    client: "DeFi App",
+    description: "Blockchain-based bill splitting and expense sharing.",
+    image: "https://image.thum.io/get/width/1200/crop/800/https://chain-split.vercel.app",
+    tags: ["Web3", "DeFi", "Crypto"],
+    span: "col-span-1 lg:col-span-3",
+    link: "https://chain-split.vercel.app"
+  }
 ];
 
 const Portfolio = () => {
@@ -122,7 +186,8 @@ const Portfolio = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-100px" }}
                 transition={{ duration: 1, delay: index * 0.1, ease: customEase }}
-                className={`group relative rounded-[32px] overflow-hidden bg-[#0C0C12] border border-white/5 hover:border-purple-500/30 transition-colors duration-500 flex flex-col min-h-[400px] md:min-h-[500px] ${project.span}`}
+                onClick={() => window.open(project.link, '_blank')}
+                className={`group relative rounded-[32px] overflow-hidden bg-[#0C0C12] border border-white/5 hover:border-purple-500/30 transition-colors duration-500 flex flex-col min-h-[400px] md:min-h-[500px] cursor-pointer ${project.span}`}
               >
                 {/* Image Background */}
                 <div className="absolute inset-0 w-full h-full overflow-hidden">

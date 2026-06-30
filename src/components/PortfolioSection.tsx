@@ -5,28 +5,94 @@ import { CheckCircle2, ArrowRight, ExternalLink, Sparkles, ArrowUpRight } from "
 const projects = [
   {
     year: "2024",
-    name: "Lemonide Tech",
-    tags: ["AI Integration", "Responsive Design", "Custom Layouts"],
-    image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=600&auto=format&fit=crop",
+    name: "Kubrut",
+    tags: ["React", "Vite", "Tailwind"],
+    image: "https://image.thum.io/get/width/600/crop/800/https://kubrut.vercel.app",
     color: "from-purple-500 to-indigo-500",
-    speed: 0 // Scroll speed modifier for parallax
+    speed: 0,
+    link: "https://kubrut.vercel.app"
   },
   {
     year: "2024",
-    name: "Nexus AI",
-    tags: ["Machine Learning", "Real-time Analytics", "API Design"],
-    image: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=600&auto=format&fit=crop",
+    name: "Lilo Technologies",
+    tags: ["Next.js", "Framer Motion"],
+    image: "https://image.thum.io/get/width/600/crop/800/https://lilotechnologies.vercel.app",
     color: "from-blue-500 to-purple-500",
-    speed: 40 // Middle card scrolls slightly slower/faster
+    speed: 40,
+    link: "https://lilotechnologies.vercel.app"
   },
   {
-    year: "2023",
-    name: "VisionAI Studio",
-    tags: ["Computer Vision", "Cloud Deployment", "Data Pipelines"],
-    image: "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?q=80&w=600&auto=format&fit=crop",
+    year: "2024",
+    name: "RS Technologies",
+    tags: ["Web3", "React"],
+    image: "https://image.thum.io/get/width/600/crop/800/https://rstechnologies.vercel.app",
     color: "from-pink-500 to-purple-500",
-    speed: 15
+    speed: 15,
+    link: "https://rstechnologies.vercel.app"
   },
+  {
+    year: "2024",
+    name: "TutionOS",
+    tags: ["EdTech", "SaaS", "Dashboard"],
+    image: "https://image.thum.io/get/width/600/crop/800/https://tutionos.vercel.app",
+    color: "from-purple-500 to-indigo-500",
+    speed: 0,
+    link: "https://tutionos.vercel.app"
+  },
+  {
+    year: "2024",
+    name: "ClientSyncOS",
+    tags: ["CRM", "Enterprise", "React"],
+    image: "https://image.thum.io/get/width/600/crop/800/https://clientsyncos.vercel.app",
+    color: "from-blue-500 to-purple-500",
+    speed: 40,
+    link: "https://clientsyncos.vercel.app"
+  },
+  {
+    year: "2024",
+    name: "BizzBrain",
+    tags: ["AI", "Analytics", "SaaS"],
+    image: "https://image.thum.io/get/width/600/crop/800/https://bizzbrainn.vercel.app",
+    color: "from-pink-500 to-purple-500",
+    speed: 15,
+    link: "https://bizzbrainn.vercel.app"
+  },
+  {
+    year: "2024",
+    name: "Web2Gether",
+    tags: ["Social", "Real-time", "WebRTC"],
+    image: "https://image.thum.io/get/width/600/crop/800/https://web-2-gether.vercel.app/",
+    color: "from-purple-500 to-indigo-500",
+    speed: 0,
+    link: "https://web-2-gether.vercel.app/"
+  },
+  {
+    year: "2024",
+    name: "Campus Aid Buddy",
+    tags: ["Education", "Management", "UI/UX"],
+    image: "https://image.thum.io/get/width/600/crop/800/https://campus-aid-buddy-s6eo.vercel.app/",
+    color: "from-blue-500 to-purple-500",
+    speed: 40,
+    link: "https://campus-aid-buddy-s6eo.vercel.app/"
+  },
+  {
+    year: "2024",
+    name: "VibeStay",
+    tags: ["Booking", "Travel", "React"],
+    image: "https://image.thum.io/get/width/600/crop/800/https://vibestayy.netlify.app",
+    color: "from-pink-500 to-purple-500",
+    speed: 15,
+    link: "https://vibestayy.netlify.app"
+  },
+  {
+    year: "2024",
+    name: "Chain Split",
+    tags: ["Web3", "DeFi", "Crypto"],
+    image: "https://image.thum.io/get/width/600/crop/800/https://chain-split.vercel.app",
+    color: "from-purple-500 to-indigo-500",
+    speed: 0,
+    link: "https://chain-split.vercel.app"
+  }
 ];
 
 /* -------------------------------------------------------------------------- */
@@ -67,6 +133,7 @@ const ProjectCard = ({ project, index }) => {
       ref={cardRef}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
+      onClick={() => window.open(project.link, '_blank')}
       initial={{ opacity: 0, y: 100, rotateX: 15 }}
       whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
       viewport={{ once: true, margin: "-50px" }}
@@ -76,7 +143,7 @@ const ProjectCard = ({ project, index }) => {
         rotateY,
         transformStyle: "preserve-3d",
       }}
-      className="relative z-10 perspective-1000"
+      className="relative z-10 perspective-1000 cursor-pointer"
     >
       <div 
         className="group h-full bg-[#0C0C0E] border border-[#2A2A2E] rounded-[32px] overflow-hidden flex flex-col transition-all duration-500 hover:border-purple-500/50 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)] hover:shadow-[0_20px_40px_-15px_rgba(139,92,246,0.15)]"
