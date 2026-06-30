@@ -76,8 +76,8 @@ const FinanceTracker = () => {
 
   const handleAddTransaction = async (e: React.FormEvent) => {
     e.preventDefault();
-    const isInternship = category.includes('Internship');
-    if (!amount || (!description && !isInternship) || !source) return;
+    const hideDescription = category === 'Internship' && type === 'credit';
+    if (!amount || (!description && !hideDescription) || !source) return;
 
     try {
       const baseAmount = currency === 'USD' ? parseFloat(amount) * 83.5 : parseFloat(amount);
@@ -86,7 +86,7 @@ const FinanceTracker = () => {
         type,
         amount: baseAmount,
         category,
-        description: isInternship ? (type === 'credit' ? 'Internship Income' : 'Internship Expense') : description,
+        description: hideDescription ? 'Internship Income' : description,
         source_destination: source,
         date,
         createdAt: new Date().toISOString()
@@ -535,7 +535,7 @@ const FinanceTracker = () => {
                   />
                 </div>
 
-                {!category.includes('Internship') && (
+                {!(category === 'Internship' && type === 'credit') && (
                   <div>
                     <label className="block text-xs font-bold text-zinc-400 uppercase tracking-widest mb-2">Description</label>
                     <input
