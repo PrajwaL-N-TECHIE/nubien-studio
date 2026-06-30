@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Lock, ShieldAlert, ArrowRight, Eye, EyeOff, Search, LogOut, Trash2, Info, X, Edit2, BookOpen, UploadCloud, CheckCircle2, Plus, Download, Settings, Mail, FileText, Link, Calendar, Building, Loader2, Target, Trophy, AlertCircle } from "lucide-react";
+import { Lock, ShieldAlert, ArrowRight, Eye, EyeOff, Search, LogOut, Trash2, Info, X, Edit2, BookOpen, UploadCloud, CheckCircle2, Plus, Download, Settings, Mail, FileText, Link, Calendar, Building, Loader2, Target, Trophy, AlertCircle, Briefcase } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { initializeApp } from "firebase/app";
 
