@@ -24,6 +24,7 @@ const CATEGORIES = {
 
 const FinanceTracker = () => {
   const [status, setStatus] = useState<'login' | 'dashboard'>('login');
+  const [currency, setCurrency] = useState<'INR' | 'USD'>('INR');
   
   // Login State
   const [email, setEmail] = useState('');
@@ -73,9 +74,11 @@ const FinanceTracker = () => {
     if (!amount || !description || !source) return;
 
     try {
+      const baseAmount = currency === 'USD' ? parseFloat(amount) * 83.5 : parseFloat(amount);
+      
       await addDoc(collection(db, "finance_transactions"), {
         type,
-        amount: parseFloat(amount),
+        amount: baseAmount,
         category,
         description,
         source_destination: source,
@@ -141,6 +144,15 @@ const FinanceTracker = () => {
 
     return { totalBalance: balance, monthlyCredit: mCredit, monthlyDebit: mDebit, chartData: sortedChart };
   }, [transactions, currentMonthPrefix]);
+
+  const formatCurrency = (amount: number) => {
+    const val = currency === 'USD' ? amount / 83.5 : amount;
+    return new Intl.NumberFormat(currency === 'INR' ? 'en-IN' : 'en-US', {
+      style: 'currency',
+      currency: currency,
+      maximumFractionDigits: 0
+    }).format(val);
+  };
 
 
   if (status === 'login') {
@@ -218,12 +230,28 @@ const FinanceTracker = () => {
             </div>
             <p className="text-zinc-400">High-level enterprise expenditure and revenue tracking.</p>
           </div>
-          <button
-            onClick={() => setIsAdding(true)}
-            className="px-6 py-3 bg-green-600 hover:bg-green-500 text-white rounded-xl font-bold transition-all shadow-[0_0_20px_rgba(34,197,94,0.3)] flex items-center gap-2"
-          >
-            <Plus size={20} /> New Transaction
-          </button>
+          <div className="flex flex-col md:flex-row items-center gap-4">
+            <div className="bg-[#0C0C12]/80 backdrop-blur-md border border-white/10 rounded-xl p-1 flex">
+              <button 
+                onClick={() => setCurrency('INR')}
+                className={`px-4 py-1.5 rounded-lg font-bold text-sm transition-all ${currency === 'INR' ? 'bg-purple-600 text-white' : 'text-zinc-500 hover:text-white'}`}
+              >
+                INR
+              </button>
+              <button 
+                onClick={() => setCurrency('USD')}
+                className={`px-4 py-1.5 rounded-lg font-bold text-sm transition-all ${currency === 'USD' ? 'bg-purple-600 text-white' : 'text-zinc-500 hover:text-white'}`}
+              >
+                USD
+              </button>
+            </div>
+            <button
+              onClick={() => setIsAdding(true)}
+              className="px-6 py-3 bg-green-600 hover:bg-green-500 text-white rounded-xl font-bold transition-all shadow-[0_0_20px_rgba(34,197,94,0.3)] flex items-center gap-2"
+            >
+              <Plus size={20} /> New Transaction
+            </button>
+          </div>
         </div>
 
         {/* KPIs */}
@@ -236,7 +264,7 @@ const FinanceTracker = () => {
               </div>
               <h3 className="text-zinc-400 font-bold uppercase tracking-widest text-sm">Net Balance</h3>
             </div>
-            <p className="text-5xl font-black text-white tracking-tight">${totalBalance.toLocaleString(undefined, {minimumFractionDigits: 2})}</p>
+            <p className="text-5xl font-black text-white tracking-tight">{formatCurrency(totalBalance)}</p>
           </div>
           
           <div className="bg-[#0C0C12]/80 backdrop-blur-md border border-white/10 rounded-3xl p-8 relative overflow-hidden group hover:border-purple-500/50 transition-colors">
@@ -249,7 +277,7 @@ const FinanceTracker = () => {
                 <p className="text-xs text-purple-400 font-mono mt-0.5">Current Month</p>
               </div>
             </div>
-            <p className="text-4xl font-black text-white tracking-tight">${monthlyCredit.toLocaleString(undefined, {minimumFractionDigits: 2})}</p>
+            <p className="text-4xl font-black text-white tracking-tight">{formatCurrency(monthlyCredit)}</p>
           </div>
 
           <div className="bg-[#0C0C12]/80 backdrop-blur-md border border-white/10 rounded-3xl p-8 relative overflow-hidden group hover:border-red-500/50 transition-colors">
@@ -262,7 +290,7 @@ const FinanceTracker = () => {
                 <p className="text-xs text-red-400 font-mono mt-0.5">Current Month</p>
               </div>
             </div>
-            <p className="text-4xl font-black text-white tracking-tight">${monthlyDebit.toLocaleString(undefined, {minimumFractionDigits: 2})}</p>
+            <p className="text-4xl font-black text-white tracking-tight">{formatCurrency(monthlyDebit)}</p>
           </div>
         </div>
 
@@ -276,7 +304,7 @@ const FinanceTracker = () => {
                 <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
                   <XAxis dataKey="name" stroke="#ffffff50" tick={{fill: '#ffffff50'}} axisLine={false} tickLine={false} />
-                  <YAxis stroke="#ffffff50" tick={{fill: '#ffffff50'}} axisLine={false} tickLine={false} tickFormatter={(val) => `$${val}`} />
+                  <YAxis stroke="#ffffff50" tick={{fill: '#ffffff50'}} axisLine={false} tickLine={false} tickFormatter={(val) => currency === 'USD' ? `$${(val / 83.5).toFixed(0)}` : `₹${val}`} />
                   <Tooltip 
                     contentStyle={{ backgroundColor: '#0C0C12', borderColor: '#ffffff20', borderRadius: '12px' }}
                     itemStyle={{ fontWeight: 'bold' }}
@@ -314,7 +342,7 @@ const FinanceTracker = () => {
                         <p className="text-zinc-400 text-sm mt-0.5">{t.source_destination}</p>
                       </div>
                       <p className={`font-black text-lg ${t.type === 'credit' ? 'text-green-400' : 'text-red-400'}`}>
-                        {t.type === 'credit' ? '+' : '-'}${t.amount.toLocaleString()}
+                        {t.type === 'credit' ? '+' : '-'}{formatCurrency(t.amount)}
                       </p>
                     </div>
                     
@@ -373,7 +401,7 @@ const FinanceTracker = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-zinc-400 uppercase tracking-widest mb-2">Amount (USD)</label>
+                  <label className="block text-xs font-bold text-zinc-400 uppercase tracking-widest mb-2">Amount ({currency})</label>
                   <input
                     type="number"
                     step="0.01"
