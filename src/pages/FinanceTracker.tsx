@@ -19,7 +19,7 @@ interface Transaction {
 
 const CATEGORIES = {
   credit: ['Client Payment', 'Investment', 'SaaS Subscription', 'Internship', 'Other Income'],
-  debit: ['Software Subscriptions', 'Salaries', 'Marketing', 'Hosting/AWS', 'Legal/Taxes', 'Internship Works', 'Other Expense']
+  debit: ['Software Subscriptions', 'Salaries', 'Employee Payout', 'Marketing', 'Hosting/AWS', 'Legal/Taxes', 'Internship Works', 'Other Expense']
 };
 const ALL_CATEGORIES = [...CATEGORIES.credit, ...CATEGORIES.debit];
 
@@ -523,14 +523,14 @@ const FinanceTracker = () => {
 
                 <div>
                   <label className="block text-xs font-bold text-zinc-400 uppercase tracking-widest mb-2">
-                    {category.includes('Internship') ? 'Intern Name' : type === 'credit' ? 'Received From' : 'Paid To'}
+                    {(category === 'Internship' && type === 'credit') ? 'Intern Name' : type === 'credit' ? 'Received From' : 'Paid To'}
                   </label>
                   <input
                     type="text"
                     required
                     value={source}
                     onChange={(e) => setSource(e.target.value)}
-                    placeholder={category.includes('Internship') ? "e.g. John Doe" : type === 'credit' ? "e.g. Client X" : "e.g. AWS"}
+                    placeholder={(category === 'Internship' && type === 'credit') ? "e.g. John Doe" : type === 'credit' ? "e.g. Client X" : "e.g. AWS"}
                     className="w-full bg-[#1A1A24]/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500/50"
                   />
                 </div>
