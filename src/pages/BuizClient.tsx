@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trophy, Target, Clock, Zap, CheckCircle2, XCircle } from 'lucide-react';
+import { Trophy, Target, Clock, Zap, CheckCircle2, XCircle, Grid3X3, ArrowLeft, ArrowRight } from 'lucide-react';
 import { db } from '@/lib/firebase';
 import { doc, setDoc, onSnapshot, updateDoc, getDoc } from 'firebase/firestore';
 import { playTickSound, playCorrectSound, playIncorrectSound } from '@/utils/audio';
@@ -31,6 +31,12 @@ const BuizClient = () => {
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [showFeedback, setShowFeedback] = useState<'correct' | 'incorrect' | 'waiting' | null>(null);
 
+  // Own-pace mode state
+  const [gameMode, setGameMode] = useState<'hostPaced' | 'ownPace'>('hostPaced');
+  const [localQIndex, setLocalQIndex] = useState(0);
+  const [answers, setAnswers] = useState<{ [questionIdx: number]: { selectedOption: number; isCorrect: boolean } }>({});
+  const [ownPaceDone, setOwnPaceDone] = useState(false);
+
   // Listen to room status once joined
   useEffect(() => {
     if (!pin || roomStatus === 'setup') return;
@@ -38,22 +44,32 @@ const BuizClient = () => {
     const unsubscribe = onSnapshot(doc(db, "buiz_rooms", pin), (docSnap) => {
       if (docSnap.exists()) {
         const data = docSnap.data();
+        const mode = data.gameMode || 'hostPaced';
+        setGameMode(mode);
+
         if (data.status === 'playing') {
           if (roomStatus === 'waiting') {
             setQuestions(data.questions || []);
             setRoomStatus('playing');
+            if (mode === 'ownPace') {
+              // In own-pace mode, restore from player doc if available
+              setQuestionStatus('answering');
+              setOwnPaceDone(false);
+            }
           }
-          // Sync with Host
-          if (data.currentQIndex !== undefined && data.currentQIndex !== currentQIndex) {
-            setCurrentQIndex(data.currentQIndex);
-            setSelectedOption(null);
-            setShowFeedback(null);
-            setTimeLeft(20);
-          }
-          if (data.questionStatus !== undefined && data.questionStatus !== questionStatus) {
-            setQuestionStatus(data.questionStatus);
-            if (data.questionStatus === 'revealed') {
-              handleHostReveal();
+          if (mode === 'hostPaced') {
+            // Sync with Host
+            if (data.currentQIndex !== undefined && data.currentQIndex !== currentQIndex) {
+              setCurrentQIndex(data.currentQIndex);
+              setSelectedOption(null);
+              setShowFeedback(null);
+              setTimeLeft(20);
+            }
+            if (data.questionStatus !== undefined && data.questionStatus !== questionStatus) {
+              setQuestionStatus(data.questionStatus);
+              if (data.questionStatus === 'revealed') {
+                handleHostReveal();
+              }
             }
           }
         } else if (data.status === 'finished') {
@@ -68,9 +84,9 @@ const BuizClient = () => {
     return () => unsubscribe();
   }, [pin, roomStatus, currentQIndex, questionStatus]);
 
-  // Timer logic for playing
+  // Timer logic for playing (host-paced only)
   useEffect(() => {
-    if (roomStatus !== 'playing' || questionStatus === 'revealed' || currentQIndex >= questions.length) return;
+    if (roomStatus !== 'playing' || questionStatus === 'revealed' || currentQIndex >= questions.length || gameMode === 'ownPace') return;
     
     const timer = setInterval(() => {
       setTimeLeft(prev => {
@@ -126,12 +142,13 @@ const BuizClient = () => {
     }
   };
 
-  const updatePlayerScore = async (newScore: number, newStreak: number, progress: number) => {
+  const updatePlayerScore = async (newScore: number, newStreak: number, progress: number, answersData?: { [questionIdx: number]: { selectedOption: number; isCorrect: boolean } }) => {
     try {
       await updateDoc(doc(db, `buiz_rooms/${pin}/players`, playerId), {
         score: newScore,
         streak: newStreak,
-        progress: progress
+        progress: progress,
+        ...(answersData ? { answers: answersData } : {})
       });
     } catch (err) {
       console.error("Failed to sync score", err);
@@ -140,12 +157,48 @@ const BuizClient = () => {
 
   const handleAnswer = (selectedIdx: number) => {
     if (questionStatus === 'revealed' || selectedOption !== null) return;
-    setSelectedOption(selectedIdx);
-    setShowFeedback('waiting');
     
-    // Optimistically update progress so host sees they answered
-    const progress = (currentQIndex + 1) / questions.length;
-    updatePlayerScore(score, streak, progress);
+    if (gameMode === 'ownPace') {
+      const currentIdx = localQIndex;
+      const q = questions[currentIdx];
+      const isCorrect = selectedIdx === q?.answer;
+      
+      // Calculate score
+      let newScore = score;
+      let newStreak = streak;
+      
+      if (isCorrect) {
+        playCorrectSound();
+        newStreak += 1;
+        const streakBonus = newStreak > 2 ? (newStreak * 100) : 0;
+        const earned = 1000 + streakBonus;
+        newScore += earned;
+      } else {
+        playIncorrectSound();
+        newStreak = 0;
+      }
+      
+      const newAnswers = { ...answers, [currentIdx]: { selectedOption: selectedIdx, isCorrect } };
+      setAnswers(newAnswers);
+      setScore(newScore);
+      setStreak(newStreak);
+      
+      const progress = Object.keys(newAnswers).length / questions.length;
+      updatePlayerScore(newScore, newStreak, progress, newAnswers);
+      
+      // Check if all done
+      if (Object.keys(newAnswers).length >= questions.length) {
+        setOwnPaceDone(true);
+      }
+    } else {
+      // Host-paced: wait for host reveal
+      setSelectedOption(selectedIdx);
+      setShowFeedback('waiting');
+      
+      // Optimistically update progress so host sees they answered
+      const progress = (currentQIndex + 1) / questions.length;
+      updatePlayerScore(score, streak, progress);
+    }
   };
 
   const handleHostReveal = () => {
@@ -154,6 +207,22 @@ const BuizClient = () => {
     // Wait, the useEffect closure might have stale state. 
     // We will evaluate the score based on the current state variable values when the reveal happens.
   };
+
+  // Own-pace navigation
+  const goToQuestion = (idx: number) => {
+    if (idx < 0 || idx >= questions.length) return;
+    setLocalQIndex(idx);
+    setSelectedOption(answers[idx]?.selectedOption ?? null);
+    setShowFeedback(answers[idx] ? (answers[idx].isCorrect ? 'correct' : 'incorrect') : null);
+    setQuestionStatus(answers[idx] ? 'revealed' : 'answering');
+  };
+
+  // Sync localQIndex to player doc on change
+  useEffect(() => {
+    if (gameMode === 'ownPace' && roomStatus === 'playing' && playerId) {
+      updateDoc(doc(db, `buiz_rooms/${pin}/players`, playerId), { currentQIndex: localQIndex }).catch(() => {});
+    }
+  }, [localQIndex, gameMode, roomStatus, pin, playerId]);
 
   // When questionStatus changes to revealed, we evaluate the score
   useEffect(() => {
@@ -185,6 +254,36 @@ const BuizClient = () => {
       updatePlayerScore(newScore, newStreak, progress);
     }
   }, [questionStatus]);
+
+  // Own-pace completed state
+  if (gameMode === 'ownPace' && ownPaceDone && questions.length > 0) {
+    return (
+      <div className="min-h-screen bg-[#050507] flex flex-col items-center justify-center p-6 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-yellow-500/10 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[100px] pointer-events-none" />
+        
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="bg-[#0C0C12]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-10 max-w-md w-full text-center relative z-10"
+        >
+          <CheckCircle2 className="text-green-400 mx-auto mb-6" size={64} />
+          <h2 className="text-3xl font-black text-white mb-2">All Done!</h2>
+          <p className="text-zinc-400 mb-8">You answered all {questions.length} questions.</p>
+          
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-8">
+            <p className="text-sm font-bold text-white/50 uppercase tracking-widest mb-1">Your Score</p>
+            <p className="text-5xl font-black text-yellow-400 font-mono">{score.toLocaleString()}</p>
+            <p className="text-sm text-zinc-500 mt-2">
+              {Object.values(answers).filter(a => a.isCorrect).length}/{questions.length} correct
+            </p>
+          </div>
+          
+          <p className="text-zinc-500 text-sm">Wait for the host to end the game to see the final podium.</p>
+        </motion.div>
+      </div>
+    );
+  }
 
   if (roomStatus === 'setup') {
     return (
@@ -290,7 +389,8 @@ const BuizClient = () => {
   }
 
   // Playing State
-  const q = questions[currentQIndex];
+  const displayQIndex = gameMode === 'ownPace' ? localQIndex : currentQIndex;
+  const q = questions[displayQIndex];
   if (!q) return <div className="min-h-screen bg-[#050507] text-white flex items-center justify-center font-mono">Loading question data...</div>;
 
   return (
@@ -313,8 +413,25 @@ const BuizClient = () => {
         <div className="flex items-center gap-4">
           <div className="bg-white/5 border border-white/10 px-4 py-2 rounded-xl flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse" />
-            <span className="text-white font-bold text-sm">{currentQIndex + 1} / {questions.length}</span>
+            <span className="text-white font-bold text-sm">{displayQIndex + 1} / {questions.length}</span>
           </div>
+          {gameMode === 'ownPace' && (
+            <div className="flex items-center gap-1">
+              {questions.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => goToQuestion(idx)}
+                  className={`w-3 h-3 rounded-full transition-all ${
+                    idx === displayQIndex 
+                      ? 'bg-purple-500 scale-125' 
+                      : answers[idx] 
+                        ? (answers[idx].isCorrect ? 'bg-green-500' : 'bg-red-500')
+                        : 'bg-white/20 hover:bg-white/40'
+                  }`}
+                />
+              ))}
+            </div>
+          )}
           {streak >= 3 && (
             <motion.div 
               initial={{ scale: 0, rotate: -10 }} animate={{ scale: 1, rotate: 0 }}
@@ -333,21 +450,23 @@ const BuizClient = () => {
         </div>
       </div>
 
-      {/* Progress Bar Timer */}
-      <div className="w-full h-2 bg-white/5 relative z-10">
-        <motion.div 
-          className={`h-full ${timeLeft > 10 ? 'bg-purple-500' : timeLeft > 5 ? 'bg-yellow-500' : 'bg-red-500'}`}
-          initial={{ width: "100%" }}
-          animate={{ width: `${(timeLeft / 20) * 100}%` }}
-          transition={{ ease: "linear", duration: 1 }}
-        />
-      </div>
+      {/* Progress Bar Timer (host-paced only) */}
+      {gameMode !== 'ownPace' && (
+        <div className="w-full h-2 bg-white/5 relative z-10">
+          <motion.div 
+            className={`h-full ${timeLeft > 10 ? 'bg-purple-500' : timeLeft > 5 ? 'bg-yellow-500' : 'bg-red-500'}`}
+            initial={{ width: "100%" }}
+            animate={{ width: `${(timeLeft / 20) * 100}%` }}
+            transition={{ ease: "linear", duration: 1 }}
+          />
+        </div>
+      )}
 
       {/* Main Play Area */}
       <div className="flex-1 flex flex-col p-4 md:p-6 max-w-4xl mx-auto w-full relative z-10 mt-8">
         
         <div className="bg-[#0C0C12]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-10 mb-8 shadow-2xl text-center relative">
-          {showFeedback === 'correct' && (
+          {(showFeedback === 'correct' || (gameMode === 'ownPace' && answers[displayQIndex]?.isCorrect)) && (
             <motion.div 
               initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
               className="absolute -top-6 left-1/2 -translate-x-1/2 bg-black border border-white/10 rounded-full p-2"
@@ -355,7 +474,7 @@ const BuizClient = () => {
               <CheckCircle2 size={40} className="text-green-500" />
             </motion.div>
           )}
-          {showFeedback === 'incorrect' && (
+          {(showFeedback === 'incorrect' || (gameMode === 'ownPace' && answers[displayQIndex] && !answers[displayQIndex].isCorrect)) && (
             <motion.div 
               initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
               className="absolute -top-6 left-1/2 -translate-x-1/2 bg-black border border-white/10 rounded-full p-2"
@@ -378,18 +497,22 @@ const BuizClient = () => {
             let bgClass = "bg-[#1A1A24]/60 hover:bg-[#1A1A24] border-white/10 text-white";
             let letterBg = "bg-white/10";
             
-            if (questionStatus === 'revealed') {
+            const hasAnswered = questionStatus === 'revealed' || selectedOption !== null || (gameMode === 'ownPace' && answers[displayQIndex] !== undefined);
+            const effectiveSelected = gameMode === 'ownPace' ? answers[displayQIndex]?.selectedOption : selectedOption;
+            const effectiveRevealed = gameMode === 'ownPace' ? answers[displayQIndex] !== undefined : questionStatus === 'revealed';
+            
+            if (effectiveRevealed) {
               if (idx === q.answer) {
                 bgClass = "bg-green-500 text-white border-green-400 shadow-[0_0_30px_rgba(34,197,94,0.3)]";
                 letterBg = "bg-green-600 border border-green-400";
-              } else if (idx === selectedOption) {
+              } else if (idx === effectiveSelected) {
                 bgClass = "bg-red-500 text-white border-red-400";
                 letterBg = "bg-red-600 border border-red-400";
               } else {
                 bgClass = "bg-white/5 border-white/10 text-white/30 opacity-50";
                 letterBg = "bg-white/5 border border-white/10";
               }
-            } else if (selectedOption === idx) {
+            } else if (idx === effectiveSelected) {
               bgClass = "bg-purple-600 text-white border-purple-400";
               letterBg = "bg-purple-700 border border-purple-400";
             }
@@ -397,11 +520,11 @@ const BuizClient = () => {
             return (
               <motion.button
                 key={idx}
-                whileHover={questionStatus === 'answering' && selectedOption === null ? { scale: 1.01, x: 5 } : {}}
-                whileTap={questionStatus === 'answering' && selectedOption === null ? { scale: 0.98 } : {}}
-                disabled={questionStatus === 'revealed' || selectedOption !== null}
+                whileHover={!hasAnswered ? { scale: 1.01, x: 5 } : {}}
+                whileTap={!hasAnswered ? { scale: 0.98 } : {}}
+                disabled={hasAnswered}
                 onClick={() => handleAnswer(idx)}
-                className={`p-5 md:p-6 rounded-2xl border font-bold text-lg md:text-xl transition-all flex items-center text-left shadow-lg ${bgClass} ${questionStatus === 'revealed' || selectedOption !== null ? 'cursor-not-allowed' : 'cursor-pointer'} w-full`}
+                className={`p-5 md:p-6 rounded-2xl border font-bold text-lg md:text-xl transition-all flex items-center text-left shadow-lg ${bgClass} ${hasAnswered ? 'cursor-not-allowed' : 'cursor-pointer'} w-full`}
               >
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm md:text-base mr-4 shrink-0 transition-colors ${letterBg}`}>
                   {String.fromCharCode(65 + idx)}
@@ -411,6 +534,34 @@ const BuizClient = () => {
             );
           })}
         </div>
+
+        {/* Navigation footer for own-pace mode */}
+        {gameMode === 'ownPace' && (
+          <div className="flex items-center justify-between mt-6 pt-4 border-t border-white/10">
+            <button
+              onClick={() => goToQuestion(displayQIndex - 1)}
+              disabled={displayQIndex === 0}
+              className="px-5 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl font-bold text-white transition-all disabled:opacity-30 flex items-center gap-2"
+            >
+              <ArrowLeft size={16} /> Previous
+            </button>
+            <span className="text-xs text-zinc-500 font-mono">
+              {Object.keys(answers).length}/{questions.length} answered
+            </span>
+            {displayQIndex < questions.length - 1 ? (
+              <button
+                onClick={() => goToQuestion(displayQIndex + 1)}
+                className="px-5 py-2.5 bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl font-bold text-white transition-all flex items-center gap-2"
+              >
+                Next <ArrowRight size={16} />
+              </button>
+            ) : (
+              <div className="text-green-400 text-sm font-bold flex items-center gap-1.5">
+                <CheckCircle2 size={16} /> Last Question
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

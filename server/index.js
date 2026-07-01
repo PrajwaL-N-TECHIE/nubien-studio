@@ -86,6 +86,19 @@ async function initDB() {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `);
+
+    await db.exec(`
+      CREATE TABLE IF NOT EXISTS sdr_campaigns (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        campaign_type TEXT NOT NULL,
+        persona_title TEXT,
+        pain_point TEXT,
+        system_prompt TEXT,
+        leads_data TEXT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
     
     console.log('Database initialized successfully.');
     
@@ -256,18 +269,22 @@ app.post('/api/internship/:registrationId/profile-image', upload.single('image')
 // AI-SDR: Generate Personalized Sales Pitch (Manual Single)
 app.post('/api/generate-pitch', async (req, res) => {
   try {
-    const { leadName, companyName, industry, painPoint } = req.body;
+    const { leadName, companyName, industry, painPoint, systemPrompt, variationOf } = req.body;
 
     if (!leadName || !companyName) {
       return res.status(400).json({ error: 'leadName and companyName are required' });
     }
 
-    const systemPrompt = `You are an elite, highly persuasive AI Sales Development Representative (SDR) working for 'Buildicy', a top-tier Custom Software and SaaS development agency based in Coimbatore. 
-Your goal is to write a short, punchy, cold email to a potential client.
-The email must not sound like marketing spam. It must sound like a human wrote it.
-Keep it under 150 words. Do not use generic buzzwords.
-Mention that Buildicy builds high-performance SaaS, AI Automation, and Web3 solutions.
-End with a soft call to action asking for a quick 10-minute chat.`;
+    let basePrompt = systemPrompt;
+    if (!basePrompt) {
+      const promptPath = path.join(__dirname, 'prompts', 'sdr_system_prompt.jinja');
+      basePrompt = fs.readFileSync(promptPath, 'utf-8');
+    }
+
+    // For A/B variations, add the variation instruction
+    if (variationOf) {
+      basePrompt = basePrompt + '\n\nCRITICAL: This is a VARIATION. Write a completely DIFFERENT email from: "' + variationOf.substring(0, 100) + '...". Change the opening, structure, and tone. Do NOT repeat the same approach.';
+    }
 
     const userPrompt = `Write a cold email to ${leadName} at ${companyName}. They are in the ${industry || 'Tech'} industry. Focus on the pain point of: ${painPoint || 'Scaling their software infrastructure'}.`;
 
@@ -293,7 +310,7 @@ End with a soft call to action asking for a quick 10-minute chat.`;
 // AI-SDR: Fully Automated Apollo.io Pipeline with Live Streaming
 app.post('/api/generate-campaign', async (req, res) => {
   try {
-    const { personaTitle, painPoint } = req.body;
+    const { personaTitle, painPoint, systemPrompt, variationOf } = req.body;
 
     if (!personaTitle) {
       return res.status(400).json({ error: 'Persona title is required (e.g. "SaaS Founder")' });
@@ -340,8 +357,18 @@ app.post('/api/generate-campaign', async (req, res) => {
     }
 
     // 2. Generate Emails for each lead and stream them immediately
-    const promptPath = path.join(__dirname, 'prompts', 'sdr_system_prompt.jinja');
-    const systemPrompt = fs.readFileSync(promptPath, 'utf-8');
+    let systemPrompt;
+    if (req.body.systemPrompt) {
+      systemPrompt = req.body.systemPrompt;
+    } else if (req.body.variationOf) {
+      // A/B variation: use the first prompt but add "Write a completely different version"
+      const promptPath = path.join(__dirname, 'prompts', 'sdr_system_prompt.jinja');
+      const basePrompt = fs.readFileSync(promptPath, 'utf-8');
+      systemPrompt = basePrompt + '\n\nCRITICAL: This is a VARIATION. Write a completely DIFFERENT email from the first version. Change the opening, structure, and tone. Do NOT repeat the same approach.';
+    } else {
+      const promptPath = path.join(__dirname, 'prompts', 'sdr_system_prompt.jinja');
+      systemPrompt = fs.readFileSync(promptPath, 'utf-8');
+    }
 
     for (const person of people) {
       const firstName = person.first_name || '';
@@ -425,7 +452,7 @@ app.post('/api/generate-campaign', async (req, res) => {
 // AI-SDR: Internship Recruitment Pipeline (Manual Data Input)
 app.post('/api/generate-internship-campaign', async (req, res) => {
   try {
-    const { rawData } = req.body;
+    const { rawData, systemPrompt, variationOf } = req.body;
 
     if (!rawData) {
       return res.status(400).json({ error: 'Raw student data is required.' });
@@ -444,8 +471,17 @@ app.post('/api/generate-internship-campaign', async (req, res) => {
       return res.end();
     }
 
-    const promptPath = path.join(__dirname, 'prompts', 'internship_sdr_prompt.jinja');
-    const systemPrompt = fs.readFileSync(promptPath, 'utf-8');
+    let systemPrompt;
+    if (req.body.systemPrompt) {
+      systemPrompt = req.body.systemPrompt;
+    } else if (req.body.variationOf) {
+      const promptPath = path.join(__dirname, 'prompts', 'internship_sdr_prompt.jinja');
+      const basePrompt = fs.readFileSync(promptPath, 'utf-8');
+      systemPrompt = basePrompt + '\n\nCRITICAL: This is a VARIATION. Write a completely DIFFERENT email from the first version. Change the opening, structure, and tone. Do NOT repeat the same approach.';
+    } else {
+      const promptPath = path.join(__dirname, 'prompts', 'internship_sdr_prompt.jinja');
+      systemPrompt = fs.readFileSync(promptPath, 'utf-8');
+    }
 
     for (const studentStr of students) {
       // Split by dashes, assuming Format: Name - Email - Notes/Headline
@@ -611,6 +647,71 @@ Founder @ Buildicy`;
     console.error('ROI Lead Capture Error:', error);
     // Even if email fails, we return 200 so the user sees the frontend result
     res.json({ success: true, warning: 'Lead captured but email failed to send.' });
+  }
+});
+
+// --------------------------------------------------------------------------
+// SDR CAMPAIGN STORAGE
+// --------------------------------------------------------------------------
+
+// Save a campaign
+app.post('/api/sdr/campaigns', async (req, res) => {
+  try {
+    const { name, campaignType, personaTitle, painPoint, systemPrompt, leads } = req.body;
+    if (!name || !leads) {
+      return res.status(400).json({ error: 'Campaign name and leads are required' });
+    }
+
+    const result = await db.run(
+      `INSERT INTO sdr_campaigns (name, campaign_type, persona_title, pain_point, system_prompt, leads_data)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [name, campaignType || 'b2b', personaTitle || '', painPoint || '', systemPrompt || '', JSON.stringify(leads)]
+    );
+
+    res.status(201).json({ success: true, id: result.lastID });
+  } catch (error) {
+    console.error('Error saving campaign:', error);
+    res.status(500).json({ error: 'Failed to save campaign' });
+  }
+});
+
+// List all campaigns
+app.get('/api/sdr/campaigns', async (req, res) => {
+  try {
+    const rows = await db.all(
+      'SELECT id, name, campaign_type, persona_title, pain_point, created_at, leads_data FROM sdr_campaigns ORDER BY created_at DESC'
+    );
+    const campaigns = rows.map(row => ({
+      ...row,
+      leads: JSON.parse(row.leads_data || '[]'),
+      leadCount: JSON.parse(row.leads_data || '[]').length
+    }));
+    res.json(campaigns);
+  } catch (error) {
+    console.error('Error fetching campaigns:', error);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+// Get single campaign
+app.get('/api/sdr/campaigns/:id', async (req, res) => {
+  try {
+    const row = await db.get('SELECT * FROM sdr_campaigns WHERE id = ?', [req.params.id]);
+    if (!row) return res.status(404).json({ error: 'Campaign not found' });
+    row.leads = JSON.parse(row.leads_data || '[]');
+    res.json(row);
+  } catch (error) {
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+// Delete campaign
+app.delete('/api/sdr/campaigns/:id', async (req, res) => {
+  try {
+    await db.run('DELETE FROM sdr_campaigns WHERE id = ?', [req.params.id]);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: 'Database error' });
   }
 });
 

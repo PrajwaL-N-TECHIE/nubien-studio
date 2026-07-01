@@ -32,6 +32,25 @@ async function initDB() {
   } catch (err) {
     console.error('Error verifying database:', err);
   }
+  
+  // Create SDR campaigns table (runs on cold start, ignores if exists)
+  try {
+    await sql`
+      CREATE TABLE IF NOT EXISTS sdr_campaigns (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        campaign_type VARCHAR(50) NOT NULL,
+        persona_title VARCHAR(255),
+        pain_point TEXT,
+        system_prompt TEXT,
+        leads_data TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+    console.log('SDR campaigns table verified.');
+  } catch (err) {
+    console.error('Error creating sdr_campaigns table:', err);
+  }
 }
 initDB();
 
@@ -140,6 +159,67 @@ app.delete('/api/admin/internships', async (req, res) => {
   } catch (error) {
     console.error('Failed to clear database:', error);
     res.status(500).json({ error: 'Failed to clear database' });
+  }
+});
+
+// --------------------------------------------------------------------------
+// SDR CAMPAIGN STORAGE (Vercel Postgres)
+// --------------------------------------------------------------------------
+
+app.post('/api/sdr/campaigns', async (req, res) => {
+  try {
+    const { name, campaignType, personaTitle, painPoint, systemPrompt, leads } = req.body;
+    if (!name || !leads) {
+      return res.status(400).json({ error: 'Campaign name and leads are required' });
+    }
+    const result = await sql`
+      INSERT INTO sdr_campaigns (name, campaign_type, persona_title, pain_point, system_prompt, leads_data)
+      VALUES (${name}, ${campaignType || 'b2b'}, ${personaTitle || ''}, ${painPoint || ''}, ${systemPrompt || ''}, ${JSON.stringify(leads)})
+      RETURNING id
+    `;
+    res.status(201).json({ success: true, id: result.rows[0].id });
+  } catch (error) {
+    console.error('Error saving campaign:', error);
+    res.status(500).json({ error: 'Failed to save campaign' });
+  }
+});
+
+app.get('/api/sdr/campaigns', async (req, res) => {
+  try {
+    const { rows } = await sql`
+      SELECT id, name, campaign_type, persona_title, pain_point, created_at, leads_data
+      FROM sdr_campaigns ORDER BY created_at DESC
+    `;
+    const campaigns = rows.map(row => ({
+      ...row,
+      leads: JSON.parse(row.leads_data || '[]'),
+      leadCount: JSON.parse(row.leads_data || '[]').length
+    }));
+    res.json(campaigns);
+  } catch (error) {
+    console.error('Error fetching campaigns:', error);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+app.get('/api/sdr/campaigns/:id', async (req, res) => {
+  try {
+    const { rows } = await sql`SELECT * FROM sdr_campaigns WHERE id = ${req.params.id}`;
+    if (rows.length === 0) return res.status(404).json({ error: 'Not found' });
+    const campaign = rows[0];
+    campaign.leads = JSON.parse(campaign.leads_data || '[]');
+    res.json(campaign);
+  } catch (error) {
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+app.delete('/api/sdr/campaigns/:id', async (req, res) => {
+  try {
+    await sql`DELETE FROM sdr_campaigns WHERE id = ${req.params.id}`;
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: 'Database error' });
   }
 });
 

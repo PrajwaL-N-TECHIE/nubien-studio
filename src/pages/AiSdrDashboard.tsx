@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, Bot, CheckCircle2, Search, Briefcase, Target, Loader2, ArrowRight, UserCircle, Send, Copy } from "lucide-react";
+import { Sparkles, Bot, CheckCircle2, Search, Briefcase, Target, Loader2, ArrowRight, UserCircle, Send, Copy, PenLine, FolderOpen, History, RefreshCw, ChevronDown, ChevronUp, Trash2 } from "lucide-react";
 import PageTransition from "@/components/PageTransition";
 import SEO from "@/components/SEO";
 import { toast } from "sonner";
@@ -10,14 +10,12 @@ const customEase = [0.22, 1, 0.36, 1];
 
 const CopyButton = ({ textToCopy, label }: { textToCopy: string, label: string }) => {
   const [copied, setCopied] = useState(false);
-
   const handleCopy = () => {
     navigator.clipboard.writeText(textToCopy);
     setCopied(true);
     toast.success(`Copied ${label}!`);
     setTimeout(() => setCopied(false), 2000);
   };
-
   return (
     <button 
       onClick={handleCopy}
@@ -37,8 +35,22 @@ interface LeadPitch {
   email: string;
   linkedin: string | null;
   emailBody: string;
+  emailBodyB?: string; // A/B variation
   isSent?: boolean;
 }
+
+interface Campaign {
+  id: number;
+  name: string;
+  campaign_type: string;
+  persona_title: string;
+  pain_point: string;
+  leads: LeadPitch[];
+  leadCount: number;
+  created_at: string;
+}
+
+const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 const AiSdrDashboard = () => {
   const [loading, setLoading] = useState(false);
@@ -52,6 +64,122 @@ const AiSdrDashboard = () => {
     painPoint: "",
     rawStudentData: ""
   });
+
+  // Email template editor
+  const [showPromptEditor, setShowPromptEditor] = useState(false);
+  const [customPrompt, setCustomPrompt] = useState("");
+
+  // Campaign history
+  const [showHistory, setShowHistory] = useState(false);
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+  const [campaignName, setCampaignName] = useState("");
+
+  const fetchCampaigns = async () => {
+    setLoadingHistory(true);
+    try {
+      const res = await fetch(`${baseUrl}/api/sdr/campaigns`);
+      if (res.ok) {
+        const data = await res.json();
+        setCampaigns(data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch campaigns", err);
+    }
+    setLoadingHistory(false);
+  };
+
+  const saveCampaign = async () => {
+    if (campaignLeads.length === 0) {
+      toast.error("No leads to save. Generate a campaign first.");
+      return;
+    }
+    const name = campaignName.trim() || `${campaignType === 'b2b' ? formData.personaTitle : 'Internship'} Campaign - ${new Date().toLocaleDateString()}`;
+    try {
+      const res = await fetch(`${baseUrl}/api/sdr/campaigns`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          campaignType,
+          personaTitle: formData.personaTitle,
+          painPoint: formData.painPoint,
+          systemPrompt: customPrompt,
+          leads: campaignLeads
+        })
+      });
+      if (res.ok) {
+        toast.success("Campaign saved!");
+        setCampaignName("");
+      } else {
+        toast.error("Failed to save campaign");
+      }
+    } catch (err) {
+      toast.error("Backend not running. Campaign not saved.");
+    }
+  };
+
+  const loadCampaign = (campaign: Campaign) => {
+    setCampaignLeads(campaign.leads);
+    setCampaignType(campaign.campaign_type as 'b2b' | 'internship');
+    if (campaign.campaign_type === 'b2b') {
+      setFormData(prev => ({ ...prev, personaTitle: campaign.persona_title, painPoint: campaign.pain_point }));
+    }
+    setShowHistory(false);
+    toast.success(`Loaded "${campaign.name}"`);
+  };
+
+  const deleteCampaign = async (id: number) => {
+    try {
+      await fetch(`${baseUrl}/api/sdr/campaigns/${id}`, { method: "DELETE" });
+      setCampaigns(prev => prev.filter(c => c.id !== id));
+      toast.success("Campaign deleted");
+    } catch (err) {
+      toast.error("Failed to delete");
+    }
+  };
+
+  const generateVariationB = async (lead: LeadPitch) => {
+    const idx = campaignLeads.findIndex(l => l.id === lead.id);
+    if (idx === -1) return;
+    
+    toast.loading(`Generating variation B for ${lead.name}...`, { id: `var-${lead.id}` });
+    
+    try {
+      const endpoint = campaignType === 'b2b' 
+        ? `${baseUrl}/api/generate-single-variation`
+        : `${baseUrl}/api/generate-single-variation`;
+      
+      // Use the generate-pitch endpoint with variation mode
+      const res = await fetch(`${baseUrl}/api/generate-pitch`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          leadName: lead.name,
+          companyName: lead.company,
+          industry: lead.title,
+          painPoint: formData.painPoint || 'Scaling their software infrastructure',
+          systemPrompt: customPrompt || undefined,
+          variationOf: lead.emailBody
+        })
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        const updated = [...campaignLeads];
+        updated[idx] = { ...lead, emailBodyB: data.email };
+        setCampaignLeads(updated);
+        toast.dismiss(`var-${lead.id}`);
+        toast.success(`Variation B ready for ${lead.name}`);
+      } else {
+        toast.dismiss(`var-${lead.id}`);
+        toast.error("Failed to generate variation");
+      }
+    } catch (err) {
+      toast.dismiss(`var-${lead.id}`);
+      toast.error("Backend error. Is the server running?");
+    }
+  };
 
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,9 +200,14 @@ const AiSdrDashboard = () => {
       setTimeout(() => setLoadingPhase(campaignType === 'b2b' ? "Scraping high-value leads..." : "Analyzing student profiles..."), 1500);
       setTimeout(() => setLoadingPhase("Routing leads through Groq LLaMA-3..."), 3500);
 
-      const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
       const endpoint = campaignType === 'b2b' ? `${baseUrl}/api/generate-campaign` : `${baseUrl}/api/generate-internship-campaign`;
-      const payload = campaignType === 'b2b' ? { personaTitle: formData.personaTitle, painPoint: formData.painPoint } : { rawData: formData.rawStudentData };
+      const payload: any = campaignType === 'b2b' 
+        ? { personaTitle: formData.personaTitle, painPoint: formData.painPoint }
+        : { rawData: formData.rawStudentData };
+      
+      if (customPrompt.trim()) {
+        payload.systemPrompt = customPrompt.trim();
+      }
 
       const response = await fetch(endpoint, {
         method: "POST",
@@ -150,20 +283,16 @@ const AiSdrDashboard = () => {
         continue;
       }
 
-      const match = lead.emailBody.match(/Subject:\s*(.*)\n\n([\s\S]*)/);
+      const emailBody = lead.emailBodyB || lead.emailBody;
+      const match = emailBody.match(/Subject:\s*(.*)\n\n([\s\S]*)/);
       const subject = match ? match[1].trim() : `Custom software for ${lead.company}`;
-      const body = match ? match[2].trim() : lead.emailBody;
+      const body = match ? match[2].trim() : emailBody;
 
       try {
-        const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
         const res = await fetch(`${baseUrl}/api/send-email`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            to: lead.email,
-            subject: subject,
-            text: body
-          })
+          body: JSON.stringify({ to: lead.email, subject, text: body })
         });
         if (res.ok) {
           successCount++;
@@ -192,8 +321,57 @@ const AiSdrDashboard = () => {
       />
 
       <div className="min-h-screen bg-[#050507] pt-32 pb-20 px-6 relative overflow-hidden">
-        {/* Cinematic Background Glows */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-purple-600/10 blur-[150px] rounded-full pointer-events-none" />
+
+        {/* Campaign History Sidebar */}
+        <AnimatePresence>
+          {showHistory && (
+            <motion.div
+              initial={{ opacity: 0, x: -300 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -300 }}
+              className="fixed left-0 top-0 h-full w-80 bg-[#0C0C12] border-r border-white/10 z-50 p-6 overflow-y-auto shadow-2xl"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-bold text-white flex items-center gap-2"><History size={18} className="text-purple-400" /> Campaigns</h3>
+                <button onClick={() => setShowHistory(false)} className="text-zinc-500 hover:text-white transition-colors text-lg">✕</button>
+              </div>
+              {loadingHistory ? (
+                <div className="flex items-center justify-center py-12"><Loader2 size={24} className="animate-spin text-purple-400" /></div>
+              ) : campaigns.length === 0 ? (
+                <p className="text-zinc-500 text-sm text-center py-12">No saved campaigns yet.<br/>Generate and save one to see it here.</p>
+              ) : (
+                <div className="space-y-3">
+                  {campaigns.map(c => (
+                    <div key={c.id} className="bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 transition-colors cursor-pointer" onClick={() => loadCampaign(c)}>
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-bold text-white text-sm truncate">{c.name}</h4>
+                          <p className="text-[10px] text-zinc-500 font-mono mt-1">{new Date(c.created_at).toLocaleDateString()} • {c.leadCount} leads</p>
+                        </div>
+                        <button onClick={(e) => { e.stopPropagation(); deleteCampaign(c.id); }} className="p-1 hover:bg-red-500/20 rounded-lg text-zinc-500 hover:text-red-400 transition-colors shrink-0 ml-2">
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                      <div className="flex items-center gap-2 mt-2">
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-purple-500/20 text-purple-400 uppercase">
+                          {c.campaign_type === 'b2b' ? 'B2B' : 'Internship'}
+                        </span>
+                        {c.persona_title && <span className="text-[10px] text-zinc-600 truncate">{c.persona_title}</span>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <button
+                onClick={() => { fetchCampaigns(); }}
+                className="mt-4 w-full py-2 bg-white/5 hover:bg-white/10 text-zinc-400 rounded-xl text-sm font-bold transition-colors flex items-center justify-center gap-2"
+              >
+                <RefreshCw size={14} /> Refresh
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <div className="max-w-7xl mx-auto relative z-10">
           
@@ -203,10 +381,16 @@ const AiSdrDashboard = () => {
               initial={{ opacity: 0, y: 20, scale: 0.9 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ duration: 0.8, ease: customEase as any }}
-              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#12121A]/90 border border-white/10 backdrop-blur-2xl mb-6 shadow-2xl"
+              className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-[#12121A]/90 border border-white/10 backdrop-blur-2xl mb-6 shadow-2xl"
             >
               <Bot size={14} className="text-purple-500" />
               <span className="text-[11px] font-bold tracking-widest text-white uppercase font-['DM_Mono']">Apollo Pipeline</span>
+              <button
+                onClick={() => { setShowHistory(true); fetchCampaigns(); }}
+                className="ml-2 text-[10px] px-2.5 py-1 bg-white/5 hover:bg-white/10 rounded-lg text-zinc-400 hover:text-white transition-colors flex items-center gap-1"
+              >
+                <FolderOpen size={12} /> History
+              </button>
             </motion.div>
 
             <motion.h1
@@ -221,7 +405,7 @@ const AiSdrDashboard = () => {
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             
-            {/* Left Column: Target Definition */}
+            {/* Left Column */}
             <motion.div 
               initial={{ opacity: 0, x: -30 }}
               animate={{ opacity: 1, x: 0 }}
@@ -293,6 +477,35 @@ const AiSdrDashboard = () => {
                     </div>
                   )}
 
+                  {/* Email Template Editor Toggle */}
+                  <div className="border-t border-white/5 pt-4">
+                    <button
+                      type="button"
+                      onClick={() => setShowPromptEditor(!showPromptEditor)}
+                      className="flex items-center gap-2 text-xs font-bold text-zinc-500 hover:text-white transition-colors w-full"
+                    >
+                      <PenLine size={14} />
+                      Email Template Editor
+                      {showPromptEditor ? <ChevronUp size={14} className="ml-auto" /> : <ChevronDown size={14} className="ml-auto" />}
+                    </button>
+                    {showPromptEditor && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        className="mt-3"
+                      >
+                        <textarea
+                          rows={10}
+                          value={customPrompt}
+                          onChange={e => setCustomPrompt(e.target.value)}
+                          placeholder="Leave empty to use the default template.&#10;&#10;Customize the AI's writing style, tone, rules, and structure here.&#10;&#10;Tip: Try 'Write like a cold email from a founder — short, direct, no fluff.'"
+                          className="w-full bg-[#1A1A24]/50 border border-white/10 rounded-xl p-4 text-white placeholder-zinc-600 focus:outline-none focus:border-purple-500/50 transition-colors resize-none text-xs font-mono custom-scrollbar"
+                        />
+                        <p className="text-[10px] text-zinc-600 mt-2">Override the default system prompt. Leave empty to use the built-in template.</p>
+                      </motion.div>
+                    )}
+                  </div>
+
                   <Magnetic strength={0.2}>
                     <button 
                       type="submit"
@@ -314,7 +527,7 @@ const AiSdrDashboard = () => {
               </div>
             </motion.div>
 
-            {/* Right Column: Automated Inbox */}
+            {/* Right Column */}
             <motion.div 
               initial={{ opacity: 0, x: 30 }}
               animate={{ opacity: 1, x: 0 }}
@@ -328,9 +541,21 @@ const AiSdrDashboard = () => {
                     <span className="text-lg font-bold text-white">Campaign Inbox</span>
                   </div>
                   {campaignLeads.length > 0 && (
-                    <span className="text-xs font-bold px-3 py-1 bg-green-500/20 text-green-400 rounded-full">
-                      {campaignLeads.length} Leads Drafted
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={campaignName}
+                        onChange={e => setCampaignName(e.target.value)}
+                        placeholder="Campaign name..."
+                        className="w-40 bg-[#1A1A24]/50 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-purple-500/50"
+                      />
+                      <button onClick={saveCampaign} className="text-[10px] px-3 py-1.5 bg-white/5 hover:bg-white/10 text-zinc-300 rounded-lg font-bold transition-colors flex items-center gap-1 border border-white/10">
+                        Save
+                      </button>
+                      <span className="text-xs font-bold px-3 py-1 bg-green-500/20 text-green-400 rounded-full">
+                        {campaignLeads.length} Leads
+                      </span>
+                    </div>
                   )}
                 </div>
 
@@ -376,9 +601,11 @@ const AiSdrDashboard = () => {
                     >
                       <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
                         {campaignLeads.map((lead, idx) => {
-                          const match = lead.emailBody.match(/Subject:\s*(.*)\n\n([\s\S]*)/);
+                          const emailBody = lead.emailBodyB || lead.emailBody;
+                          const match = emailBody.match(/Subject:\s*(.*)\n\n([\s\S]*)/);
                           const subject = match ? match[1].trim() : `Quick question for ${lead.name}`;
-                          const body = match ? match[2].trim() : lead.emailBody;
+                          const body = match ? match[2].trim() : emailBody;
+                          const hasVariationB = !!lead.emailBodyB;
 
                           return (
                             <div key={idx} className="bg-[#1A1A24]/40 border border-white/5 rounded-2xl p-5 hover:border-purple-500/30 transition-colors">
@@ -393,13 +620,21 @@ const AiSdrDashboard = () => {
                                     <p className="text-[10px] text-purple-400 mt-1 font-['DM_Mono']">{lead.email}</p>
                                   </div>
                                 </div>
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2 flex-wrap">
                                   {lead.isSent ? (
                                     <div className="flex items-center gap-1.5 px-3 py-1.5 bg-green-500/20 text-green-400 rounded-lg text-xs font-bold border border-green-500/30">
-                                      <CheckCircle2 size={14} /> Sent via Gmail
+                                      <CheckCircle2 size={14} /> Sent
                                     </div>
                                   ) : (
                                     <>
+                                      {!hasVariationB && (
+                                        <button
+                                          onClick={() => generateVariationB(lead)}
+                                          className="text-[10px] px-2.5 py-1.5 flex items-center gap-1.5 rounded-lg transition-colors border bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border-blue-500/30"
+                                        >
+                                          <RefreshCw size={12} /> A/B Test
+                                        </button>
+                                      )}
                                       <CopyButton textToCopy={lead.email} label="Email ID" />
                                       <CopyButton textToCopy={subject} label="Subject" />
                                       <CopyButton textToCopy={body} label="Body" />
@@ -407,10 +642,46 @@ const AiSdrDashboard = () => {
                                   )}
                                 </div>
                               </div>
-                              <div className="text-sm text-zinc-300 whitespace-pre-wrap leading-relaxed font-medium">
-                                <span className="text-zinc-500 font-bold mb-2 block">Subject: {subject}</span>
-                                {body}
-                              </div>
+
+                              {/* A/B Display */}
+                              {hasVariationB ? (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                  <div className="border border-purple-500/30 rounded-xl p-4 bg-purple-500/5">
+                                    <div className="flex items-center justify-between mb-2">
+                                      <span className="text-[10px] font-bold text-purple-400 uppercase tracking-widest">Version A</span>
+                                      <span className="text-[10px] text-purple-600">Original</span>
+                                    </div>
+                                    <div className="text-sm text-zinc-300 whitespace-pre-wrap leading-relaxed font-medium">
+                                      <span className="text-zinc-500 font-bold block text-xs mb-1">Subject: {subject}</span>
+                                      <div className="max-h-40 overflow-y-auto">{body}</div>
+                                    </div>
+                                  </div>
+                                  <div className="border border-blue-500/30 rounded-xl p-4 bg-blue-500/5">
+                                    <div className="flex items-center justify-between mb-2">
+                                      <span className="text-[10px] font-bold text-blue-400 uppercase tracking-widest">Version B</span>
+                                      <CopyButton textToCopy={lead.emailBodyB || ''} label="Body B" />
+                                    </div>
+                                    <div className="text-sm text-zinc-300 whitespace-pre-wrap leading-relaxed font-medium">
+                                      {(() => {
+                                        const matchB = (lead.emailBodyB || '').match(/Subject:\s*(.*)\n\n([\s\S]*)/);
+                                        const subjectB = matchB ? matchB[1].trim() : '';
+                                        const bodyB = matchB ? matchB[2].trim() : lead.emailBodyB;
+                                        return (
+                                          <>
+                                            <span className="text-zinc-500 font-bold block text-xs mb-1">Subject: {subjectB}</span>
+                                            <div className="max-h-40 overflow-y-auto">{bodyB}</div>
+                                          </>
+                                        );
+                                      })()}
+                                    </div>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="text-sm text-zinc-300 whitespace-pre-wrap leading-relaxed font-medium">
+                                  <span className="text-zinc-500 font-bold mb-2 block">Subject: {subject}</span>
+                                  {body}
+                                </div>
+                              )}
                             </div>
                           );
                         })}

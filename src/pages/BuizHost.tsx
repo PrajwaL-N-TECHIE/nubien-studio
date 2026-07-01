@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, Play, Trophy, Copy, CheckCircle2, Target, StopCircle, Plus, Lock, Trash2, Save, Eye, EyeOff } from 'lucide-react';
+import { Users, Play, Trophy, Copy, CheckCircle2, Target, StopCircle, Plus, Lock, Trash2, Save, Eye, EyeOff, Zap, Clock, Grid3X3 } from 'lucide-react';
 import { db, auth } from '@/lib/firebase';
 import { doc, setDoc, onSnapshot, collection, updateDoc, getDocs, deleteDoc, addDoc } from 'firebase/firestore';
 import { signInWithEmailAndPassword } from 'firebase/auth';
@@ -22,6 +22,8 @@ interface Player {
   streak: number;
   progress: number;
   avatar?: string;
+  currentQIndex?: number;
+  answers?: { [questionIdx: string]: { selectedOption: number; isCorrect: boolean; timeLeft: number } };
 }
 
 const BuizHost = () => {
@@ -46,6 +48,7 @@ const BuizHost = () => {
   const [selectedQuestions, setSelectedQuestions] = useState<Set<number | string>>(new Set());
   const [customQuestions, setCustomQuestions] = useState<CustomQuestion[]>([]);
   const [podiumPhase, setPodiumPhase] = useState<0 | 1 | 2 | 3>(0); // 0=none, 1=3rd, 2=2nd, 3=1st
+  const [gameMode, setGameMode] = useState<'hostPaced' | 'ownPace'>('hostPaced');
 
   // Custom Q Form State
   const [cqText, setCqText] = useState('');
@@ -172,6 +175,7 @@ const BuizHost = () => {
         questions: finalPayload,
         currentQIndex: 0,
         questionStatus: 'answering',
+        gameMode: gameMode,
         createdAt: new Date()
       });
 
@@ -243,6 +247,7 @@ const BuizHost = () => {
         questions: quiz.questions,
         currentQIndex: 0,
         questionStatus: 'answering',
+        gameMode: 'hostPaced',
         createdAt: new Date()
       });
 
@@ -302,12 +307,19 @@ const BuizHost = () => {
     if (!pin) return;
     setCurrentQIndex(0);
     setQuestionStatus('answering');
-    await updateDoc(doc(db, "buiz_rooms", pin), {
-      status: 'playing',
-      currentQIndex: 0,
-      questionStatus: 'answering',
-      startedAt: new Date()
-    });
+    if (gameMode === 'ownPace') {
+      await updateDoc(doc(db, "buiz_rooms", pin), {
+        status: 'playing',
+        startedAt: new Date()
+      });
+    } else {
+      await updateDoc(doc(db, "buiz_rooms", pin), {
+        status: 'playing',
+        currentQIndex: 0,
+        questionStatus: 'answering',
+        startedAt: new Date()
+      });
+    }
     setStatus('playing');
   };
 
@@ -533,7 +545,23 @@ const BuizHost = () => {
               />
               <p className="text-zinc-400 mt-2 text-sm">{selectedQuestions.size} from Bank, {customQuestions.length} Custom</p>
             </div>
-            <div className="flex items-center gap-4 shrink-0">
+            <div className="flex items-center gap-3">
+              <div className="flex bg-[#1A1A24] rounded-xl p-1">
+                <button
+                  type="button"
+                  onClick={() => setGameMode('hostPaced')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-colors ${gameMode === 'hostPaced' ? 'bg-purple-600 text-white' : 'text-zinc-500 hover:text-white'}`}
+                >
+                  <Clock size={14} /> Host Paced
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setGameMode('ownPace')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-colors ${gameMode === 'ownPace' ? 'bg-purple-600 text-white' : 'text-zinc-500 hover:text-white'}`}
+                >
+                  <Zap size={14} /> Own Pace
+                </button>
+              </div>
               <button onClick={handleQuickPick} className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-xl font-bold transition-all text-sm border border-white/10">
                 Quick Pick 10
               </button>
@@ -816,9 +844,84 @@ const BuizHost = () => {
                   ))}
                 </AnimatePresence>
               </div>
+            ) : gameMode === 'ownPace' ? (
+              <div className="flex-1 flex flex-col">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-2">
+                    <Grid3X3 size={20} className="text-purple-400" />
+                    <span className="text-white font-bold">Progress Matrix</span>
+                  </div>
+                  <div className="flex items-center gap-4 text-sm">
+                    <span className="text-green-400 font-bold">{players.filter(p => {
+                      const answered = Object.keys(p.answers || {}).length;
+                      return answered >= roomQuestions.length;
+                    }).length} / {players.length} done</span>
+                    <span className="text-zinc-400">
+                      Avg completion: {players.length > 0 ? Math.round(players.reduce((sum, p) => sum + (Object.keys(p.answers || {}).length), 0) / players.length / roomQuestions.length * 100) : 0}%
+                    </span>
+                  </div>
+                </div>
+
+                <div className="overflow-x-auto flex-1">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-white/10">
+                        <th className="text-left py-2 pr-4 text-zinc-500 font-bold uppercase tracking-widest text-[10px]">Player</th>
+                        <th className="text-left py-2 pr-4 text-zinc-500 font-bold uppercase tracking-widest text-[10px]">Score</th>
+                        {roomQuestions.map((_, qi) => (
+                          <th key={qi} className="text-center py-2 px-1.5 text-zinc-500 font-bold uppercase tracking-widest text-[10px] w-8">Q{qi + 1}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[...players].sort((a, b) => b.score - a.score).map(p => (
+                        <tr key={p.id} className="border-b border-white/5 hover:bg-white/5">
+                          <td className="py-2.5 pr-4 text-white font-bold flex items-center gap-2">
+                            {p.avatar && <img src={p.avatar} className="w-5 h-5 rounded-full" alt="" />}
+                            {p.name}
+                          </td>
+                          <td className="py-2.5 pr-4 text-purple-400 font-mono font-bold">{p.score.toLocaleString()}</td>
+                          {roomQuestions.map((q, qi) => {
+                            const answer = p.answers?.[qi];
+                            let cellClass = "bg-white/5 text-zinc-600";
+                            let cellText = "\u2014";
+                            if (answer) {
+                              cellText = String.fromCharCode(65 + answer.selectedOption);
+                              cellClass = answer.isCorrect ? "bg-green-500/20 text-green-400 font-bold" : "bg-red-500/20 text-red-400 font-bold";
+                            }
+                            return (
+                              <td key={qi} className="text-center py-2.5 px-1.5">
+                                <div className={`w-7 h-7 rounded-lg flex items-center justify-center mx-auto text-[11px] ${cellClass}`}>
+                                  {cellText}
+                                </div>
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="mt-6 pt-4 border-t border-white/10">
+                  <h3 className="text-sm font-bold text-white/50 uppercase tracking-widest mb-3">Answer Distribution (Current Progress)</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {roomQuestions.map((q, qi) => {
+                      const totalAnswers = players.filter(p => p.answers?.[qi]).length;
+                      const correctAnswers = players.filter(p => p.answers?.[qi]?.isCorrect).length;
+                      return (
+                        <div key={qi} className="bg-white/5 border border-white/10 rounded-xl p-3">
+                          <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-1">Q{qi + 1}</p>
+                          <p className="text-white font-bold text-sm truncate">{q.question}</p>
+                          <p className="text-xs text-zinc-400 mt-1">{totalAnswers} answers &bull; {correctAnswers} correct ({totalAnswers > 0 ? Math.round(correctAnswers / totalAnswers * 100) : 0}%)</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
             ) : (
               <div className="flex-1 flex flex-col">
-                {/* Host Question View */}
                 {roomQuestions[currentQIndex] && (
                   <>
                     <div className="flex justify-between items-center mb-6">
@@ -892,19 +995,38 @@ const BuizHost = () => {
               <div>
                 <p className="text-xs text-purple-300/70 font-bold uppercase tracking-widest mb-2">Instructions</p>
                 <ol className="text-sm text-zinc-300 space-y-3 list-decimal list-inside">
-                  <li>Share the PIN with students.</li>
-                  <li>Students go to <b>/buiz</b> to join.</li>
-                  <li>Wait for all students to appear on the leaderboard.</li>
-                  <li>Click <b>START NOW</b>.</li>
-                  <li>Students will answer 10 random questions at their own pace.</li>
+                  {gameMode === 'hostPaced' ? (
+                    <>
+                      <li>Share the PIN with students.</li>
+                      <li>Students go to <b>/buiz</b> to join.</li>
+                      <li>Wait for all students to appear on the leaderboard.</li>
+                      <li>Click <b>START NOW</b>.</li>
+                      <li>Students will answer each question in sync with the host timer.</li>
+                    </>
+                  ) : (
+                    <>
+                      <li>Share the PIN with students.</li>
+                      <li>Students go to <b>/buiz</b> to join.</li>
+                      <li>Wait for all students to appear on the leaderboard.</li>
+                      <li>Click <b>START NOW</b>.</li>
+                      <li>Students answer all questions at their own pace. Watch the progress matrix fill up in real-time!</li>
+                    </>
+                  )}
                 </ol>
               </div>
 
               <div className="pt-6 border-t border-purple-500/20">
                 <p className="text-xs text-purple-300/70 font-bold uppercase tracking-widest mb-2">Current Mode</p>
                 <div className="bg-black/40 rounded-xl p-4 border border-white/5">
-                  <p className="font-bold text-white text-sm mb-1">Host Paced (Kahoot Style)</p>
-                  <p className="text-xs text-zinc-500">Host controls the question flow. Students answer in real-time on their devices.</p>
+                  <p className="font-bold text-white text-sm mb-1 flex items-center gap-2">
+                    {gameMode === 'hostPaced' ? <Clock size={14} className="text-purple-400" /> : <Zap size={14} className="text-green-400" />}
+                    {gameMode === 'hostPaced' ? 'Host Paced (Kahoot Style)' : 'Own Pace (Async)'}
+                  </p>
+                  <p className="text-xs text-zinc-500">
+                    {gameMode === 'hostPaced' 
+                      ? 'Host controls the question flow. Students answer in real-time on their devices.'
+                      : 'Students answer at their own pace. Host sees live progress in the matrix.'}
+                  </p>
                 </div>
               </div>
             </div>
