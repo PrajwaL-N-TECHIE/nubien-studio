@@ -89,7 +89,7 @@ const MagneticButton = ({ children, onClick }: { children: React.ReactNode, onCl
 const SupportSection = () => {
   const sectionRef = useRef(null);
   const fanRef = useRef(null);
-  const { dpr } = usePerformance();
+  const { dpr, isLowEnd } = usePerformance();
   const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
   const fanInView = useInView(fanRef, { once: true, margin: "-50px" });
 
