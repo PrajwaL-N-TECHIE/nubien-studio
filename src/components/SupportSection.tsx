@@ -126,11 +126,13 @@ const SupportSection = () => {
 
       {/* 3D Glitch Sphere Background */}
       <div className="absolute inset-0 z-0 opacity-40">
-        <Canvas camera={{ position: [0, 0, 5], fov: 75 }} dpr={dpr}>
-          <ambientLight intensity={0.5} />
-          <pointLight position={[10, 10, 10]} />
-          <GlitchSphere />
-        </Canvas>
+        {!isLowEnd && (
+          <Canvas camera={{ position: [0, 0, 5], fov: 75 }} dpr={dpr}>
+            <ambientLight intensity={0.5} />
+            <pointLight position={[10, 10, 10]} />
+            <GlitchSphere />
+          </Canvas>
+        )}
       </div>
 
       {/* Parallax 404 Watermark */}

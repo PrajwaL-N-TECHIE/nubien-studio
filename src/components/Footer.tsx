@@ -329,7 +329,7 @@ const Footer = () => {
 
       {/* 3D NEURAL CORE BACKGROUND */}
       <div className="absolute inset-0 pointer-events-none z-0">
-        {isInView && (
+        {isInView && !isLowEnd && (
           <Suspense fallback={null}>
             <Canvas
               dpr={dpr}

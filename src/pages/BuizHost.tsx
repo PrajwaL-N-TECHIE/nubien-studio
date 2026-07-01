@@ -839,7 +839,7 @@ const BuizHost = () => {
                       animate={{ opacity: 1, scale: 1 }}
                       className="bg-purple-600/20 border border-purple-500/30 px-4 py-2 rounded-full flex items-center gap-2"
                     >
-                      {p.avatar && <img src={p.avatar} alt="Avatar" className="w-6 h-6 rounded-full bg-black/20" />}
+                      {p.avatar && <img src={p.avatar} alt="Avatar" loading="lazy" className="w-6 h-6 rounded-full bg-black/20" />}
                       <span className="text-white font-bold text-sm">{p.name}</span>
                     </motion.div>
                   ))}
@@ -878,7 +878,7 @@ const BuizHost = () => {
                       {[...players].sort((a, b) => b.score - a.score).map(p => (
                         <tr key={p.id} className="border-b border-white/5 hover:bg-white/5">
                           <td className="py-2.5 pr-4 text-white font-bold flex items-center gap-2">
-                            {p.avatar && <img src={p.avatar} className="w-5 h-5 rounded-full" alt="" />}
+                            {p.avatar && <img src={p.avatar} className="w-5 h-5 rounded-full" loading="lazy" alt="" />}
                             {p.name}
                           </td>
                           <td className="py-2.5 pr-4 text-purple-400 font-mono font-bold">{p.score.toLocaleString()}</td>

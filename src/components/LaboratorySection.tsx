@@ -187,7 +187,7 @@ const LeadershipCard = ({ name, role, description, isCEO, imageSrc, imageWrapper
                 <div className="w-48 h-48 md:w-64 md:h-64 rounded-3xl bg-[#12121A] border border-white/5 flex items-center justify-center mb-10 shadow-2xl group-hover:border-purple-500/50 transition-all duration-500 overflow-hidden ring-1 ring-white/10 group-hover:ring-purple-500/30">
                     {imageSrc ? (
                         <div className={`w-full h-full ${imageWrapperClassName}`}>
-                            <img src={imageSrc} alt={`${name} - ${role} of Buildicy`} className={`w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ${imgClassName}`} />
+                            <img src={imageSrc} alt={`${name} - ${role} of Buildicy`} loading="lazy" className={`w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ${imgClassName}`} />
                         </div>
                     ) : (
                         <Users className="text-purple-400 group-hover:text-white transition-colors" size={64} />

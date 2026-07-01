@@ -244,11 +244,13 @@ const ProcessSection = () => {
 
       {/* 3D BACKGROUND (Optimized dpr for sharp/smooth rendering) */}
       <div className="absolute inset-0 pointer-events-none z-0">
-        <Suspense fallback={null}>
-          <Canvas camera={{ position: [0, 0, 15], fov: 60 }} dpr={dpr}>
-            <DataWave />
-          </Canvas>
-        </Suspense>
+        {!isLowEnd && (
+          <Suspense fallback={null}>
+            <Canvas camera={{ position: [0, 0, 15], fov: 60 }} dpr={dpr}>
+              <DataWave />
+            </Canvas>
+          </Suspense>
+        )}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,transparent_0%,#050507_100%)] opacity-90" />
       </div>
 

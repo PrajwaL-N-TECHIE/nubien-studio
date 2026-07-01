@@ -24,4 +24,25 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          "vendor-three": ["three", "@react-three/fiber", "@react-three/drei"],
+          "vendor-firebase": ["firebase/app", "firebase/firestore", "firebase/auth"],
+          "vendor-motion": ["framer-motion"],
+          "vendor-charts": ["recharts"],
+          "vendor-ui": [
+            "lucide-react",
+            "sonner",
+            "vaul",
+            "cmdk",
+            "input-otp",
+            "embla-carousel-react",
+            "react-resizable-panels",
+          ],
+        },
+      },
+    },
+  },
 }));

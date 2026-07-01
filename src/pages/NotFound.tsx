@@ -161,16 +161,18 @@ const NotFound = () => {
 
       {/* 3D Scene */}
       <div className="absolute inset-0 z-0">
-        <Canvas dpr={dpr}>
-          <PerspectiveCamera makeDefault position={[0, 0, 5]} fov={75} />
-          <ambientLight intensity={0.5} />
-          <pointLight position={[10, 10, 10]} intensity={1} color="#a855f7" />
-          <pointLight position={[-10, -10, -10]} intensity={0.5} color="#3b82f6" />
-          <Suspense fallback={null}>
-            <GlitchSphere />
-            <ParticleField />
-          </Suspense>
-        </Canvas>
+        {!isLowEnd && (
+          <Canvas dpr={dpr}>
+            <PerspectiveCamera makeDefault position={[0, 0, 5]} fov={75} />
+            <ambientLight intensity={0.5} />
+            <pointLight position={[10, 10, 10]} intensity={1} color="#a855f7" />
+            <pointLight position={[-10, -10, -10]} intensity={0.5} color="#3b82f6" />
+            <Suspense fallback={null}>
+              <GlitchSphere />
+              <ParticleField />
+            </Suspense>
+          </Canvas>
+        )}
       </div>
 
       {/* Interactive Watermark */}
