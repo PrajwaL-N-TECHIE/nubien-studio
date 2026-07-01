@@ -211,7 +211,7 @@ const ProcessCard = ({ step, index, isInView }: { step: any, index: number, isIn
 // --------------------------------------------------------------------------
 const ProcessSection = () => {
   const containerRef = useRef(null);
-  const { dpr } = usePerformance();
+  const { dpr, isLowEnd } = usePerformance();
   const isInView = useInView(containerRef, { once: true, margin: "-100px" });
 
   const { scrollYProgress } = useScroll({
