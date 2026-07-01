@@ -5,6 +5,7 @@ import { db, auth } from '@/lib/firebase';
 import { doc, setDoc, onSnapshot, collection, updateDoc, getDocs, deleteDoc, addDoc } from 'firebase/firestore';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { QUESTIONS } from '@/data/questions';
+import { toast } from "sonner";
 
 interface CustomQuestion {
   id: string;
@@ -157,7 +158,7 @@ const BuizHost = () => {
 
   const generateRoom = async () => {
     if (selectedQuestions.size === 0 && customQuestions.length === 0) {
-      alert("Please select or create at least one question!");
+      toast.error("Select or create at least one question!");
       return;
     }
 
@@ -184,17 +185,17 @@ const BuizHost = () => {
       setStatus('waiting');
     } catch (err) {
       console.error("Failed to create room", err);
-      alert("Make sure you updated your Firebase Rules to allow writing to buiz_rooms!");
+      toast.error("Make sure you updated your Firebase Rules to allow writing to buiz_rooms!");
     }
   };
 
   const saveQuiz = async () => {
     if (!quizName.trim()) {
-      alert("Please enter a name for this quiz session!");
+      toast.error("Please enter a name for this quiz session!");
       return;
     }
     if (selectedQuestions.size === 0 && customQuestions.length === 0) {
-      alert("Please select or create at least one question!");
+      toast.error("Select or create at least one question!");
       return;
     }
 
@@ -208,14 +209,14 @@ const BuizHost = () => {
         createdAt: new Date().toISOString()
       });
 
-      alert("Quiz saved successfully!");
+      toast.success("Quiz saved successfully!");
       setStatus('setup');
       setQuizName('');
       setSelectedQuestions(new Set());
       setCustomQuestions([]);
     } catch (err) {
       console.error("Failed to save quiz", err);
-      alert("Failed to save. Check your Firebase permissions.");
+      toast.error("Failed to save. Check your Firebase permissions.");
     }
   };
 
@@ -256,7 +257,7 @@ const BuizHost = () => {
       setStatus('waiting');
     } catch (err) {
       console.error("Failed to create room from saved quiz", err);
-      alert("Failed to launch. Check your Firebase permissions.");
+      toast.error("Failed to launch. Check your Firebase permissions.");
     }
   };
 
@@ -275,7 +276,7 @@ const BuizHost = () => {
 
   const addCustomQuestion = () => {
     if (!cqText.trim() || cqOptions.some(opt => !opt.trim())) {
-      alert("Please fill out the question and all 4 options.");
+      toast.error("Please fill out the question and all 4 options.");
       return;
     }
     const newQ: CustomQuestion = {

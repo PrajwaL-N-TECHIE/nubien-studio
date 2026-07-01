@@ -4,6 +4,7 @@ import { Trophy, Target, Clock, Zap, CheckCircle2, XCircle, Grid3X3, ArrowLeft, 
 import { db } from '@/lib/firebase';
 import { doc, setDoc, onSnapshot, updateDoc, getDoc } from 'firebase/firestore';
 import { playTickSound, playCorrectSound, playIncorrectSound } from '@/utils/audio';
+import { toast } from "sonner";
 
 interface Question {
   id: number | string;
@@ -76,7 +77,7 @@ const BuizClient = () => {
           setRoomStatus('finished');
         }
       } else {
-        alert("Room was closed by host.");
+        toast.error("Room was closed by host.");
         setRoomStatus('setup');
       }
     });
@@ -113,12 +114,12 @@ const BuizClient = () => {
       const roomSnap = await getDoc(roomRef);
       
       if (!roomSnap.exists()) {
-        alert("Invalid PIN. Room not found.");
+        toast.error("Invalid PIN. Room not found.");
         return;
       }
       
       if (roomSnap.data().status !== 'waiting') {
-        alert("Game has already started or finished!");
+        toast.error("Game has already started or finished!");
         return;
       }
       
@@ -138,7 +139,7 @@ const BuizClient = () => {
       setRoomStatus('waiting');
     } catch (err) {
       console.error(err);
-      alert("Failed to join. Check your internet connection.");
+      toast.error("Failed to join. Check your internet connection.");
     }
   };
 

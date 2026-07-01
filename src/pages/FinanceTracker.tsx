@@ -6,6 +6,7 @@ import { collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, order
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell, BarChart, Bar, LineChart as ReLineChart, Line, ReferenceLine } from 'recharts';
 import confetti from 'canvas-confetti';
+import { toast } from "sonner";
 
 interface Transaction {
   id: string;
@@ -50,6 +51,7 @@ const FinanceTracker = () => {
 
   // Dashboard State
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [loadingData, setLoadingData] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
   const [viewingTransaction, setViewingTransaction] = useState<Transaction | null>(null);
   const [celebration, setCelebration] = useState<number | null>(null);
@@ -87,6 +89,7 @@ const FinanceTracker = () => {
 
   useEffect(() => {
     if (status === 'dashboard') {
+      setLoadingData(true);
       const q = query(collection(db, "finance_transactions"), orderBy("date", "desc"));
       const unsubscribe = onSnapshot(q, (snapshot) => {
         const transData: Transaction[] = [];
@@ -94,6 +97,7 @@ const FinanceTracker = () => {
           transData.push({ id: doc.id, ...doc.data() } as Transaction);
         });
         setTransactions(transData);
+        setLoadingData(false);
       });
       return () => unsubscribe();
     }
@@ -162,7 +166,7 @@ const FinanceTracker = () => {
       setDate(new Date().toISOString().split('T')[0]);
     } catch (err) {
       console.error("Failed to add/update transaction", err);
-      alert("Failed to save transaction. Check Firebase permissions.");
+      toast.error("Failed to save transaction. Check Firebase permissions.");
     }
   };
 
@@ -243,7 +247,7 @@ const FinanceTracker = () => {
       setRtForm({ type: 'credit', amount: '', category: CATEGORIES.credit[0], description: '', source_destination: '', frequency: 'monthly', next_date: new Date().toISOString().split('T')[0] });
     } catch (err) {
       console.error("Failed to save recurring txn", err);
-      alert("Failed to save. Check Firebase permissions.");
+      toast.error("Failed to save. Check Firebase permissions.");
     }
   };
 

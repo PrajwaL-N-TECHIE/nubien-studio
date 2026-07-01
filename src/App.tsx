@@ -15,6 +15,7 @@ import CustomCursor from "@/components/CustomCursor";
 import NoiseOverlay from "@/components/NoiseOverlay";
 import ContactScouter from "@/components/ContactScouter";
 import CoreVitalsHUD from "@/components/CoreVitalsHUD";
+import PageLoader from "@/components/PageLoader";
 import { PerformanceProvider } from "@/context/PerformanceContext";
 
 // Pages - Lazy loaded
@@ -43,7 +44,7 @@ const AnimatedRoutes = () => {
 
   return (
     <AnimatePresence mode="wait">
-      <Suspense fallback={<div className="min-h-screen bg-[#050507]" />}>
+      <Suspense fallback={<PageLoader />}>
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={<Home />} />
           <Route path="/services" element={<Services />} />
