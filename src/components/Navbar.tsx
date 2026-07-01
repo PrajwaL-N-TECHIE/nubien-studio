@@ -25,7 +25,6 @@ import {
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import Magnetic from "./Magnetic";
-import ThemeToggle from "./ThemeToggle";
 
 // --------------------------------------------------------------------------
 // CONFIGURATION
@@ -208,10 +207,6 @@ const MobileMenu = ({ isOpen, onClose }: any) => {
 
             {/* Contact Info */}
             <div className="p-4 border-t border-white/5 bg-white/5">
-              <div className="flex items-center justify-between px-4 mb-4">
-                <span className="text-xs font-bold text-white/40 uppercase tracking-widest">Appearance</span>
-                <ThemeToggle />
-              </div>
               <motion.div variants={itemVariants} className="space-y-2">
                 <div className="flex items-center gap-3 px-4 py-2 text-sm text-white/60">
                   <Phone size={14} />
@@ -375,11 +370,6 @@ const DynamicIslandNav = () => {
                           </motion.div>
                         </button>
                       </Magnetic>
-                    </div>
-
-                    {/* Theme Toggle */}
-                    <div className="ml-2">
-                      <ThemeToggle />
                     </div>
                   </motion.div>
                 )}
