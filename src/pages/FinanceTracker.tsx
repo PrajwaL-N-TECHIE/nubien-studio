@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, Eye, EyeOff, TrendingUp, TrendingDown, DollarSign, Plus, Trash2, Calendar, Activity, Filter, ArrowUpRight, ArrowDownRight, Hash, Edit2, Download, Search } from 'lucide-react';
+import { Lock, Eye, EyeOff, TrendingUp, TrendingDown, DollarSign, Plus, Trash2, Calendar, Activity, Filter, ArrowUpRight, ArrowDownRight, Hash, Edit2, Download, Search, Repeat, ToggleLeft, ToggleRight, AlertTriangle, LineChart } from 'lucide-react';
 import { db, auth } from '@/lib/firebase';
-import { collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, where } from 'firebase/firestore';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell, BarChart, Bar, LineChart as ReLineChart, Line, ReferenceLine } from 'recharts';
 import confetti from 'canvas-confetti';
 
 interface Transaction {
@@ -15,6 +15,19 @@ interface Transaction {
   description: string;
   source_destination: string;
   date: string; // YYYY-MM-DD
+  createdAt: string;
+}
+
+interface RecurringTransaction {
+  id: string;
+  type: 'credit' | 'debit';
+  amount: number;
+  category: string;
+  description: string;
+  source_destination: string;
+  frequency: 'monthly' | 'weekly' | 'yearly';
+  next_date: string; // YYYY-MM-DD
+  active: boolean;
   createdAt: string;
 }
 
@@ -47,6 +60,23 @@ const FinanceTracker = () => {
   const [timeframe, setTimeframe] = useState<'all' | 'year' | 'month'>('month');
   const [filterCategory, setFilterCategory] = useState<string>('All');
 
+  // Recurring Transactions
+  const [recurringTxns, setRecurringTxns] = useState<RecurringTransaction[]>([]);
+  const [showRecurringModal, setShowRecurringModal] = useState(false);
+  const [editingRecurring, setEditingRecurring] = useState<RecurringTransaction | null>(null);
+  const [rtForm, setRtForm] = useState({
+    type: 'credit' as 'credit' | 'debit',
+    amount: '',
+    category: CATEGORIES.credit[0],
+    description: '',
+    source_destination: '',
+    frequency: 'monthly' as 'monthly' | 'weekly' | 'yearly',
+    next_date: new Date().toISOString().split('T')[0]
+  });
+
+  // Forecast
+  const [forecastMonths, setForecastMonths] = useState(6);
+
   // New Transaction Form State
   const [type, setType] = useState<'credit' | 'debit'>('credit');
   const [amount, setAmount] = useState('');
@@ -64,6 +94,21 @@ const FinanceTracker = () => {
           transData.push({ id: doc.id, ...doc.data() } as Transaction);
         });
         setTransactions(transData);
+      });
+      return () => unsubscribe();
+    }
+  }, [status]);
+
+  // Listen to recurring transactions
+  useEffect(() => {
+    if (status === 'dashboard') {
+      const q = query(collection(db, "recurring_transactions"), orderBy("next_date", "asc"));
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        const recData: RecurringTransaction[] = [];
+        snapshot.forEach((doc) => {
+          recData.push({ id: doc.id, ...doc.data() } as RecurringTransaction);
+        });
+        setRecurringTxns(recData);
       });
       return () => unsubscribe();
     }
@@ -175,6 +220,65 @@ const FinanceTracker = () => {
     document.body.removeChild(link);
   };
 
+  // --- Recurring Transaction Handlers ---
+  const handleAddRecurring = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!rtForm.amount || !rtForm.description || !rtForm.source_destination) return;
+    try {
+      const baseAmount = currency === 'USD' ? parseFloat(rtForm.amount) * 83.5 : parseFloat(rtForm.amount);
+      if (editingRecurring) {
+        await updateDoc(doc(db, "recurring_transactions", editingRecurring.id), {
+          ...rtForm,
+          amount: baseAmount,
+        });
+      } else {
+        await addDoc(collection(db, "recurring_transactions"), {
+          ...rtForm,
+          amount: baseAmount,
+          createdAt: new Date().toISOString()
+        });
+      }
+      setShowRecurringModal(false);
+      setEditingRecurring(null);
+      setRtForm({ type: 'credit', amount: '', category: CATEGORIES.credit[0], description: '', source_destination: '', frequency: 'monthly', next_date: new Date().toISOString().split('T')[0] });
+    } catch (err) {
+      console.error("Failed to save recurring txn", err);
+      alert("Failed to save. Check Firebase permissions.");
+    }
+  };
+
+  const toggleRecurringActive = async (rt: RecurringTransaction) => {
+    try {
+      await updateDoc(doc(db, "recurring_transactions", rt.id), { active: !rt.active });
+    } catch (err) {
+      console.error("Failed to toggle", err);
+    }
+  };
+
+  const deleteRecurring = async (id: string) => {
+    if (window.confirm('Delete this recurring transaction?')) {
+      try {
+        await deleteDoc(doc(db, "recurring_transactions", id));
+      } catch (err) {
+        console.error("Failed to delete", err);
+      }
+    }
+  };
+
+  const openEditRecurring = (rt: RecurringTransaction) => {
+    setEditingRecurring(rt);
+    setRtForm({
+      type: rt.type,
+      amount: (currency === 'USD' ? rt.amount / 83.5 : rt.amount).toString(),
+      category: rt.category,
+      description: rt.description,
+      source_destination: rt.source_destination,
+      frequency: rt.frequency,
+      next_date: rt.next_date
+    });
+    setShowRecurringModal(true);
+  };
+
   // Calculations & Filtering
   const { 
     totalRevenue, 
@@ -184,7 +288,10 @@ const FinanceTracker = () => {
     filteredTransactions,
     incomeByCategory,
     expenseByCategory,
-    profitMargin
+    profitMargin,
+    forecastData,
+    avgMonthlyIncome,
+    avgMonthlyExpenses
   } = useMemo(() => {
     let rev = 0;
     let exp = 0;
@@ -262,6 +369,69 @@ const FinanceTracker = () => {
     // Sort chart data chronologically
     const sortedChart = Object.values(monthlyMap).sort((a, b) => a.name.localeCompare(b.name));
 
+    // ---- Forecast Calculation ----
+    // Compute average monthly income/expenses from all-time data (for non-recurring baseline)
+    const allMonthsMap: Record<string, { inc: number; exp: number }> = {};
+    transactions.forEach(t => {
+      const m = t.date.substring(0, 7);
+      if (!allMonthsMap[m]) allMonthsMap[m] = { inc: 0, exp: 0 };
+      if (t.type === 'credit') allMonthsMap[m].inc += t.amount;
+      else allMonthsMap[m].exp += t.amount;
+    });
+    const monthCount = Object.keys(allMonthsMap).length || 1;
+
+    // Baseline average from actual data
+    const totalInc = Object.values(allMonthsMap).reduce((s, m) => s + m.inc, 0);
+    const totalExp = Object.values(allMonthsMap).reduce((s, m) => s + m.exp, 0);
+    const avgInc = totalInc / monthCount;
+    const avgExp = totalExp / monthCount;
+
+    // Calculate recurring monthly amounts
+    let recurringMonthlyInc = 0;
+    let recurringMonthlyExp = 0;
+    const nowDate = new Date();
+    recurringTxns.filter(rt => rt.active).forEach(rt => {
+      const monthlyAmount = rt.frequency === 'monthly' ? rt.amount
+        : rt.frequency === 'weekly' ? rt.amount * 4.33
+        : rt.amount / 12; // yearly
+      if (rt.type === 'credit') recurringMonthlyInc += monthlyAmount;
+      else recurringMonthlyExp += monthlyAmount;
+    });
+
+    // Non-recurring baseline = average minus what recurring already covers
+    // This avoids double-counting recurring amounts
+    const nonRecurringAvgInc = Math.max(0, avgInc - recurringMonthlyInc);
+    const nonRecurringAvgExp = Math.max(0, avgExp - recurringMonthlyExp);
+
+    // Generate forecast for next N months
+    const forecast: { name: string; Income: number; Expenses: number; Balance: number }[] = [];
+    let runningBalance = bal; // start from current net balance
+
+    // Get current month from actual data as starting point for the forecast
+    const lastHistMonth = sortedChart.length > 0 ? sortedChart[sortedChart.length - 1].name : currentMonth;
+    
+    // Start forecast from the month after the last historical data
+    const [lastY, lastM] = lastHistMonth.split('-').map(Number);
+    let fy = lastY;
+    let fm = lastM;
+
+    for (let i = 0; i < forecastMonths; i++) {
+      fm += 1;
+      if (fm > 12) { fm = 1; fy += 1; }
+      const monthLabel = `${fy}-${String(fm).padStart(2, '0')}`;
+      
+      const projectedInc = recurringMonthlyInc + nonRecurringAvgInc;
+      const projectedExp = recurringMonthlyExp + nonRecurringAvgExp;
+      runningBalance += (projectedInc - projectedExp);
+      
+      forecast.push({
+        name: monthLabel,
+        Income: projectedInc,
+        Expenses: projectedExp,
+        Balance: runningBalance
+      });
+    }
+
     return { 
       totalRevenue: rev, 
       totalExpenses: exp, 
@@ -270,9 +440,12 @@ const FinanceTracker = () => {
       chartData: sortedChart, 
       filteredTransactions: filteredTx,
       incomeByCategory,
-      expenseByCategory
+      expenseByCategory,
+      forecastData: forecast,
+      avgMonthlyIncome: avgInc,
+      avgMonthlyExpenses: avgExp
     };
-  }, [transactions, timeframe, filterCategory, searchQuery]);
+  }, [transactions, timeframe, filterCategory, searchQuery, recurringTxns, forecastMonths]);
 
   const formatCurrency = (amount: number) => {
     const val = currency === 'USD' ? amount / 83.5 : amount;
@@ -391,6 +564,13 @@ const FinanceTracker = () => {
             <p className="text-zinc-400 text-lg">High-level enterprise expenditure and revenue tracking.</p>
           </div>
           <div className="flex items-center gap-4">
+            <button
+              onClick={() => setShowRecurringModal(true)}
+              className="px-6 py-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-2xl font-bold transition-all shadow-lg flex items-center gap-2 group"
+            >
+              <Repeat size={20} className="text-zinc-400 group-hover:text-white transition-colors" />
+              <span className="hidden sm:inline">Recurring</span>
+            </button>
             <button
               onClick={handleExportCSV}
               className="px-6 py-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-2xl font-bold transition-all shadow-lg flex items-center gap-2 group"
@@ -752,7 +932,252 @@ const FinanceTracker = () => {
           </div>
         </div>
 
+        {/* Cash Flow Forecast */}
+        <div className="mt-8 bg-[#0C0C12]/80 backdrop-blur-md border border-white/10 rounded-3xl p-6 md:p-8">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
+            <div>
+              <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                <LineChart size={20} className="text-blue-400" /> Cash Flow Forecast
+              </h3>
+              <p className="text-zinc-500 text-sm mt-1">
+                Projected {forecastMonths}-month outlook based on recurring transactions and historical averages
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="flex bg-white/5 border border-white/10 rounded-lg p-1">
+                {[3, 6, 12].map(n => (
+                  <button
+                    key={n}
+                    onClick={() => setForecastMonths(n)}
+                    className={`px-3 py-1.5 rounded-md text-xs font-bold uppercase tracking-wider transition-all ${forecastMonths === n ? 'bg-blue-600 text-white shadow-md' : 'text-zinc-400 hover:text-white'}`}
+                  >
+                    {n}m
+                  </button>
+                ))}
+              </div>
+              <div className="flex items-center gap-3 text-xs font-bold tracking-widest uppercase">
+                <span className="flex items-center gap-1.5 text-green-400"><div className="w-2 h-2 rounded-full bg-green-500" /> Income</span>
+                <span className="flex items-center gap-1.5 text-red-400"><div className="w-2 h-2 rounded-full bg-red-500" /> Expense</span>
+                <span className="flex items-center gap-1.5 text-blue-400"><div className="w-2 h-2 rounded-full bg-blue-500" /> Balance</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
+            <div className="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-5">
+              <p className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-1">Avg Monthly Income</p>
+              <p className="text-2xl font-black text-white">{formatCurrency(avgMonthlyIncome)}</p>
+            </div>
+            <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-5">
+              <p className="text-xs font-bold text-red-400 uppercase tracking-widest mb-1">Avg Monthly Expenses</p>
+              <p className="text-2xl font-black text-white">{formatCurrency(avgMonthlyExpenses)}</p>
+            </div>
+            <div className="bg-green-500/10 border border-green-500/20 rounded-2xl p-5">
+              <p className="text-xs font-bold text-green-400 uppercase tracking-widest mb-1">Monthly Runway</p>
+              <p className="text-2xl font-black text-white">{formatCurrency(avgMonthlyIncome - avgMonthlyExpenses)}</p>
+            </div>
+            <div className="bg-purple-500/10 border border-purple-500/20 rounded-2xl p-5">
+              <p className="text-xs font-bold text-purple-400 uppercase tracking-widest mb-1">Projected Balance ({forecastMonths}m)</p>
+              <p className={`text-2xl font-black ${forecastData.length > 0 && forecastData[forecastData.length - 1].Balance >= 0 ? 'text-white' : 'text-red-400'}`}>
+                {forecastData.length > 0 ? formatCurrency(forecastData[forecastData.length - 1].Balance) : '—'}
+              </p>
+            </div>
+          </div>
+
+          <div className="h-[400px] w-full">
+            {forecastData.length === 0 ? (
+              <div className="w-full h-full flex items-center justify-center border border-dashed border-white/10 rounded-2xl">
+                <p className="text-zinc-500">Add transactions and recurring entries to see a forecast.</p>
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <ReLineChart data={[...chartData.slice(-3), ...forecastData]} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
+                  <XAxis 
+                    dataKey="name" 
+                    stroke="#ffffff30" 
+                    tick={{ fill: '#ffffff50', fontSize: 12 }} 
+                    axisLine={false} 
+                    tickLine={false} 
+                    dy={10}
+                  />
+                  <YAxis 
+                    stroke="#ffffff30" 
+                    tick={{ fill: '#ffffff50', fontSize: 12 }} 
+                    axisLine={false} 
+                    tickLine={false}
+                    tickFormatter={(val) => currency === 'USD' ? `$${(val / 83.5).toFixed(0)}` : `₹${(val/1000).toFixed(0)}k`}
+                    dx={-10}
+                  />
+                  <Tooltip
+                    formatter={(value: number) => formatCurrency(value)}
+                    contentStyle={{ backgroundColor: '#1A1A24', borderColor: '#ffffff10', borderRadius: '16px' }}
+                    labelStyle={{ color: '#a1a1aa', marginBottom: '8px' }}
+                  />
+                  <Legend verticalAlign="top" height={36} />
+                  {/* Dotted separator line for forecast start */}
+                  <ReferenceLine x={forecastData[0]?.name} stroke="#ffffff20" strokeDasharray="5 5" label={{ value: 'Forecast →', position: 'top', fill: '#ffffff40', fontSize: 10 }} />
+                  <Line type="monotone" dataKey="Income" stroke="#22c55e" strokeWidth={2} dot={false} strokeDasharray="4 2" />
+                  <Line type="monotone" dataKey="Expenses" stroke="#ef4444" strokeWidth={2} dot={false} strokeDasharray="4 2" />
+                  <Line type="monotone" dataKey="Balance" stroke="#3b82f6" strokeWidth={3} dot={{ fill: '#3b82f6', r: 4 }} />
+                </ReLineChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+
+          {/* Forecast Table */}
+          <div className="mt-8 overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/10">
+                  <th className="text-left py-3 pr-6 text-zinc-500 font-bold uppercase tracking-widest text-[10px]">Month</th>
+                  <th className="text-right py-3 px-4 text-zinc-500 font-bold uppercase tracking-widest text-[10px]">Projected Income</th>
+                  <th className="text-right py-3 px-4 text-zinc-500 font-bold uppercase tracking-widest text-[10px]">Projected Expenses</th>
+                  <th className="text-right py-3 px-4 text-zinc-500 font-bold uppercase tracking-widest text-[10px]">Net</th>
+                  <th className="text-right py-3 pl-4 text-zinc-500 font-bold uppercase tracking-widest text-[10px]">Running Balance</th>
+                </tr>
+              </thead>
+              <tbody>
+                {forecastData.map((row, i) => (
+                  <tr key={row.name} className="border-b border-white/5 hover:bg-white/5">
+                    <td className="py-3 pr-6 text-white font-bold text-xs">{row.name}</td>
+                    <td className="py-3 px-4 text-right text-green-400 font-mono font-bold text-xs">{formatCurrency(row.Income)}</td>
+                    <td className="py-3 px-4 text-right text-red-400 font-mono font-bold text-xs">{formatCurrency(row.Expenses)}</td>
+                    <td className={`py-3 px-4 text-right font-mono font-bold text-xs ${row.Income - row.Expenses >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      {formatCurrency(row.Income - row.Expenses)}
+                    </td>
+                    <td className={`py-3 pl-4 text-right font-mono font-bold text-xs ${row.Balance >= 0 ? 'text-blue-400' : 'text-red-400'}`}>
+                      {formatCurrency(row.Balance)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
       </div>
+
+      {/* Recurring Transactions Modal */}
+      <AnimatePresence>
+        {showRecurringModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => { setShowRecurringModal(false); setEditingRecurring(null); }}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative z-10 w-full max-w-2xl bg-[#0C0C12] border border-white/10 rounded-3xl shadow-2xl p-8 max-h-[90vh] overflow-y-auto"
+            >
+              <h2 className="text-2xl font-black text-white mb-2 flex items-center gap-2"><Repeat size={22} className="text-purple-400" /> Recurring Transactions</h2>
+              <p className="text-zinc-500 text-sm mb-6">These are auto-included in your cash flow forecast.</p>
+
+              {/* Existing recurring list */}
+              <div className="space-y-3 mb-8">
+                {recurringTxns.length === 0 && (
+                  <p className="text-zinc-600 text-sm text-center py-8 border border-dashed border-white/10 rounded-2xl">No recurring transactions yet. Add your first one below.</p>
+                )}
+                {recurringTxns.map(rt => (
+                  <div key={rt.id} className={`bg-white/5 border border-white/10 rounded-xl p-4 flex items-center justify-between gap-4 transition-opacity ${!rt.active ? 'opacity-50' : ''}`}>
+                    <div className="flex items-center gap-4 flex-1 min-w-0">
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border ${rt.type === 'credit' ? 'bg-green-500/10 border-green-500/20 text-green-400' : 'bg-red-500/10 border-red-500/20 text-red-400'}`}>
+                        {rt.type === 'credit' ? <TrendingUp size={18} /> : <TrendingDown size={18} />}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-white font-bold text-sm truncate">{rt.description}</p>
+                        <p className="text-[10px] text-zinc-500 font-mono">{rt.source_destination} • {rt.category} • Every {rt.frequency}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 shrink-0">
+                      <span className={`font-black text-sm ${rt.type === 'credit' ? 'text-green-400' : 'text-red-400'}`}>
+                        {rt.type === 'credit' ? '+' : '-'}{formatCurrency(rt.amount)}
+                      </span>
+                      <button onClick={() => toggleRecurringActive(rt)} className={`p-2 rounded-lg transition-colors ${rt.active ? 'text-green-400 hover:bg-green-500/20' : 'text-zinc-500 hover:bg-white/10'}`}>
+                        {rt.active ? <ToggleRight size={20} /> : <ToggleLeft size={20} />}
+                      </button>
+                      <button onClick={() => openEditRecurring(rt)} className="p-2 text-zinc-500 hover:text-blue-400 hover:bg-white/5 rounded-lg transition-colors">
+                        <Edit2 size={16} />
+                      </button>
+                      <button onClick={() => deleteRecurring(rt.id)} className="p-2 text-zinc-500 hover:text-red-400 hover:bg-white/5 rounded-lg transition-colors">
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Add/Edit form */}
+              <div className="border-t border-white/10 pt-6">
+                <h3 className="text-lg font-bold text-white mb-4">{editingRecurring ? 'Edit Recurring' : 'Add New Recurring'}</h3>
+                <form onSubmit={handleAddRecurring} className="space-y-4">
+                  <div className="flex gap-4">
+                    <button
+                      type="button"
+                      onClick={() => setRtForm({...rtForm, type: 'credit', category: CATEGORIES.credit[0]})}
+                      className={`flex-1 py-2.5 rounded-xl font-bold transition-all text-sm border ${rtForm.type === 'credit' ? 'bg-green-600/20 border-green-500 text-green-400' : 'bg-white/5 border-white/10 text-zinc-400'}`}
+                    >INCOME</button>
+                    <button
+                      type="button"
+                      onClick={() => setRtForm({...rtForm, type: 'debit', category: CATEGORIES.debit[0]})}
+                      className={`flex-1 py-2.5 rounded-xl font-bold transition-all text-sm border ${rtForm.type === 'debit' ? 'bg-red-600/20 border-red-500 text-red-400' : 'bg-white/5 border-white/10 text-zinc-400'}`}
+                    >EXPENSE</button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-zinc-400 uppercase tracking-widest mb-2">Amount ({currency})</label>
+                      <input type="number" step="0.01" required value={rtForm.amount} onChange={e => setRtForm({...rtForm, amount: e.target.value})} placeholder="e.g. 5000" className="w-full bg-[#1A1A24]/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500/50" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-zinc-400 uppercase tracking-widest mb-2">Frequency</label>
+                      <select value={rtForm.frequency} onChange={e => setRtForm({...rtForm, frequency: e.target.value as any})} className="w-full bg-[#1A1A24] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/50">
+                        <option value="monthly" className="bg-[#0C0C12]">Monthly</option>
+                        <option value="weekly" className="bg-[#0C0C12]">Weekly</option>
+                        <option value="yearly" className="bg-[#0C0C12]">Yearly</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-zinc-400 uppercase tracking-widest mb-2">Category</label>
+                      <select value={rtForm.category} onChange={e => setRtForm({...rtForm, category: e.target.value})} className="w-full bg-[#1A1A24] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/50">
+                        {(rtForm.type === 'credit' ? CATEGORIES.credit : CATEGORIES.debit).map(c => (
+                          <option key={c} value={c} className="bg-[#0C0C12]">{c}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-zinc-400 uppercase tracking-widest mb-2">Next Date</label>
+                      <input type="date" required value={rtForm.next_date} onChange={e => setRtForm({...rtForm, next_date: e.target.value})} className="w-full bg-[#1A1A24]/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/50" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-zinc-400 uppercase tracking-widest mb-2">Description</label>
+                    <input type="text" required value={rtForm.description} onChange={e => setRtForm({...rtForm, description: e.target.value})} placeholder="e.g. Office Rent" className="w-full bg-[#1A1A24]/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500/50" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-zinc-400 uppercase tracking-widest mb-2">{rtForm.type === 'credit' ? 'Received From' : 'Paid To'}</label>
+                    <input type="text" required value={rtForm.source_destination} onChange={e => setRtForm({...rtForm, source_destination: e.target.value})} placeholder="e.g. Landlord" className="w-full bg-[#1A1A24]/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500/50" />
+                  </div>
+                  <div className="flex gap-4 pt-2">
+                    <button type="button" onClick={() => { setShowRecurringModal(false); setEditingRecurring(null); }} className="flex-1 py-3 bg-white/5 hover:bg-white/10 text-white rounded-xl font-bold transition-all border border-white/10">
+                      Close
+                    </button>
+                    <button type="submit" className="flex-1 py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold transition-all shadow-[0_0_20px_rgba(168,85,247,0.4)]">
+                      {editingRecurring ? 'Update' : 'Add Recurring'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* View Transaction Modal */}
       <AnimatePresence>
