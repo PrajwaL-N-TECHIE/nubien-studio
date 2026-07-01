@@ -16,6 +16,7 @@ import NoiseOverlay from "@/components/NoiseOverlay";
 import ContactScouter from "@/components/ContactScouter";
 import CoreVitalsHUD from "@/components/CoreVitalsHUD";
 import PageLoader from "@/components/PageLoader";
+import { useTheme } from "@/hooks/useTheme";
 import { PerformanceProvider } from "@/context/PerformanceContext";
 
 // Pages - Lazy loaded
@@ -87,6 +88,7 @@ const GlobalLayout = ({ children }: { children: React.ReactNode }) => {
 
 const App = () => {
   const [isScouterOpen, setIsScouterOpen] = useState(false);
+  useTheme(); // Initialize theme (dark/light) class on <html>
 
   // Allow triggering from anywhere via custom event for maximum flexibility
   useEffect(() => {
