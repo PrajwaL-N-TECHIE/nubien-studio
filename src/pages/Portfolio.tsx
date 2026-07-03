@@ -110,6 +110,26 @@ const projects = [
     tags: ["Web3", "DeFi", "Crypto"],
     span: "col-span-1 lg:col-span-3",
     link: "https://chain-split.vercel.app"
+  },
+  {
+    id: 11,
+    title: "K-Ramen",
+    client: "Restaurant",
+    description: "Authentic Japanese ramen restaurant website with rich visual storytelling.",
+    image: "https://image.thum.io/get/width/1200/crop/800/https://k-ramen.vercel.app",
+    tags: ["Restaurant", "UI/UX", "Vite"],
+    span: "col-span-1",
+    link: "https://k-ramen.vercel.app"
+  },
+  {
+    id: 12,
+    title: "Ghost Noodle Nightlife",
+    client: "Nightlife",
+    description: "Immersive nightlife and dining experience platform.",
+    image: "https://image.thum.io/get/width/1200/crop/800/https://ghost-noodle-nightlife.vercel.app",
+    tags: ["Nightlife", "Dining", "React"],
+    span: "col-span-1 lg:col-span-2",
+    link: "https://ghost-noodle-nightlife.vercel.app"
   }
 ];
 

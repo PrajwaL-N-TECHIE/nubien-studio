@@ -92,6 +92,24 @@ const projects = [
     color: "from-purple-500 to-indigo-500",
     speed: 0,
     link: "https://chain-split.vercel.app"
+  },
+  {
+    year: "2025",
+    name: "K-Ramen",
+    tags: ["Restaurant", "UI/UX", "Vite"],
+    image: "https://image.thum.io/get/width/600/crop/800/https://k-ramen.vercel.app",
+    color: "from-orange-500 to-red-500",
+    speed: 20,
+    link: "https://k-ramen.vercel.app"
+  },
+  {
+    year: "2025",
+    name: "Ghost Noodle Nightlife",
+    tags: ["Nightlife", "Dining", "React"],
+    image: "https://image.thum.io/get/width/600/crop/800/https://ghost-noodle-nightlife.vercel.app",
+    color: "from-pink-500 to-purple-500",
+    speed: 30,
+    link: "https://ghost-noodle-nightlife.vercel.app"
   }
 ];
 
