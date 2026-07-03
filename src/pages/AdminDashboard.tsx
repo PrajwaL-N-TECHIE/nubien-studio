@@ -232,7 +232,7 @@ const AdminDashboard = () => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        if (user.email === 'admin@buildicy.com') {
+        if (user.email === 'buildicy@gmail.com') {
           setIsAuthenticated(true);
           fetchSettings();
           fetchRecords('temp');
