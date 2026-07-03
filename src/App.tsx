@@ -14,7 +14,7 @@ import Preloader from "@/components/Preloader";
 import CustomCursor from "@/components/CustomCursor";
 import NoiseOverlay from "@/components/NoiseOverlay";
 import ContactScouter from "@/components/ContactScouter";
-import CoreVitalsHUD from "@/components/CoreVitalsHUD";
+
 import PageLoader from "@/components/PageLoader";
 import { useTheme } from "@/hooks/useTheme";
 import { PerformanceProvider } from "@/context/PerformanceContext";
@@ -81,7 +81,6 @@ const GlobalLayout = ({ children }: { children: React.ReactNode }) => {
       </main>
 
       {!isStandaloneRoute && <Footer />}
-      {!isStandaloneRoute && <CoreVitalsHUD />}
     </div>
   );
 };
