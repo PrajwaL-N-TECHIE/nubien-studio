@@ -824,13 +824,13 @@ const AdminDashboard = () => {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen pt-32 pb-24 px-4 flex flex-col items-center justify-center relative overflow-hidden bg-[#050507]">
+      <div className="min-h-screen pt-20 sm:pt-32 pb-24 px-4 flex flex-col items-center justify-center relative overflow-hidden bg-[#050507]">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-red-600/10 rounded-full blur-[120px] pointer-events-none" />
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-md bg-[#0a0a0f]/80 backdrop-blur-2xl border border-white/10 rounded-3xl p-8 shadow-2xl relative z-10"
+          className="w-full max-w-md bg-[#0a0a0f]/80 backdrop-blur-2xl border border-white/10 rounded-3xl p-5 sm:p-8 shadow-2xl relative z-10"
         >
           <button
             onClick={() => navigate('/')}
@@ -917,7 +917,7 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen pt-32 pb-24 px-4 sm:px-6 lg:px-8 relative bg-[#050507]">
+    <div className="min-h-screen pt-20 sm:pt-32 pb-24 px-4 sm:px-6 lg:px-8 relative bg-[#050507] overflow-x-hidden">
       <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-purple-600/5 rounded-full blur-[150px] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto relative z-10">
@@ -939,8 +939,21 @@ const AdminDashboard = () => {
 
         <div className="flex flex-col lg:flex-row gap-8 items-start">
           
-          {/* Sidebar */}
-          <div className="w-full lg:w-72 shrink-0 bg-[#0C0C12]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-4 sticky top-24 z-20 shadow-[0_0_40px_rgba(0,0,0,0.5)]">
+          {/* Mobile Tab Bar */}
+          <div className="block lg:hidden w-full mb-6 overflow-x-auto -mx-4 px-4 sm:-mx-6 sm:px-6">
+            <div className="flex gap-1.5 min-w-max pb-1">
+              <button onClick={() => setActiveTab('temp_registrations')} className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all whitespace-nowrap ${activeTab === 'temp_registrations' ? 'bg-purple-600 text-white shadow-lg' : 'bg-white/5 text-white/60 hover:text-white hover:bg-white/10 border border-white/10'}`}><ShieldAlert size={14} /> Temp</button>
+              <button onClick={() => setActiveTab('perm_registrations')} className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all whitespace-nowrap ${activeTab === 'perm_registrations' ? 'bg-purple-600 text-white shadow-lg' : 'bg-white/5 text-white/60 hover:text-white hover:bg-white/10 border border-white/10'}`}><Lock size={14} /> Perm</button>
+              <button onClick={() => setActiveTab('materials')} className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all whitespace-nowrap ${activeTab === 'materials' ? 'bg-purple-600 text-white shadow-lg' : 'bg-white/5 text-white/60 hover:text-white hover:bg-white/10 border border-white/10'}`}><BookOpen size={14} /> Materials</button>
+              <button onClick={() => setActiveTab('assignments')} className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all whitespace-nowrap ${activeTab === 'assignments' ? 'bg-purple-600 text-white shadow-lg' : 'bg-white/5 text-white/60 hover:text-white hover:bg-white/10 border border-white/10'}`}><Edit2 size={14} /> Assignments</button>
+              <button onClick={() => setActiveTab('submissions')} className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all whitespace-nowrap ${activeTab === 'submissions' ? 'bg-purple-600 text-white shadow-lg' : 'bg-white/5 text-white/60 hover:text-white hover:bg-white/10 border border-white/10'}`}><CheckCircle2 size={14} /> Submissions</button>
+              <button onClick={() => setActiveTab('leaderboard')} className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all whitespace-nowrap ${activeTab === 'leaderboard' ? 'bg-purple-600 text-white shadow-lg' : 'bg-white/5 text-white/60 hover:text-white hover:bg-white/10 border border-white/10'}`}><Trophy size={14} /> Scores</button>
+              <button onClick={() => setActiveTab('settings')} className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all whitespace-nowrap ${activeTab === 'settings' ? 'bg-purple-600 text-white shadow-lg' : 'bg-white/5 text-white/60 hover:text-white hover:bg-white/10 border border-white/10'}`}><Settings size={14} /> Settings</button>
+            </div>
+          </div>
+
+          {/* Sidebar - Desktop only */}
+          <div className="hidden lg:block w-full lg:w-72 shrink-0 bg-[#0C0C12]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-4 sticky top-24 z-20 shadow-[0_0_40px_rgba(0,0,0,0.5)]">
             <div className="space-y-6">
               <div>
                 <h3 className="text-xs font-black text-white uppercase tracking-[0.2em] mb-3 px-3">People</h3>
@@ -980,18 +993,18 @@ const AdminDashboard = () => {
 
         {(activeTab === 'temp_registrations' || activeTab === 'perm_registrations') && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="flex justify-between items-center mb-6">
-              <div className="relative">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-6">
+              <div className="relative w-full sm:w-auto">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" size={18} />
                 <input
                   type="text"
                   placeholder="Search applicants..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full md:w-64 bg-white/5 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-white placeholder-white/40 focus:outline-none focus:border-purple-500/50 transition-colors text-sm"
+                  className="w-full sm:w-64 bg-white/5 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-white placeholder-white/40 focus:outline-none focus:border-purple-500/50 transition-colors text-sm"
                 />
               </div>
-              <div className="flex items-center gap-4">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-4">
                 <select
                   value={cohortFilter}
                   onChange={(e) => setCohortFilter(e.target.value)}
@@ -1008,35 +1021,35 @@ const AdminDashboard = () => {
                 {activeTab === 'temp_registrations' && (
                   <button 
                     onClick={handlePurgeTempDb}
-                    className="px-4 py-2 bg-red-900/30 hover:bg-red-600 text-red-400 hover:text-white rounded-xl border border-red-500/20 text-sm font-bold flex items-center gap-2 transition-colors shadow-[0_0_15px_rgba(220,38,38,0)] hover:shadow-[0_0_20px_rgba(220,38,38,0.4)]"
+                    className="px-3 sm:px-4 py-2 bg-red-900/30 hover:bg-red-600 text-red-400 hover:text-white rounded-xl border border-red-500/20 text-sm font-bold flex items-center gap-1.5 sm:gap-2 transition-colors shadow-[0_0_15px_rgba(220,38,38,0)] hover:shadow-[0_0_20px_rgba(220,38,38,0.4)]"
                   >
-                    <Trash2 size={16} /> Purge Temp DB
+                    <Trash2 size={16} /> <span className="hidden sm:inline">Purge Temp DB</span>
                   </button>
                 )}
                 <button 
                   onClick={handleDownloadCSV}
-                  className="px-4 py-2 bg-green-600/20 hover:bg-green-600 text-green-400 hover:text-white rounded-xl border border-green-500/30 text-sm font-bold flex items-center gap-2 transition-colors"
+                  className="px-3 sm:px-4 py-2 bg-green-600/20 hover:bg-green-600 text-green-400 hover:text-white rounded-xl border border-green-500/30 text-sm font-bold flex items-center gap-1.5 sm:gap-2 transition-colors"
                 >
-                  <Download size={16} /> Export CSV
+                  <Download size={16} /> <span className="hidden sm:inline">Export CSV</span>
                 </button>
                 <button
                   onClick={() => setIsAddingStudent(true)}
-                  className="px-4 py-2 bg-purple-600/20 hover:bg-purple-600 text-purple-400 hover:text-white rounded-xl border border-purple-500/30 text-sm font-bold flex items-center gap-2 transition-colors"
+                  className="px-3 sm:px-4 py-2 bg-purple-600/20 hover:bg-purple-600 text-purple-400 hover:text-white rounded-xl border border-purple-500/30 text-sm font-bold flex items-center gap-1.5 sm:gap-2 transition-colors"
                 >
-                  <Plus size={16} /> Add Student
+                  <Plus size={16} /> <span className="hidden sm:inline">Add Student</span>
                 </button>
               </div>
             </div>
 
             {/* Analytics Section */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-4 mb-8">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-purple-900/20 border border-purple-500/30 rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-lg"
+                className="bg-purple-900/20 border border-purple-500/30 rounded-2xl p-3 sm:p-4 flex flex-col items-center justify-center text-center shadow-lg"
               >
                 <p className="text-xs text-purple-400 font-bold uppercase mb-1">Total</p>
-                <p className="text-3xl font-extrabold text-white">{records.length}</p>
+                <p className="text-2xl sm:text-3xl font-extrabold text-white">{records.length}</p>
               </motion.div>
               {Object.entries(allTracks).map(([rawTrack, friendlyName], i) => {
                 const count = records.filter(r => r.track === rawTrack).length;
@@ -1046,12 +1059,12 @@ const AdminDashboard = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: (i + 1) * 0.05 }}
-                    className="bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-lg"
+                    className="bg-white/5 border border-white/10 rounded-2xl p-3 sm:p-4 flex flex-col items-center justify-center text-center shadow-lg"
                   >
                     <p className="text-[10px] text-white/50 font-bold uppercase mb-1 line-clamp-1">
                       {friendlyName.replace(' Engineer', '').replace(' Developer', '').replace(' Designer', '')}
                     </p>
-                    <p className="text-2xl font-extrabold text-white/90">{count}</p>
+                    <p className="text-xl sm:text-2xl font-extrabold text-white/90">{count}</p>
                   </motion.div>
                 );
               })}
@@ -1062,8 +1075,8 @@ const AdminDashboard = () => {
               animate={{ opacity: 1, y: 0 }}
               className="bg-[#0a0a0f]/80 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden shadow-2xl"
             >
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
+                <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
+                <table className="w-full text-left border-collapse min-w-[600px]">
                   <thead className="bg-[#050507]">
                     <tr>
                       <th className="px-6 py-4 text-left text-xs font-bold text-white/40 uppercase tracking-wider">Applicant</th>
@@ -1651,7 +1664,7 @@ const AdminDashboard = () => {
 
       {/* Edit Material Modal */}
       {editingMaterial && (
-        <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm" onClick={() => setEditingMaterial(null)}>
+        <div className="fixed inset-0 z-[80] flex items-center justify-center p-2 sm:p-4 bg-black/90 backdrop-blur-sm" onClick={() => setEditingMaterial(null)}>
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
