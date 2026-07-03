@@ -526,7 +526,7 @@ const FinanceTracker = () => {
 
   if (status === 'login') {
     return (
-      <div className="min-h-screen bg-[#050507] flex flex-col items-center justify-center p-6 relative overflow-hidden">
+      <div className="min-h-screen bg-[#050507] flex flex-col items-center justify-center p-6 relative overflow-x-hidden sm:overflow-hidden">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-600/10 rounded-full blur-[120px] pointer-events-none" />
 
         <motion.div
@@ -588,7 +588,7 @@ const FinanceTracker = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#050507] pt-20 sm:pt-24 pb-8 sm:pb-12 px-4 sm:px-6 md:px-12 relative overflow-hidden">
+    <div className="min-h-screen bg-[#050507] pt-20 sm:pt-24 pb-8 sm:pb-12 px-4 sm:px-6 md:px-12 relative overflow-x-hidden sm:overflow-hidden">
       <div className="absolute top-0 right-0 w-[600px] sm:w-[800px] h-[600px] sm:h-[800px] bg-purple-600/10 rounded-full blur-[150px] pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-[400px] sm:w-[600px] h-[400px] sm:h-[600px] bg-purple-600/10 rounded-full blur-[150px] pointer-events-none" />
 
@@ -783,7 +783,7 @@ const FinanceTracker = () => {
           </div>
 
           {/* Ledger */}
-          <div className="bg-[#0C0C12]/80 backdrop-blur-md border border-white/10 rounded-3xl p-4 md:p-6 lg:p-8 flex flex-col h-[400px] sm:h-[500px] xl:h-[550px]">
+          <div className="bg-[#0C0C12]/80 backdrop-blur-md border border-white/10 rounded-3xl p-4 md:p-6 lg:p-8 flex flex-col h-[400px] sm:h-[500px] xl:h-[550px] overflow-hidden">
             <div className="flex items-center justify-between mb-4 shrink-0">
               <h3 className="text-lg sm:text-xl font-bold text-white">Ledger</h3>
               <span className="text-xs text-zinc-500 bg-white/5 px-2 py-1 rounded-lg">{filteredTransactions.length}</span>
@@ -800,7 +800,7 @@ const FinanceTracker = () => {
               />
             </div>
 
-            <div className="flex-1 overflow-y-auto pr-1 sm:pr-2 space-y-2 sm:space-y-3 custom-scrollbar" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }}>
+            <div className="flex-1 overflow-y-auto pr-1 sm:pr-2 space-y-2 sm:space-y-3 custom-scrollbar min-h-0" style={{ WebkitOverflowScrolling: 'touch' }}>
               {filteredTransactions.length === 0 ? (
                 <div className="text-center py-10">
                   <p className="text-zinc-500">No transactions match your filters.</p>
