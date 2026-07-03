@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, Eye, EyeOff, TrendingUp, TrendingDown, DollarSign, Plus, Trash2, Calendar, Activity, Filter, ArrowUpRight, ArrowDownRight, Hash, Edit2, Download, Search, Repeat, ToggleLeft, ToggleRight, AlertTriangle, LineChart, LogOut } from 'lucide-react';
+import { Lock, Eye, EyeOff, TrendingUp, TrendingDown, DollarSign, Plus, Trash2, Calendar, Activity, Filter, ArrowUpRight, ArrowDownRight, Hash, Edit2, Download, Search, Repeat, ToggleLeft, ToggleRight, AlertTriangle, LineChart, LogOut, ArrowLeft } from 'lucide-react';
 import { db, auth } from '@/lib/firebase';
 import { collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, where } from 'firebase/firestore';
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
@@ -515,6 +515,12 @@ const FinanceTracker = () => {
           animate={{ opacity: 1, y: 0 }}
           className="bg-[#0C0C12]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-10 max-w-md w-full relative z-10 shadow-[0_0_50px_rgba(168,85,247,0.15)]"
         >
+          <button
+            onClick={() => window.location.href = '/'}
+            className="absolute top-4 left-4 text-zinc-500 hover:text-white transition-colors p-2 rounded-xl hover:bg-white/5"
+          >
+            <ArrowLeft size={20} />
+          </button>
           <div className="w-16 h-16 bg-purple-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-purple-500/30">
             <Lock className="text-purple-400" size={32} />
           </div>

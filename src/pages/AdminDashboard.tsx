@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Lock, ShieldAlert, ArrowRight, Eye, EyeOff, Search, LogOut, Trash2, Info, X, Edit2, BookOpen, UploadCloud, CheckCircle2, Plus, Download, Settings, Mail, FileText, Link, Calendar, Building, Loader2, Target, Trophy, AlertCircle, Briefcase } from "lucide-react";
+import { Lock, ShieldAlert, ArrowRight, Eye, EyeOff, Search, LogOut, Trash2, Info, X, Edit2, BookOpen, UploadCloud, CheckCircle2, Plus, Download, Settings, Mail, FileText, Link, Calendar, Building, Loader2, Target, Trophy, AlertCircle, Briefcase, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { initializeApp } from "firebase/app";
 
@@ -813,6 +813,12 @@ const AdminDashboard = () => {
           animate={{ opacity: 1, y: 0 }}
           className="w-full max-w-md bg-[#0a0a0f]/80 backdrop-blur-2xl border border-white/10 rounded-3xl p-8 shadow-2xl relative z-10"
         >
+          <button
+            onClick={() => navigate('/')}
+            className="absolute top-4 left-4 text-zinc-500 hover:text-white transition-colors p-2 rounded-xl hover:bg-white/5"
+          >
+            <ArrowLeft size={20} />
+          </button>
           <div className="w-16 h-16 bg-red-900/30 rounded-full border border-red-500/20 flex items-center justify-center mx-auto mb-6">
             <ShieldAlert size={32} className="text-red-500" />
           </div>
