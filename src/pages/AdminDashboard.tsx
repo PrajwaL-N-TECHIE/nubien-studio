@@ -72,13 +72,16 @@ interface CrucibleQuestion {
   answer: number;
 }
 
-const trackNames: Record<string, string> = {
-  uiux: "UI/UX Designer",
-  ai_automation: "AI Automation Engineer",
-  fullstack: "Full Stack Developer",
-  blockchain: "Blockchain Engineer",
-  ai_architect: "AI Architect"
-};
+const DEFAULT_TRACKS = [
+  { id: "uiux", name: "UI/UX Designer", price: "₹899" },
+  { id: "ai_automation", name: "AI Automation Engineer", price: "₹899" },
+  { id: "fullstack", name: "Full Stack Developer", price: "₹1099" },
+  { id: "blockchain", name: "Blockchain Engineer", price: "₹1099" },
+  { id: "ai_architect", name: "AI Architect", price: "₹1299" }
+];
+
+const defaultTrackNames: Record<string, string> = {};
+DEFAULT_TRACKS.forEach(t => { defaultTrackNames[t.id] = t.name; });
 
 const AdminLeaderboard = () => {
   const [leaderboard, setLeaderboard] = useState<InternshipRecord[]>([]);
@@ -133,7 +136,7 @@ const AdminLeaderboard = () => {
                   <p className="text-xs text-zinc-500">{student.email}</p>
                 </td>
                 <td className="p-4">
-                  <p className="text-sm text-zinc-300">{trackNames[student.track] || student.track}</p>
+                  <p className="text-sm text-zinc-300">{defaultTrackNames[student.track] || student.track}</p>
                   <p className="text-xs text-blue-400 font-mono">{student.cohort}</p>
                 </td>
                 <td className="p-4 text-right">
@@ -209,14 +212,14 @@ const AdminDashboard = () => {
   const [globalBatch, setGlobalBatch] = useState("batch-1");
   const [globalEarlyBird, setGlobalEarlyBird] = useState(true);
   const [isSavingSettings, setIsSavingSettings] = useState(false);
-  const [customTracks, setCustomTracks] = useState<{id: string, name: string, price: string}[]>([]);
+  const [customTracks, setCustomTracks] = useState<{id: string, name: string, price: string}[]>(DEFAULT_TRACKS);
   const [newTrackId, setNewTrackId] = useState("");
   const [newTrackName, setNewTrackName] = useState("");
   const [newTrackPrice, setNewTrackPrice] = useState("");
   const [isAddingTrack, setIsAddingTrack] = useState(false);
 
   const allTracks = useMemo(() => {
-    const combined = { ...trackNames };
+    const combined: Record<string, string> = {};
     customTracks.forEach(t => {
       combined[t.id] = t.name;
     });
@@ -302,8 +305,12 @@ const AdminDashboard = () => {
       }
 
       const tracksSnap = await getDoc(doc(db, "settings", "tracks"));
-      if (tracksSnap.exists() && tracksSnap.data().items) {
+      if (tracksSnap.exists() && tracksSnap.data().items && tracksSnap.data().items.length > 0) {
         setCustomTracks(tracksSnap.data().items);
+      } else {
+        // Seed default tracks into Firestore so admin can manage all tracks
+        await setDoc(doc(db, "settings", "tracks"), { items: DEFAULT_TRACKS }, { merge: true });
+        setCustomTracks(DEFAULT_TRACKS);
       }
     } catch (err) {
       console.error(err);
@@ -1560,21 +1567,21 @@ const AdminDashboard = () => {
           </div>
 
           <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8">
-            <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2"><Briefcase className="text-purple-400" size={24}/> Manage Custom Tracks</h2>
+            <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2"><Briefcase className="text-purple-400" size={24}/> Manage Internship Tracks</h2>
             
             <div className="mb-8">
-              <h3 className="text-sm font-bold text-white/60 uppercase mb-4">Current Custom Tracks</h3>
+              <h3 className="text-sm font-bold text-white/60 uppercase mb-4">All Tracks</h3>
               {customTracks.length === 0 ? (
-                <p className="text-white/40 italic">No custom tracks found. Only default tracks will be shown.</p>
+                <p className="text-white/40 italic">No tracks found. Add your first track below.</p>
               ) : (
                 <div className="space-y-3">
                   {customTracks.map(track => (
                     <div key={track.id} className="flex items-center justify-between bg-[#050507] p-4 rounded-xl border border-white/5">
                       <div>
                         <p className="text-white font-bold">{track.name} <span className="text-white/40 font-normal ml-2">({track.price})</span></p>
-                        <p className="text-xs text-white/40 mt-1">ID: {track.id}</p>
+                        <p className="text-xs text-white/40 mt-1">ID: {track.id}{DEFAULT_TRACKS.some(dt => dt.id === track.id) ? <span className="text-purple-400 ml-2">(default)</span> : ''}</p>
                       </div>
-                      <button onClick={() => handleDeleteTrack(track.id)} className="p-2 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
+                      <button onClick={() => handleDeleteTrack(track.id)} className="p-2 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors" title="Delete track">
                         <Trash2 size={18} />
                       </button>
                     </div>
