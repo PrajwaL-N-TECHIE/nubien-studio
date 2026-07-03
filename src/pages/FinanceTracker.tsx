@@ -98,6 +98,10 @@ const FinanceTracker = () => {
         });
         setTransactions(transData);
         setLoadingData(false);
+      }, (error) => {
+        console.error("Firestore snapshot error (finance_transactions):", error);
+        toast.error(`Finance data error: ${error.message}. Check Firestore indexes and rules.`);
+        setLoadingData(false);
       });
       return () => unsubscribe();
     }
@@ -113,6 +117,8 @@ const FinanceTracker = () => {
           recData.push({ id: doc.id, ...doc.data() } as RecurringTransaction);
         });
         setRecurringTxns(recData);
+      }, (error) => {
+        console.error("Firestore snapshot error (recurring_transactions):", error);
       });
       return () => unsubscribe();
     }
