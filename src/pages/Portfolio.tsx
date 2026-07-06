@@ -13,23 +13,13 @@ const customEase = [0.22, 1, 0.36, 1];
 const projects = [
   {
     id: 1,
-    title: "Kubrut",
-    client: "Web App",
-    description: "Modern web application providing tailored solutions.",
-    image: "https://image.thum.io/get/width/1200/crop/800/https://kubrut.vercel.app",
+    title: "Kindred Drop Site",
+    client: "E-Commerce",
+    description: "Modern product drop site with sleek interface.",
+    image: "https://image.thum.io/get/width/1200/crop/800/https://kindred-drop-site.vercel.app",
     tags: ["React", "Vite", "Tailwind"],
     span: "col-span-1 lg:col-span-2",
-    link: "https://kubrut.vercel.app"
-  },
-  {
-    id: 2,
-    title: "Lilo Technologies",
-    client: "Corporate Website",
-    description: "Professional corporate presence with dynamic UI.",
-    image: "https://image.thum.io/get/width/1200/crop/800/https://lilotechnologies.vercel.app",
-    tags: ["Next.js", "Framer Motion"],
-    span: "col-span-1",
-    link: "https://lilotechnologies.vercel.app"
+    link: "https://kindred-drop-site.vercel.app"
   },
   {
     id: 3,
@@ -58,7 +48,7 @@ const projects = [
     description: "Advanced client management and synchronization tool.",
     image: "https://image.thum.io/get/width/1200/crop/800/https://clientsyncos.vercel.app",
     tags: ["CRM", "Enterprise", "React"],
-    span: "col-span-1",
+    span: "col-span-1 lg:col-span-2",
     link: "https://clientsyncos.vercel.app"
   },
   {

@@ -5,21 +5,12 @@ import { CheckCircle2, ArrowRight, ExternalLink, Sparkles, ArrowUpRight } from "
 const projects = [
   {
     year: "2024",
-    name: "Kubrut",
-    tags: ["React", "Vite", "Tailwind"],
-    image: "https://image.thum.io/get/width/600/crop/800/https://kubrut.vercel.app",
+    name: "Kindred Drop Site",
+    tags: ["E-Commerce", "React", "Vite"],
+    image: "https://image.thum.io/get/width/600/crop/800/https://kindred-drop-site.vercel.app",
     color: "from-purple-500 to-indigo-500",
     speed: 0,
-    link: "https://kubrut.vercel.app"
-  },
-  {
-    year: "2024",
-    name: "Lilo Technologies",
-    tags: ["Next.js", "Framer Motion"],
-    image: "https://image.thum.io/get/width/600/crop/800/https://lilotechnologies.vercel.app",
-    color: "from-blue-500 to-purple-500",
-    speed: 40,
-    link: "https://lilotechnologies.vercel.app"
+    link: "https://kindred-drop-site.vercel.app"
   },
   {
     year: "2024",
