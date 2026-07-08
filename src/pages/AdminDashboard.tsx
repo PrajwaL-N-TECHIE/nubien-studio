@@ -226,6 +226,12 @@ const AdminDashboard = () => {
     return combined;
   }, [customTracks]);
 
+  useEffect(() => {
+    if (customTracks.length > 0 && !customTracks.find(t => t.id === newStudent.track)) {
+      setNewStudent(prev => ({ ...prev, track: customTracks[0].id }));
+    }
+  }, [customTracks, newStudent.track]);
+
   const navigate = useNavigate();
 
   // Listen for Firebase Auth state changes
