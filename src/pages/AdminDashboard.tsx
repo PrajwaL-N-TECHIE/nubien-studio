@@ -724,7 +724,7 @@ const AdminDashboard = () => {
         alert("Student added successfully! Their password is their Registration ID: " + registrationId);
       }
       setIsAddingStudent(false);
-      setNewStudent({ name: "", email: "", phone: "", track: "uiux", college: "", degree: "", reason: "", cohort: "batch-1", referral_code: "", registration_id: "" });
+      setNewStudent({ name: "", email: "", phone: "", track: customTracks.length > 0 ? customTracks[0].id : "uiux", college: "", degree: "", reason: "", cohort: "batch-1", referral_code: "", registration_id: "" });
       setNewStudentReceiptFile(null);
       fetchRecords(activeTab === 'perm_registrations' ? 'perm' : 'temp');
     } catch (error: any) {
@@ -1001,7 +1001,10 @@ const AdminDashboard = () => {
                   <Download size={16} /> <span className="hidden sm:inline">Export CSV</span>
                 </button>
                 <button
-                  onClick={() => setIsAddingStudent(true)}
+                  onClick={() => {
+                    setNewStudent(prev => ({ ...prev, track: customTracks.length > 0 ? customTracks[0].id : "uiux" }));
+                    setIsAddingStudent(true);
+                  }}
                   className="px-3 sm:px-4 py-2 bg-purple-600/20 hover:bg-purple-600 text-purple-400 hover:text-white rounded-xl border border-purple-500/30 text-sm font-bold flex items-center gap-1.5 sm:gap-2 transition-colors"
                 >
                   <Plus size={16} /> <span className="hidden sm:inline">Add Student</span>
