@@ -64,21 +64,9 @@ const InternshipRegistration = () => {
   const [earlyBirdActive, setEarlyBirdActive] = useState<boolean>(true);
   const navigate = useNavigate();
 
-  const [trackPricing, setTrackPricing] = useState<Record<string, string>>({
-    uiux: "₹899",
-    ai_automation: "₹899",
-    fullstack: "₹1099",
-    blockchain: "₹1099",
-    ai_architect: "₹1299"
-  });
+  const [trackPricing, setTrackPricing] = useState<Record<string, string>>({});
 
-  const [trackNames, setTrackNames] = useState<Record<string, string>>({
-    uiux: "UI/UX Designer",
-    ai_automation: "AI Automation Engineer",
-    fullstack: "Full Stack Developer",
-    blockchain: "Blockchain Engineer",
-    ai_architect: "AI Architect"
-  });
+  const [trackNames, setTrackNames] = useState<Record<string, string>>({});
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -105,8 +93,9 @@ const InternshipRegistration = () => {
         const tracksSnap = await getDoc(doc(db, "settings", "tracks"));
         if (tracksSnap.exists() && tracksSnap.data().items) {
           const items = tracksSnap.data().items;
-          const newNames = { ...trackNames };
-          const newPrices = { ...trackPricing };
+          // Build fresh objects from ONLY what the admin has configured — do not merge with hardcoded defaults
+          const newNames: Record<string, string> = {};
+          const newPrices: Record<string, string> = {};
           items.forEach((t: any) => {
             newNames[t.id] = t.name;
             newPrices[t.id] = t.price;
