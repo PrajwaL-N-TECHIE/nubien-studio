@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, lazy, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, Send, User, Mail, Phone, BookOpen, GraduationCap, Briefcase, Link as LinkIcon, CheckCircle2, UploadCloud, QrCode, Download, ArrowRight, Printer, Plus, Minus, MessageCircle, Radio, Linkedin } from "lucide-react";
 import Magnetic from "@/components/Magnetic";
@@ -8,6 +8,8 @@ import jsPDF from 'jspdf';
 import { useNavigate } from "react-router-dom";
 import SEO from "@/components/SEO";
 import PageTransition from "@/components/PageTransition";
+import ScrollStack, { ScrollStackItem } from "@/components/ScrollStack";
+const Lanyard = lazy(() => import("@/components/Lanyard"));
 
 import { db, auth } from "@/lib/firebase";
 import { collection, query, where, getDocs, getDoc, doc, addDoc, serverTimestamp } from "firebase/firestore";
@@ -49,10 +51,105 @@ const FAQs = [
   }
 ];
 
+const LEARNING_JOURNEY = [
+  {
+    week: "1",
+    title: "Foundations",
+    desc: "Kick off with a deep dive into your chosen domain. Get your tools configured and lock in the core concepts that everything else builds on.",
+    points: ["Domain introduction & industry landscape", "Tools & environment setup", "Core concept foundations"]
+  },
+  {
+    week: "2",
+    title: "Intermediate",
+    desc: "Level up with advanced concepts and real industry workflows. Move from theory to practical, hands-on implementations.",
+    points: ["Advanced concepts & patterns", "Industry workflows", "Practical implementations"]
+  },
+  {
+    week: "3",
+    title: "Project Development",
+    desc: "Plan, build, and ship. Collaborate on a real industry project through development sessions, testing, and optimization.",
+    points: ["Project planning & architecture", "Development sessions", "Testing & optimization"]
+  },
+  {
+    week: "4",
+    title: "Career Readiness",
+    desc: "Turn skills into opportunities. Polish your resume, optimize your presence, ace mock interviews, and submit your final project.",
+    points: ["Resume building", "LinkedIn & GitHub optimization", "Mock interviews & final submission"]
+  }
+];
+
+const generateInternCard = (data: { name: string; track: string; id: string; date: string }): string | null => {
+  if (typeof document === 'undefined') return null;
+  const W = 512, H = 768;
+  const canvas = document.createElement('canvas');
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return null;
+
+  const grad = ctx.createLinearGradient(0, 0, 0, H);
+  grad.addColorStop(0, '#1a1033');
+  grad.addColorStop(1, '#08080d');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  const glow = ctx.createRadialGradient(W / 2, 170, 10, W / 2, 170, 200);
+  glow.addColorStop(0, 'rgba(168,85,247,0.35)');
+  glow.addColorStop(1, 'rgba(168,85,247,0)');
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, 0, W, 360);
+
+  ctx.save();
+  ctx.translate(W / 2, 150);
+  ctx.fillStyle = '#c084fc';
+  ctx.beginPath(); ctx.moveTo(0, -34); ctx.lineTo(28, -17); ctx.lineTo(0, 0); ctx.lineTo(-28, -17); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#7c3aed';
+  ctx.beginPath(); ctx.moveTo(0, -18); ctx.lineTo(22, -8); ctx.lineTo(0, 2); ctx.lineTo(-22, -8); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#5b21b6';
+  ctx.beginPath(); ctx.moveTo(0, -4); ctx.lineTo(16, 3); ctx.lineTo(0, 10); ctx.lineTo(-16, 3); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath(); ctx.arc(0, -34, 5, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 46px Arial, sans-serif';
+  ctx.fillText('BUILDICY', W / 2, 240);
+  ctx.fillStyle = '#a855f7';
+  ctx.font = 'bold 18px Arial, sans-serif';
+  ctx.fillText('OFFICIAL INTERN ID', W / 2, 270);
+
+  ctx.strokeStyle = 'rgba(168,85,247,0.4)';
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(60, 300); ctx.lineTo(W - 60, 300); ctx.stroke();
+
+  ctx.textAlign = 'left';
+  const field = (y: number, label: string, value: string, valueColor = '#ffffff') => {
+    ctx.fillStyle = '#71717a';
+    ctx.font = 'bold 14px Arial, sans-serif';
+    ctx.fillText(label, 60, y);
+    ctx.fillStyle = valueColor;
+    ctx.font = 'bold 24px Arial, sans-serif';
+    ctx.fillText(value.slice(0, 26), 60, y + 28);
+  };
+  field(360, 'INTERN', (data.name || 'INTERN').toUpperCase());
+  field(440, 'TRACK', data.track || 'Internship Track', '#c084fc');
+  field(520, 'REGISTRATION ID', data.id || 'BLDCY-XXXX-0000');
+  field(600, 'ENROLLED ON', data.date || '');
+
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#3f3f46';
+  ctx.font = 'bold 13px Arial, sans-serif';
+  ctx.fillText('STATUS: VERIFIED & CONFIRMED', W / 2, H - 40);
+
+  return canvas.toDataURL('image/png');
+};
+
 const InternshipRegistration = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [registrationData, setRegistrationData] = useState<any>(null);
+  const [internCardUrl, setInternCardUrl] = useState<string | null>(null);
   const [selectedTrack, setSelectedTrack] = useState("");
   const [fileName, setFileName] = useState("");
   const [isPrinting, setIsPrinting] = useState(false);
@@ -111,6 +208,12 @@ const InternshipRegistration = () => {
     fetchStats();
     fetchEarlyBirdSettings();
   }, []);
+
+  useEffect(() => {
+    if (!isSuccess || !registrationData) return;
+    const url = generateInternCard(registrationData);
+    if (url) setInternCardUrl(url);
+  }, [isSuccess, registrationData]);
 
   const handleVerifyReferral = async (code: string) => {
     const cleanCode = code.trim();
@@ -480,6 +583,34 @@ const InternshipRegistration = () => {
           </motion.div>
         </div>
 
+        {/* Swinging Intern ID Card — Lanyard */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 2.6 }}
+          className="w-full max-w-md mt-12 relative z-10 flex flex-col items-center"
+        >
+          <div className="flex items-center gap-2 mb-1">
+            <Sparkles size={18} className="text-purple-400" />
+            <h3 className="text-lg font-bold text-white">Your Intern ID Card</h3>
+          </div>
+          <p className="text-xs text-white/50 mb-4 text-center">Drag it, flick it, screenshot it. Welcome to the team.</p>
+          <div className="w-full h-[400px] md:h-[460px] rounded-3xl overflow-hidden">
+            {internCardUrl ? (
+              <Suspense fallback={<div className="w-full h-full flex items-center justify-center text-white/40 text-sm">Loading card…</div>}>
+                <Lanyard
+                  position={[0, 0, 24]}
+                  gravity={[0, -30, 0]}
+                  frontImage={internCardUrl}
+                  imageFit="cover"
+                />
+              </Suspense>
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-white/40 text-sm animate-pulse">Forging your ID card…</div>
+            )}
+          </div>
+        </motion.div>
+
         {/* Action Buttons */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -582,6 +713,44 @@ const InternshipRegistration = () => {
           Accelerate your career with the Buildicy Elite Internship Training Program. Gain hands-on experience, expert mentorship, and build industry-grade projects. Enroll below to secure your spot.
         </p>
       </motion.div>
+
+      {/* What You'll Learn — ScrollStack Journey */}
+      <div className="w-full max-w-4xl mx-auto mb-16 relative z-10">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-sm font-medium mb-3">
+            <Sparkles size={16} /> What You'll Learn
+          </div>
+          <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-2 tracking-tight">
+            Your 4-Week <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-purple-600">Learning Journey</span>
+          </h2>
+          <p className="text-white/60 max-w-xl mx-auto">Scroll through the immersive path from foundations to career readiness.</p>
+        </div>
+        <div className="h-[80vh] rounded-3xl border border-white/10 bg-black/20 overflow-hidden">
+          <ScrollStack useNativeScroll itemDistance={120} baseScale={0.88} blurAmount={2}>
+            {LEARNING_JOURNEY.map((w) => (
+              <ScrollStackItem key={w.week}>
+                <div className="rounded-[32px] overflow-hidden border border-white/10 bg-gradient-to-br from-[#170f2e] to-[#0a0a0f] p-8 md:p-10 min-h-[16rem] flex flex-col justify-center shadow-2xl">
+                  <div className="flex items-center gap-5 mb-5">
+                    <span className="text-6xl md:text-7xl font-black bg-clip-text text-transparent bg-gradient-to-br from-purple-300 to-purple-600 font-['Syne'] leading-none">{w.week}</span>
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.2em] text-purple-400 font-bold mb-1 font-['DM_Mono']">Week {w.week}</p>
+                      <h3 className="text-2xl md:text-3xl font-bold text-white tracking-tight">{w.title}</h3>
+                    </div>
+                  </div>
+                  <p className="text-white/60 leading-relaxed mb-4">{w.desc}</p>
+                  <ul className="space-y-2">
+                    {w.points.map((p, i) => (
+                      <li key={i} className="text-sm text-white/80 flex items-start gap-2">
+                        <span className="text-purple-400 mt-0.5">▸</span>{p}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </ScrollStackItem>
+            ))}
+          </ScrollStack>
+        </div>
+      </div>
 
       {/* Early Bird Banner */}
       <AnimatePresence>

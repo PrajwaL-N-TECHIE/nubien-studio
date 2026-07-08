@@ -4,6 +4,7 @@ import { Sparkles, ArrowRight, Play, Zap, Globe, Star, Circle } from "lucide-rea
 
 const ThreeScene = lazy(() => import("@/components/ThreeScene"));
 import Magnetic from "@/components/Magnetic";
+import MagnetLines from "@/components/MagnetLines";
 import { usePerformance } from "@/context/PerformanceContext";
 
 // Premium Easing Curve
@@ -149,6 +150,22 @@ const HeroSection = () => {
       className="relative min-h-screen flex flex-col items-center overflow-hidden bg-[#050507]"
     >
       <FloatingParticles />
+
+      {/* MagnetLines — cursor-reactive grid background */}
+      {!isLowEnd && (
+        <div className="absolute inset-0 pointer-events-none z-0 flex items-center justify-center overflow-hidden opacity-[0.13]">
+          <MagnetLines
+            rows={13}
+            columns={18}
+            containerSize="100%"
+            lineColor="#a855f7"
+            lineWidth="0.35vmin"
+            lineHeight="2.5vmin"
+            baseAngle={0}
+            style={{ width: '100%', height: '100%' }}
+          />
+        </div>
+      )}
 
       <Suspense fallback={<div className="absolute inset-0 bg-[#050507]" />}>
         <motion.div className="absolute inset-0 z-0" style={{ opacity }}>

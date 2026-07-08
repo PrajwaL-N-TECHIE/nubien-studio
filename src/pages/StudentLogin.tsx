@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Ribbons from "@/components/Ribbons";
 import { motion, AnimatePresence } from "framer-motion";
 import { User, Lock, ArrowRight, CheckCircle2, Loader2, ShieldCheck, Mail, Key, Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -88,6 +89,19 @@ export default function StudentLogin() {
   return (
     <PageTransition>
       <div className="min-h-screen bg-[#050507] flex items-center justify-center relative overflow-hidden text-white selection:bg-purple-500/30">
+        {/* Ribbons animated background */}
+        <div className="absolute inset-0 pointer-events-none z-0">
+          <Ribbons
+            colors={['#7c3aed', '#a855f7', '#6d28d9', '#9333ea']}
+            baseThickness={22}
+            speedMultiplier={0.35}
+            enableShaderEffect={true}
+            enableFade={true}
+            backgroundColor={[0, 0, 0, 0]}
+            offsetFactor={0.08}
+            maxAge={600}
+          />
+        </div>
         <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-purple-600/5 rounded-full blur-[150px] pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-blue-600/5 rounded-full blur-[150px] pointer-events-none" />
 

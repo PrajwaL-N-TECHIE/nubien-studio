@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   LayoutDashboard, BookOpen, Trophy, Bot, Briefcase, 
@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { usePerformance } from "@/context/PerformanceContext";
 import PageTransition from "@/components/PageTransition";
+import Folder from "@/components/Folder";
 import { useNavigate } from "react-router-dom";
 import { db, auth } from "@/lib/firebase";
 import { collection, query, where, getDocs, addDoc, serverTimestamp, orderBy, updateDoc, doc } from "firebase/firestore";
@@ -32,7 +33,7 @@ interface StudentData {
 interface Material {
   id: string;
   title: string;
-  type: 'pdf' | 'link' | 'video';
+  type: 'pdf' | 'link' | 'video' | 'image' | 'archive' | 'audio';
   url: string;
   cohort: string;
 }
@@ -55,7 +56,23 @@ interface Submission {
   feedback?: string;
 }
 
+const FOLDER_COLORS: Record<string, string> = {
+  pdf: '#7c3aed',
+  video: '#2563eb',
+  link: '#0891b2',
+  image: '#db2777',
+  archive: '#ea580c',
+  audio: '#16a34a',
+};
 
+const FOLDER_LABELS: Record<string, string> = {
+  pdf: 'Documents',
+  video: 'Videos',
+  link: 'Links',
+  image: 'Images',
+  archive: 'Archives',
+  audio: 'Audio',
+};
 
 const getNextLiveSession = () => {
   const now = new Date();
@@ -298,6 +315,15 @@ const Vault = ({ materials, student }: { materials: Material[], student: Student
     }
   };
 
+  const groupedMaterials = useMemo(() => {
+    const groups: Record<string, Material[]> = {};
+    materials.forEach((m) => {
+      const key = m.type || 'pdf';
+      (groups[key] = groups[key] || []).push(m);
+    });
+    return groups;
+  }, [materials]);
+
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="flex items-center justify-between mb-8">
@@ -306,6 +332,34 @@ const Vault = ({ materials, student }: { materials: Material[], student: Student
           <p className="text-zinc-400 text-sm mt-1">Access all your cohort's documents, links, and slides.</p>
         </div>
       </div>
+
+      {materials.length > 0 && (
+        <div className="mb-6 p-6 md:p-8 bg-white/[0.02] border border-white/10 rounded-3xl">
+          <h3 className="text-sm font-bold text-white/60 uppercase tracking-widest mb-6 flex items-center gap-2">
+            <Archive size={16} className="text-purple-400" /> Quick Access Folders
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 justify-items-center py-4">
+            {Object.entries(groupedMaterials).map(([type, mats]) => (
+              <div key={type} className="flex flex-col items-center gap-4">
+                <Folder
+                  color={FOLDER_COLORS[type] || '#7c3aed'}
+                  size={1.25}
+                  items={mats.slice(0, 3).map((m) => (
+                    <span key={m.id} className="text-[9px] leading-tight text-center text-zinc-700 font-bold px-1 line-clamp-2">
+                      {m.title}
+                    </span>
+                  ))}
+                />
+                <div className="text-center">
+                  <p className="text-xs font-bold text-white uppercase tracking-wider">{FOLDER_LABELS[type] || type}</p>
+                  <p className="text-[10px] text-white/40 font-mono">{mats.length} item{mats.length !== 1 ? 's' : ''}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="text-[11px] text-white/30 text-center mt-2">Tap a folder to peek inside. Full list below.</p>
+        </div>
+      )}
 
       <div className="grid gap-4">
         {materials.length === 0 ? (
