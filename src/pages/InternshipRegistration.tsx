@@ -161,9 +161,26 @@ const InternshipRegistration = () => {
   const [earlyBirdActive, setEarlyBirdActive] = useState<boolean>(true);
   const navigate = useNavigate();
 
-  const [trackPricing, setTrackPricing] = useState<Record<string, string>>({});
+  const DEFAULT_TRACKS = {
+    names: {
+      uiux: "UI/UX Designer",
+      ai_automation: "AI Automation Engineer",
+      fullstack: "Full Stack Developer",
+      blockchain: "Blockchain Engineer",
+      ai_architect: "AI Architect"
+    },
+    prices: {
+      uiux: "₹899",
+      ai_automation: "₹899",
+      fullstack: "₹1099",
+      blockchain: "₹1099",
+      ai_architect: "₹1299"
+    }
+  };
 
-  const [trackNames, setTrackNames] = useState<Record<string, string>>({});
+  const [trackPricing, setTrackPricing] = useState<Record<string, string>>(DEFAULT_TRACKS.prices);
+
+  const [trackNames, setTrackNames] = useState<Record<string, string>>(DEFAULT_TRACKS.names);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -181,16 +198,21 @@ const InternshipRegistration = () => {
     };
 
     const fetchEarlyBirdSettings = async () => {
+      // Read general settings independently so a failure here doesn't block tracks
       try {
         const snap = await getDoc(doc(db, "settings", "general"));
         if (snap.exists() && snap.data().earlyBirdActive !== undefined) {
           setEarlyBirdActive(snap.data().earlyBirdActive);
         }
+      } catch (err) {
+        console.error("Failed to fetch general settings:", err);
+      }
 
+      // Read admin-configured tracks independently
+      try {
         const tracksSnap = await getDoc(doc(db, "settings", "tracks"));
         if (tracksSnap.exists() && tracksSnap.data().items) {
           const items = tracksSnap.data().items;
-          // Build fresh objects from ONLY what the admin has configured — do not merge with hardcoded defaults
           const newNames: Record<string, string> = {};
           const newPrices: Record<string, string> = {};
           items.forEach((t: any) => {
@@ -201,7 +223,7 @@ const InternshipRegistration = () => {
           setTrackPricing(newPrices);
         }
       } catch (err) {
-        console.error("Failed to fetch settings", err);
+        console.error("Failed to fetch tracks:", err);
       }
     };
 
@@ -399,6 +421,28 @@ const InternshipRegistration = () => {
       
       // Save to Temp Database
       await addDoc(collection(db, "internships_temp"), studentData);
+
+      // Sync to server API for certificate verification
+      try {
+        await fetch('/api/register-internship', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: studentData.name,
+            email: studentData.email,
+            phone: studentData.phone,
+            track: studentData.track,
+            college: studentData.college,
+            degree: studentData.degree,
+            reason: studentData.reason,
+            receipt: studentData.receipt,
+            registration_id: studentData.registration_id,
+            referral_code: studentData.referral_code
+          })
+        });
+      } catch (apiErr) {
+        console.error('Failed to sync to server API:', apiErr);
+      }
 
       const resultData = { id: docRef.id, registration_id: registrationId };
 
@@ -725,8 +769,8 @@ const InternshipRegistration = () => {
           </h2>
           <p className="text-white/60 max-w-xl mx-auto">Scroll through the immersive path from foundations to career readiness.</p>
         </div>
-        <div className="h-[80vh] rounded-3xl border border-white/10 bg-black/20 overflow-hidden">
-          <ScrollStack useNativeScroll itemDistance={120} baseScale={0.88} blurAmount={2}>
+        <div className="rounded-3xl border border-white/10 bg-black/20">
+          <ScrollStack useWindowScroll itemDistance={120} baseScale={0.88} blurAmount={2}>
             {LEARNING_JOURNEY.map((w) => (
               <ScrollStackItem key={w.week}>
                 <div className="rounded-[32px] overflow-hidden border border-white/10 bg-gradient-to-br from-[#170f2e] to-[#0a0a0f] p-8 md:p-10 min-h-[16rem] flex flex-col justify-center shadow-2xl">
