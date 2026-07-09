@@ -794,6 +794,29 @@ const InternshipRegistration = () => {
           </ScrollStack>
       </div>
 
+      {/* CTA Banner between learning journey and form */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="max-w-2xl w-full mx-auto mb-12 relative z-10"
+      >
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-purple-600/20 via-purple-900/10 to-indigo-900/20 border border-purple-500/20 p-8 md:p-10 text-center">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200%] h-[200%] bg-purple-500/5 rounded-full blur-3xl pointer-events-none" />
+          <div className="relative z-10">
+            <h3 className="text-2xl md:text-3xl font-extrabold text-white mb-3 tracking-tight">
+              Ready to Dive In?
+            </h3>
+            <p className="text-white/60 text-base mb-6 max-w-md mx-auto leading-relaxed">
+              Fill out the form below to get yourself enrolled and start your journey with us.
+            </p>
+            <div className="flex items-center justify-center gap-3">
+              <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+              <span className="text-sm text-white/50 font-medium">Limited spots available — Enroll now</span>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
       {/* Early Bird Banner */}
       <AnimatePresence>
         {isEarlyBird && !isSuccess && (
