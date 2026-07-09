@@ -769,8 +769,7 @@ const InternshipRegistration = () => {
           </h2>
           <p className="text-white/60 max-w-xl mx-auto">Scroll through the immersive path from foundations to career readiness.</p>
         </div>
-        <div className="rounded-3xl border border-white/10 bg-black/20">
-          <ScrollStack useWindowScroll itemDistance={120} baseScale={0.88} blurAmount={2}>
+        <ScrollStack useWindowScroll useNativeScroll itemDistance={120} baseScale={0.88} blurAmount={2}>
             {LEARNING_JOURNEY.map((w) => (
               <ScrollStackItem key={w.week}>
                 <div className="rounded-[32px] overflow-hidden border border-white/10 bg-gradient-to-br from-[#170f2e] to-[#0a0a0f] p-8 md:p-10 min-h-[16rem] flex flex-col justify-center shadow-2xl">
@@ -793,7 +792,6 @@ const InternshipRegistration = () => {
               </ScrollStackItem>
             ))}
           </ScrollStack>
-        </div>
       </div>
 
       {/* Early Bird Banner */}
