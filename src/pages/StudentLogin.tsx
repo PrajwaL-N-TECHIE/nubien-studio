@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Ribbons from "@/components/Ribbons";
 import { motion, AnimatePresence } from "framer-motion";
-import { User, Lock, ArrowRight, CheckCircle2, Loader2, ShieldCheck, Mail, Key, Eye, EyeOff } from "lucide-react";
+import { User, Lock, ArrowRight, CheckCircle2, Loader2, ShieldCheck, Mail, Key, Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import PageTransition from "@/components/PageTransition";
 import { db, auth } from "@/lib/firebase";
@@ -104,6 +104,15 @@ export default function StudentLogin() {
         </div>
         <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-purple-600/5 rounded-full blur-[150px] pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-blue-600/5 rounded-full blur-[150px] pointer-events-none" />
+
+        <button
+          type="button"
+          onClick={() => navigate('/')}
+          className="absolute top-6 left-6 z-20 flex items-center gap-2 text-sm font-medium text-zinc-400 hover:text-white transition-colors"
+        >
+          <ArrowLeft size={18} />
+          Back
+        </button>
 
         <div className="relative z-10 w-full max-w-md p-6">
           <motion.div
