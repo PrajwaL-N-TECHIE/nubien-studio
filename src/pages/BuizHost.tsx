@@ -81,6 +81,7 @@ const BuizHost = () => {
 
   // 1. Host Timer Logic (Max 20s per question)
   useEffect(() => {
+    if (gameMode === 'ownPace') return;
     if (status === 'playing' && questionStatus === 'answering') {
       setTimeLeft(20);
       const timer = setInterval(() => {
@@ -101,6 +102,7 @@ const BuizHost = () => {
 
   // 2. Dynamic Skip (If all players answered early)
   useEffect(() => {
+    if (gameMode === 'ownPace') return;
     if (status === 'playing' && questionStatus === 'answering' && players.length > 0 && roomQuestions.length > 0) {
       const targetProgress = (currentQIndex + 1) / roomQuestions.length;
       // Use a small epsilon for float comparison just in case, though they should be exact
@@ -116,6 +118,7 @@ const BuizHost = () => {
 
   // 3. Auto-Advance to Next Question
   useEffect(() => {
+    if (gameMode === 'ownPace') return;
     if (status === 'playing' && questionStatus === 'revealed') {
       const timer = setTimeout(() => {
         if (currentQIndex + 1 < roomQuestions.length) {

@@ -462,16 +462,31 @@ const Dropzone = ({ assignments, student, submissions, setSubmissions }: { assig
               <p className="text-zinc-500 text-sm">No active tasks available right now.</p>
             ) : (
               assignments.map((a, i) => {
-                const isSubmitted = submissions.some(s => s.assignment_id === a.id);
-                const isLocked = i > 0 && !submissions.some(s => s.assignment_id === assignments[i-1].id);
+                const assignSubs = submissions.filter(s => s.assignment_id === a.id).sort((a, b) => {
+                  const timeA = a.submitted_at?.seconds || 0;
+                  const timeB = b.submitted_at?.seconds || 0;
+                  return timeB - timeA;
+                });
+                const latestSub = assignSubs[0];
+                const isRejected = latestSub?.status === 'rejected';
+                const isSubmitted = !!latestSub && !isRejected;
+                
+                const prevSubs = i > 0 ? submissions.filter(s => s.assignment_id === assignments[i-1].id).sort((a, b) => {
+                  const timeA = a.submitted_at?.seconds || 0;
+                  const timeB = b.submitted_at?.seconds || 0;
+                  return timeB - timeA;
+                }) : [];
+                const prevLatestSub = prevSubs[0];
+                const isLocked = i > 0 && (!prevLatestSub || prevLatestSub.status === 'rejected');
                 
                 return (
-                  <div key={a.id} className={`p-5 border rounded-2xl transition-all ${isSubmitted ? 'bg-green-500/5 border-green-500/20' : isLocked ? 'bg-[#050507]/80 border-white/5 opacity-60' : 'bg-white/5 border-white/10 hover:border-purple-500/30'}`}>
+                  <div key={a.id} className={`p-5 border rounded-2xl transition-all ${isSubmitted ? 'bg-green-500/5 border-green-500/20' : isRejected ? 'bg-red-500/5 border-red-500/20' : isLocked ? 'bg-[#050507]/80 border-white/5 opacity-60' : 'bg-white/5 border-white/10 hover:border-purple-500/30'}`}>
                     <div className="flex justify-between items-start mb-2">
                       <h4 className={`font-bold ${isLocked ? 'text-zinc-500' : 'text-white'} flex items-center gap-2`}>
                         {isLocked && <FileLock2 size={16} />} {a.title}
                       </h4>
                       {isSubmitted && <span className="px-2 py-1 bg-green-500/20 text-green-400 text-[10px] uppercase font-bold tracking-widest rounded">Submitted</span>}
+                      {isRejected && <span className="px-2 py-1 bg-red-500/20 text-red-400 text-[10px] uppercase font-bold tracking-widest rounded">Rejected - Resubmit</span>}
                       {isLocked && <span className="px-2 py-1 bg-zinc-800 text-zinc-500 text-[10px] uppercase font-bold tracking-widest rounded">Locked</span>}
                     </div>
                     {!isLocked ? (
@@ -506,10 +521,25 @@ const Dropzone = ({ assignments, student, submissions, setSubmissions }: { assig
                 <select required value={selectedAssignId} onChange={e => setSelectedAssignId(e.target.value)} className="w-full bg-[#050507] border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-blue-500/50 text-sm">
                   <option value="">-- Choose Assignment --</option>
                   {assignments.map((a, i) => {
-                    const isLocked = i > 0 && !submissions.some(s => s.assignment_id === assignments[i-1].id);
+                    const prevSubs = i > 0 ? submissions.filter(s => s.assignment_id === assignments[i-1].id).sort((a, b) => {
+                      const timeA = a.submitted_at?.seconds || 0;
+                      const timeB = b.submitted_at?.seconds || 0;
+                      return timeB - timeA;
+                    }) : [];
+                    const prevLatestSub = prevSubs[0];
+                    const isLocked = i > 0 && (!prevLatestSub || prevLatestSub.status === 'rejected');
+                    
+                    const mySubs = submissions.filter(s => s.assignment_id === a.id).sort((a, b) => {
+                      const timeA = a.submitted_at?.seconds || 0;
+                      const timeB = b.submitted_at?.seconds || 0;
+                      return timeB - timeA;
+                    });
+                    const myLatestSub = mySubs[0];
+                    const isRejected = myLatestSub?.status === 'rejected';
+
                     return (
                       <option key={a.id} value={a.id} disabled={isLocked}>
-                        {a.title} {isLocked ? "(Locked)" : ""}
+                        {a.title} {isLocked ? "(Locked)" : isRejected ? "(Rejected - Resubmit)" : ""}
                       </option>
                     );
                   })}

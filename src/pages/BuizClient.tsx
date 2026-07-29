@@ -157,9 +157,10 @@ const BuizClient = () => {
   };
 
   const handleAnswer = (selectedIdx: number) => {
-    if (questionStatus === 'revealed' || selectedOption !== null) return;
+    if (questionStatus === 'revealed') return;
     
     if (gameMode === 'ownPace') {
+      if (answers[localQIndex] !== undefined) return;
       const currentIdx = localQIndex;
       const q = questions[currentIdx];
       const isCorrect = selectedIdx === q?.answer;
@@ -498,7 +499,7 @@ const BuizClient = () => {
             let bgClass = "bg-[#1A1A24]/60 hover:bg-[#1A1A24] border-white/10 text-white";
             let letterBg = "bg-white/10";
             
-            const hasAnswered = questionStatus === 'revealed' || selectedOption !== null || (gameMode === 'ownPace' && answers[displayQIndex] !== undefined);
+            const hasAnswered = questionStatus === 'revealed' || (gameMode === 'ownPace' && answers[displayQIndex] !== undefined);
             const effectiveSelected = gameMode === 'ownPace' ? answers[displayQIndex]?.selectedOption : selectedOption;
             const effectiveRevealed = gameMode === 'ownPace' ? answers[displayQIndex] !== undefined : questionStatus === 'revealed';
             
