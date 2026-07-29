@@ -17,9 +17,9 @@ const customEase = [0.22, 1, 0.36, 1];
 // Team images for the support section
 const teamImages = [
   PrajwalImage,
-  MayurImage,
   MizbhaImage,
   LathikaImage,
+  MayurImage,
 ];
 
 // Calculated positions for a perfect spreading fan (4 cards)
