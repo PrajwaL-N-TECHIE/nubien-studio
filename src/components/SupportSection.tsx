@@ -6,19 +6,28 @@ import { MeshDistortMaterial, Sphere } from "@react-three/drei";
 import { audio } from "@/utils/audio";
 import { usePerformance } from "@/context/PerformanceContext";
 
+import PrajwalImage from "@/assets/prajwal.jpg";
 import MayurImage from "@/assets/mayur.jpg";
+import MizbhaImage from "@/assets/mizbha.jpg";
+import LathikaImage from "@/assets/lathika.jpg";
 
 // Premium Easing Curve
 const customEase = [0.22, 1, 0.36, 1];
 
 // Team images for the support section
 const teamImages = [
+  PrajwalImage,
   MayurImage,
+  MizbhaImage,
+  LathikaImage,
 ];
 
-// Calculated positions for a perfect spreading fan (1 card centered)
+// Calculated positions for a perfect spreading fan (4 cards)
 const fanCards = [
-  { rotate: 0, x: 0, y: 10 },
+  { rotate: -15, x: -90, y: 30 },
+  { rotate: -5, x: -30, y: 10 },
+  { rotate: 5, x: 30, y: 10 },
+  { rotate: 15, x: 90, y: 30 },
 ];
 
 // --------------------------------------------------------------------------
