@@ -6,6 +6,9 @@ import TiltCard from "./TiltCard";
 import Magnetic from "./Magnetic";
 import { usePerformance } from "@/context/PerformanceContext";
 import MayurImage from "@/assets/mayur.jpg";
+import PrajwalImage from "@/assets/prajwal.jpg";
+import MizbhaImage from "@/assets/mizbha.jpg";
+import LathikaImage from "@/assets/lathika.jpg";
 // --------------------------------------------------------------------------
 // PHYSICS-BASED GLASS DISTORTION
 // --------------------------------------------------------------------------
@@ -252,9 +255,12 @@ const LaboratorySection = () => {
                         Driven by <span className="italic bg-gradient-to-r from-white via-zinc-400 to-zinc-600 bg-clip-text text-transparent">Vision & Purpose.</span>
                     </h2>
                     <div className="flex flex-col gap-12 max-w-6xl mx-auto">
-                        {/* Co-founders */}
-                        <div className="grid grid-cols-1 md:grid-cols-1 gap-8 lg:gap-12 w-full px-0 md:px-8 max-w-2xl mx-auto">
-                            <LeadershipCard name="Mayur P" role="Co-founder & Web3 Developer" description="Pioneering decentralized applications and Web3 infrastructure, focusing on secure, scalable blockchain solutions for the modern web." imageSrc={MayurImage} />
+                        {/* Co-founders & Team */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 w-full px-0 md:px-8 mx-auto">
+                            <LeadershipCard name="Prajwal N" role="Founder & CEO" isCEO imageSrc={PrajwalImage} />
+                            <LeadershipCard name="Mayur P" role="Co-Founder & CTO" description="Pioneering decentralized applications and Web3 infrastructure, focusing on secure, scalable blockchain solutions for the modern web." imageSrc={MayurImage} />
+                            <LeadershipCard name="Mizbha Fathima" role="Creative Lead" description="Crafting intuitive and immersive user experiences with a keen eye for aesthetic detail and functional design principles." imageSrc={MizbhaImage} />
+                            <LeadershipCard name="Lathika J" role="FSD & Client Success Lead" imageSrc={LathikaImage} />
                         </div>
                     </div>
                 </div>

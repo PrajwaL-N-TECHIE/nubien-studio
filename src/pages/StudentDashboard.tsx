@@ -698,7 +698,20 @@ const MockInterviewArena = ({ student, setStudent }: { student: StudentData, set
 
   const [questions] = useState<any[]>(() => {
     const answered = student.answered_questions || [];
-    const data = QUESTIONS.filter(q => !answered.includes(q.id.toString()));
+    
+    const trackMapping: Record<string, string> = {
+      "ai_architect": "AI Architect",
+      "fullstack": "Full Stack Web Dev",
+      "ai_automation": "AI Automation",
+      "blockchain": "Agentic AI", 
+      "uiux": "AI Automation" 
+    };
+    const mappedTopic = trackMapping[student.track] || "AI Architect";
+    
+    let topicData = QUESTIONS.filter(q => q.topic === mappedTopic);
+    if (topicData.length === 0) topicData = QUESTIONS;
+    
+    const data = topicData.filter(q => !answered.includes(q.id.toString()));
     
     // Sort by Difficulty: Easy -> Medium -> Hard
     const diffWeight: Record<string, number> = { 'Easy': 1, 'Medium': 2, 'Hard': 3 };
