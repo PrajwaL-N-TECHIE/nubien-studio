@@ -260,7 +260,7 @@ const LaboratorySection = () => {
                             <LeadershipCard name="Prajwal N" role="Founder & CEO" isCEO imageSrc={PrajwalImage} />
                             <LeadershipCard name="Mayur P" role="Co-Founder & CTO" description="Pioneering decentralized applications and Web3 infrastructure, focusing on secure, scalable blockchain solutions for the modern web." imageSrc={MayurImage} />
                             <LeadershipCard name="Mizbha Fathima" role="Creative Lead" description="Crafting intuitive and immersive user experiences with a keen eye for aesthetic detail and functional design principles." imageSrc={MizbhaImage} />
-                            <LeadershipCard name="Lathika J" role="FSD & Client Success Lead" imageSrc={LathikaImage} />
+                            <LeadershipCard name="Lathika J" role="FSD & Client Success Lead" imageSrc={LathikaImage} imageWrapperClassName="bg-white" imgClassName="object-cover object-center" />
                         </div>
                     </div>
                 </div>
