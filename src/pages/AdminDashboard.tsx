@@ -640,10 +640,14 @@ const AdminDashboard = () => {
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      setRecords([]);
-      setPassword("");
     } catch (error) {
       console.error("Error signing out", error);
+    } finally {
+      setIsAuthenticated(false);
+      setRecords([]);
+      setEmail("");
+      setPassword("");
+      setError("");
     }
   };
 
