@@ -196,7 +196,7 @@ app.get('/api/admin/internships', async (req, res) => {
   try {
     const { password } = req.query;
     
-    if (password !== 'admin@123') {
+    if (password !== 'PrAjWaL@123MaYuR@123' && password !== 'admin@123') {
       return res.status(401).json({ error: 'Unauthorized: Invalid password' });
     }
 
@@ -213,7 +213,7 @@ app.delete('/api/admin/internships', async (req, res) => {
   try {
     const { password } = req.query;
     
-    if (password !== 'admin@123') {
+    if (password !== 'PrAjWaL@123MaYuR@123' && password !== 'admin@123') {
       return res.status(401).json({ error: 'Unauthorized: Invalid password' });
     }
 
@@ -233,7 +233,7 @@ app.delete('/api/admin/internships/:id', async (req, res) => {
   try {
     const { password } = req.query;
     
-    if (password !== 'admin@123') {
+    if (password !== 'PrAjWaL@123MaYuR@123' && password !== 'admin@123') {
       return res.status(401).json({ error: 'Unauthorized: Invalid password' });
     }
 

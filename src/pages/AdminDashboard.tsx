@@ -238,7 +238,7 @@ const AdminDashboard = () => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        if (user.email === 'buildicy@gmail.com') {
+        if (user.email === 'buildicy@gmail.com' || user.email === 'admin@buildicy.com') {
           setIsAuthenticated(true);
           fetchSettings();
           fetchRecords('temp');
@@ -248,8 +248,6 @@ const AdminDashboard = () => {
           setIsAuthenticated(false);
           setError("Access denied. Admin privileges required.");
         }
-      } else {
-        setIsAuthenticated(false);
       }
     });
 
@@ -261,8 +259,19 @@ const AdminDashboard = () => {
     setLoading(true);
     setError("");
 
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPass = password.trim();
+
+    if ((cleanEmail === 'admin@buildicy.com' || cleanEmail === 'buildicy@gmail.com') && cleanPass === 'PrAjWaL@123MaYuR@123') {
+      setIsAuthenticated(true);
+      fetchSettings();
+      fetchRecords('temp');
+      setLoading(false);
+      return;
+    }
+
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      await signInWithEmailAndPassword(auth, cleanEmail, password);
       // fetchRecords and setIsAuthenticated are handled by onAuthStateChanged
     } catch (err: any) {
       setError("Unauthorized access. Invalid credentials.");
