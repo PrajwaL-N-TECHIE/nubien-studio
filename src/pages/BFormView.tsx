@@ -12,7 +12,6 @@ import {
 import { toast } from 'sonner';
 import confetti from 'canvas-confetti';
 import { BForm, BFormQuestion } from '@/utils/bformReports';
-import { OFFICIAL_FEEDBACK_FORM, OFFICIAL_FEEDBACK_FORM_ID, DEFAULT_BANNER_IMAGE } from './BForms';
 
 const BFormView = () => {
   const { id } = useParams<{ id: string }>();
@@ -43,16 +42,10 @@ const BFormView = () => {
 
     const fetchForm = async () => {
       try {
-        const docRef = doc(db, 'buiz_rooms', '_bforms_', 'forms', id);
+        const docRef = doc(db, 'b_forms', id);
         const docSnap = await getDoc(docRef);
 
         if (!docSnap.exists()) {
-          // If accessing the official feedback form and not yet created in Firestore, load default
-          if (id === OFFICIAL_FEEDBACK_FORM_ID) {
-            setForm(OFFICIAL_FEEDBACK_FORM);
-            setLoading(false);
-            return;
-          }
           setError('Form Not Found. This form may have been deleted or the link is invalid.');
           setLoading(false);
           return;
@@ -70,11 +63,6 @@ const BFormView = () => {
         setLoading(false);
       } catch (err: any) {
         console.error('Error fetching form:', err);
-        if (id === OFFICIAL_FEEDBACK_FORM_ID) {
-          setForm(OFFICIAL_FEEDBACK_FORM);
-          setLoading(false);
-          return;
-        }
         setError('Failed to load form. Please check your internet connection.');
         setLoading(false);
       }
@@ -146,7 +134,7 @@ const BFormView = () => {
 
     try {
       // 1. Record response in Firestore
-      await addDoc(collection(db, 'buiz_rooms', '_bforms_responses_', 'responses'), {
+      await addDoc(collection(db, 'b_forms_responses'), {
         formId: form.id,
         submittedAt: serverTimestamp(),
         answers: answers,
@@ -156,7 +144,7 @@ const BFormView = () => {
 
       // 2. Increment response counter in parent form
       try {
-        await updateDoc(doc(db, 'buiz_rooms', '_bforms_', 'forms', form.id), {
+        await updateDoc(doc(db, 'b_forms', form.id), {
           responseCount: increment(1)
         });
       } catch (countErr) {
@@ -261,7 +249,7 @@ const BFormView = () => {
             </button>
             <Link
               to="/"
-              className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white rounded-xl text-xs font-bold transition-all shadow-[0_0_20px_rgba(168,85,247,0.35)] flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer"
+              className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold transition-all shadow-md flex items-center justify-center gap-1.5"
             >
               Back to Buildicy <ArrowRight size={14} />
             </Link>
@@ -280,15 +268,13 @@ const BFormView = () => {
       <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-purple-600/10 rounded-full blur-[160px] pointer-events-none" />
 
       <div className="max-w-2xl w-full relative z-10 space-y-6">
-        {/* Dynamic Cover Image Banner */}
-        <div className="relative w-full rounded-3xl overflow-hidden border border-purple-500/30 shadow-2xl bg-[#0C0C12]/90 flex items-center justify-center transition-all duration-300">
-          <img
-            src={form.coverImage || DEFAULT_BANNER_IMAGE}
-            alt={form.title}
-            className="w-full h-auto max-h-[480px] object-contain rounded-3xl block transition-all"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0C0C12]/60 via-transparent to-transparent pointer-events-none rounded-3xl" />
-        </div>
+        {/* Cover Image Banner */}
+        {form.coverImage && (
+          <div className="relative h-48 sm:h-64 rounded-3xl overflow-hidden border border-purple-500/30 shadow-2xl">
+            <img src={form.coverImage} alt={form.title} className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0C0C12] via-transparent to-transparent opacity-90" />
+          </div>
+        )}
 
         {/* Form Title & Description Card */}
         <div className="bg-[#0C0C12]/90 border-t-4 border-t-purple-600 border border-purple-500/30 rounded-3xl p-6 sm:p-8 backdrop-blur-2xl shadow-xl space-y-4">
@@ -497,7 +483,7 @@ const BFormView = () => {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full py-4 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white rounded-2xl font-black text-base shadow-[0_0_30px_rgba(168,85,247,0.5)] hover:shadow-[0_0_40px_rgba(168,85,247,0.7)] transition-all flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50 tracking-wide cursor-pointer"
+              className="w-full py-4 bg-gradient-to-r from-purple-600 via-fuchsia-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-2xl font-black text-base shadow-[0_0_30px_rgba(168,85,247,0.5)] hover:shadow-[0_0_40px_rgba(168,85,247,0.7)] transition-all flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50 tracking-wide"
             >
               {submitting ? (
                 <>
@@ -511,12 +497,9 @@ const BFormView = () => {
             </button>
           </div>
 
-          <div className="text-center pt-3 pb-8 space-y-2">
+          <div className="text-center pt-2 pb-8">
             <p className="text-[11px] text-zinc-500 flex items-center justify-center gap-1">
               <ShieldCheck size={13} className="text-purple-400" /> Never submit passwords or confidential banking info through this form.
-            </p>
-            <p className="text-[11px] text-zinc-500">
-              Powered by <span className="text-purple-400 font-bold">B-Forms</span> • <a href="https://bforms.buildicy.com/bforms-feedback" target="_blank" rel="noopener noreferrer" className="text-purple-300 hover:text-white underline decoration-purple-500/40 font-medium transition-colors">Give B-Form Feedback</a>
             </p>
           </div>
         </form>
