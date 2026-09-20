@@ -348,7 +348,7 @@ const BForms = () => {
 
   // Copy Form Share Link
   const copyShareLink = (formId: string) => {
-    const url = `${window.location.origin}/b-forms/${formId}`;
+    const url = `${window.location.origin}/${formId}`;
     navigator.clipboard.writeText(url);
     setCopiedLink(true);
     toast.success('Link copied to clipboard!', {
@@ -424,7 +424,7 @@ const BForms = () => {
 
             <button
               type="submit"
-              className="w-full py-3.5 mt-2 bg-gradient-to-r from-purple-600 via-fuchsia-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-xl font-bold transition-all shadow-[0_0_20px_rgba(168,85,247,0.4)] text-sm active:scale-95 flex items-center justify-center gap-2"
+              className="w-full py-3.5 mt-2 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white rounded-xl font-bold transition-all shadow-[0_0_25px_rgba(168,85,247,0.45)] hover:shadow-[0_0_35px_rgba(168,85,247,0.65)] text-sm active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
             >
               <Shield size={16} /> Enter B-Forms Studio
             </button>
@@ -475,8 +475,8 @@ const BForms = () => {
             onClick={() => setView('dashboard')}
             className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 ${
               view === 'dashboard'
-                ? 'bg-purple-600 text-white shadow-[0_0_15px_rgba(168,85,247,0.4)]'
-                : 'bg-purple-950/40 text-purple-300 hover:text-white border border-purple-500/30'
+                ? 'bg-purple-600/25 text-purple-200 border border-purple-500/50 shadow-[0_0_15px_rgba(168,85,247,0.25)]'
+                : 'bg-white/5 text-zinc-400 hover:text-white hover:bg-white/10 border border-white/10'
             }`}
           >
             <Layers size={15} /> All Forms ({forms.length})
@@ -489,11 +489,7 @@ const BForms = () => {
               setFormDescription('Thank you for participating! Please take a few moments to share your candid feedback.');
               setCoverImage('');
             }}
-            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 ${
-              view === 'create'
-                ? 'bg-purple-600 text-white shadow-[0_0_15px_rgba(168,85,247,0.4)]'
-                : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-[0_0_20px_rgba(168,85,247,0.3)]'
-            }`}
+            className="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white shadow-[0_0_20px_rgba(168,85,247,0.4)] hover:shadow-[0_0_30px_rgba(168,85,247,0.6)] active:scale-95 cursor-pointer"
           >
             <Plus size={16} /> Create Form
           </button>
@@ -528,7 +524,7 @@ const BForms = () => {
 
               <div className="bg-[#141224] border border-purple-500/40 rounded-xl p-3 flex items-center justify-between gap-2 mb-6">
                 <span className="text-xs text-purple-200 font-mono truncate select-all">
-                  {`${window.location.origin}/b-forms/${shareModalForm.id}`}
+                  {`${window.location.origin}/${shareModalForm.id}`}
                 </span>
                 <button
                   onClick={() => copyShareLink(shareModalForm.id)}
@@ -541,7 +537,7 @@ const BForms = () => {
 
               <div className="flex gap-3">
                 <a
-                  href={`/b-forms/${shareModalForm.id}`}
+                  href={`/${shareModalForm.id}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex-1 py-3 bg-purple-950/60 hover:bg-purple-900 border border-purple-500/40 text-purple-200 hover:text-white rounded-xl text-center text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2"
@@ -587,10 +583,15 @@ const BForms = () => {
                 Create your first Google Forms-style survey with cover banner, customizable questions, and one-click shareable links!
               </p>
               <button
-                onClick={() => setView('create')}
-                className="px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-xl font-bold text-sm shadow-[0_0_20px_rgba(168,85,247,0.4)] transition-all flex items-center gap-2 mx-auto active:scale-95"
+                onClick={() => {
+                  setView('create');
+                  setFormTitle('Buildicy Feedback Survey');
+                  setFormDescription('Thank you for participating! Please take a few moments to share your candid feedback.');
+                  setCoverImage('');
+                }}
+                className="px-6 py-3.5 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white rounded-xl font-bold text-sm shadow-[0_0_25px_rgba(168,85,247,0.45)] hover:shadow-[0_0_35px_rgba(168,85,247,0.65)] transition-all flex items-center gap-2 mx-auto active:scale-95 cursor-pointer"
               >
-                <Plus size={16} /> Create New Feedback Form
+                <Plus size={18} /> Create New Feedback Form
               </button>
             </div>
           ) : (
@@ -609,7 +610,7 @@ const BForms = () => {
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
                     ) : (
-                      <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-purple-950/40 via-indigo-950/30 to-[#0C0C12] text-purple-400/50">
+                      <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-purple-950/50 via-purple-900/30 to-[#0C0C12] text-purple-400/50">
                         <ImageIcon size={32} />
                         <span className="text-[10px] font-bold uppercase tracking-widest mt-1 text-purple-400/70">B-Forms</span>
                       </div>
@@ -654,7 +655,7 @@ const BForms = () => {
                           <Copy size={13} /> Link
                         </button>
                         <a
-                          href={`/b-forms/${form.id}`}
+                          href={`/${form.id}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="p-1.5 bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white rounded-lg border border-white/10 transition-colors"
@@ -707,7 +708,7 @@ const BForms = () => {
               <button
                 onClick={saveForm}
                 disabled={savingForm}
-                className="px-5 py-2.5 bg-gradient-to-r from-purple-600 via-fuchsia-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-xl font-bold text-xs sm:text-sm shadow-[0_0_20px_rgba(168,85,247,0.4)] transition-all flex items-center gap-2 active:scale-95 disabled:opacity-50"
+                className="px-5 py-2.5 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white rounded-xl font-bold text-xs sm:text-sm shadow-[0_0_20px_rgba(168,85,247,0.4)] hover:shadow-[0_0_30px_rgba(168,85,247,0.6)] transition-all flex items-center gap-2 active:scale-95 disabled:opacity-50 cursor-pointer"
               >
                 <Save size={16} /> {savingForm ? 'Publishing...' : 'Publish & Get Link'}
               </button>
@@ -1017,7 +1018,7 @@ const BForms = () => {
               <button
                 onClick={() => downloadFormResponsesPDF(activeForm, responses)}
                 disabled={responses.length === 0}
-                className="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-xl font-bold text-xs sm:text-sm transition-all flex items-center gap-1.5 disabled:opacity-40 shadow-[0_0_20px_rgba(168,85,247,0.3)]"
+                className="px-4 py-2 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white rounded-xl font-bold text-xs sm:text-sm transition-all flex items-center gap-1.5 disabled:opacity-40 shadow-[0_0_20px_rgba(168,85,247,0.35)] cursor-pointer active:scale-95"
               >
                 <FileText size={15} /> Download PDF
               </button>
@@ -1140,7 +1141,7 @@ const BForms = () => {
                               </div>
                               <div className="h-2.5 w-full bg-white/5 rounded-full overflow-hidden">
                                 <div
-                                  className="h-full bg-gradient-to-r from-purple-600 to-indigo-500 rounded-full transition-all duration-500"
+                                  className="h-full bg-gradient-to-r from-purple-600 to-purple-500 rounded-full transition-all duration-500"
                                   style={{ width: `${pct}%` }}
                                 />
                               </div>

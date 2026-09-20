@@ -249,7 +249,7 @@ const BFormView = () => {
             </button>
             <Link
               to="/"
-              className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold transition-all shadow-md flex items-center justify-center gap-1.5"
+              className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white rounded-xl text-xs font-bold transition-all shadow-[0_0_20px_rgba(168,85,247,0.35)] flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer"
             >
               Back to Buildicy <ArrowRight size={14} />
             </Link>
@@ -483,7 +483,7 @@ const BFormView = () => {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full py-4 bg-gradient-to-r from-purple-600 via-fuchsia-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-2xl font-black text-base shadow-[0_0_30px_rgba(168,85,247,0.5)] hover:shadow-[0_0_40px_rgba(168,85,247,0.7)] transition-all flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50 tracking-wide"
+              className="w-full py-4 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white rounded-2xl font-black text-base shadow-[0_0_30px_rgba(168,85,247,0.5)] hover:shadow-[0_0_40px_rgba(168,85,247,0.7)] transition-all flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50 tracking-wide cursor-pointer"
             >
               {submitting ? (
                 <>
