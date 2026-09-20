@@ -4,7 +4,8 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import {
   ArrowUpRight, Sparkles, MapPin, Clock, Linkedin, Mail, Send,
-  Heart, ChevronRight, Briefcase, Activity, Eye, Users, Cpu, CheckCircle2, Instagram
+  Heart, ChevronRight, Briefcase, Activity, Eye, Users, Cpu, CheckCircle2, Instagram,
+  ExternalLink
 } from "lucide-react";
 import Magnetic from "./Magnetic";
 import { usePerformance } from "@/context/PerformanceContext";
@@ -295,37 +296,49 @@ const Footer = () => {
   const textTracking = useTransform(scrollYProgress, [0.4, 0.9], ["-0.02em", "0.08em"]);
   const textOpacity = useTransform(scrollYProgress, [0.4, 0.8], [0, 0.05]);
 
-  const links = {
-    Company: [
-      { name: "About Us", path: "/company" },
-      { name: "Portfolio", path: "/portfolio" },
-      { name: "Services", path: "/services" },
-      { name: "Careers", path: "#" },
-      { name: "Blog", path: "#" },
-      { name: "Admin Portal", path: "/admin" },
-      { name: "Host Buiz Arena", path: "/buiz/host" },
-      { name: "B-Forms (Studio)", path: "/b-forms" },
-      { name: "Internal Portal", path: "/finance" }
-    ],
-    Solutions: [
-      { name: "SaaS ROI Calculator", path: "/roi-calculator" },
-      { name: "B-Forms Feedback Engine", path: "/b-forms" },
-      { name: "AI Studio", path: "#" },
-      { name: "Analytics", path: "#" },
-      { name: "Cloud Solutions", path: "#" },
-      { name: "Security", path: "#" },
-      { name: "Enterprise", path: "#" }
-    ],
-    Resources: [
-      { name: "Apply for Internship", path: "/internship-registration" },
-      { name: "Verify Certificate", path: "/verify" },
-      { name: "Student Dashboard", path: "/student-login" },
-      { name: "Buiz Arena", path: "/buiz" },
-      { name: "B-Forms (Feedback)", path: "/b-forms" },
-      { name: "API Reference", path: "#" },
-      { name: "Community", path: "#" }
-    ],
-  };
+  const linkSections = [
+    {
+      title: "Buildicy Ecosystem",
+      links: [
+        { name: "Buiz Arena", path: "/buiz", isExternal: false, badge: "Live" },
+        { name: "Host Buiz Studio", path: "/buiz/host", isExternal: false },
+        { name: "B-Forms Engine", path: "/b-forms", isExternal: false },
+        { name: "AI SDR Dashboard", path: "/ai-sdr", isExternal: false }
+      ]
+    },
+    {
+      title: "Products",
+      links: [
+        { name: "Bizzbrain", path: "https://bizzbrain.buildicy.com/", isExternal: true },
+        { name: "Markeee", path: "https://markeee.buildicy.com/", isExternal: true },
+        { name: "B-Forms Platform", path: "https://bforms.buildicy.com/", isExternal: true }
+      ]
+    },
+    {
+      title: "Academic Hub",
+      links: [
+        { name: "Apply for Internship", path: "/internship-registration", isExternal: false },
+        { name: "Verify Certificate", path: "/verify", isExternal: false },
+        { name: "Student Dashboard", path: "/student-login", isExternal: false }
+      ]
+    },
+    {
+      title: "Portals & Tools",
+      links: [
+        { name: "Admin Portal", path: "/admin", isExternal: false },
+        { name: "Internal Portal", path: "/finance", isExternal: false, badge: "Host" },
+        { name: "SaaS ROI Calculator", path: "/roi-calculator", isExternal: false }
+      ]
+    },
+    {
+      title: "Company",
+      links: [
+        { name: "About Us", path: "/company", isExternal: false },
+        { name: "Portfolio", path: "/portfolio", isExternal: false },
+        { name: "Services", path: "/services", isExternal: false }
+      ]
+    }
+  ];
 
   return (
     <footer ref={containerRef} className="relative bg-[#050507] pt-40 pb-8 px-6 overflow-hidden min-h-[60vh] md:min-h-screen flex flex-col justify-end">
@@ -385,10 +398,10 @@ const Footer = () => {
         </div>
 
         {/* MAIN GRID */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-12 py-20 relative">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-10 lg:gap-8 py-20 relative">
 
           {/* Brand Column */}
-          <div className="md:col-span-3 flex flex-col gap-6">
+          <div className="md:col-span-12 lg:col-span-3 flex flex-col gap-6">
             <div className="flex items-center gap-3 group cursor-pointer">
               <div className="relative w-12 h-12 flex items-center justify-center rounded-2xl bg-white/5 border border-white/10 shadow-lg group-hover:border-purple-500/30 transition-colors">
                 <svg width="34" height="36" viewBox="0 0 68 72" fill="none">
@@ -403,7 +416,7 @@ const Footer = () => {
             <p className="text-zinc-400 text-sm leading-relaxed font-medium mt-2">
               A dedicated team building simple and powerful digital products that people love. We turn complex ideas into seamless experiences.
             </p>
-            <div className="flex items-center gap-3 mt-6">
+            <div className="flex items-center gap-3 mt-4">
               {[
                 { Icon: Linkedin, url: "https://www.linkedin.com/company/buildicy/" },
                 { Icon: Instagram, url: "https://www.instagram.com/_buildicy?igsh=eXB3ZTZrazF6ajcw" },
@@ -423,33 +436,48 @@ const Footer = () => {
                         });
                       }
                     }}
-                    className="w-12 h-12 rounded-full bg-[#12121A]/80 border border-white/10 flex items-center justify-center hover:border-purple-500/50 hover:bg-purple-500/20 transition-all backdrop-blur-md shadow-xl group"
+                    className="w-11 h-11 rounded-full bg-[#12121A]/80 border border-white/10 flex items-center justify-center hover:border-purple-500/50 hover:bg-purple-500/20 transition-all backdrop-blur-md shadow-xl group"
                   >
-                    <Icon size={18} className="text-zinc-400 group-hover:text-white transition-colors" />
+                    <Icon size={17} className="text-zinc-400 group-hover:text-white transition-colors" />
                   </a>
                 </Magnetic>
               ))}
             </div>
           </div>
 
-          {/* Dynamic Links Grid */}
-          <div className="md:col-span-5 grid grid-cols-3 gap-6">
-            {Object.entries(links).map(([section, items]) => (
-              <div key={section} className="flex flex-col gap-6">
-                <h4 className="text-[10px] font-bold text-zinc-500 tracking-[0.2em] uppercase">
-                  {section}
+          {/* Dynamic Categorized Links Grid */}
+          <div className="md:col-span-12 lg:col-span-6 grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-6">
+            {linkSections.map((section) => (
+              <div key={section.title} className="flex flex-col gap-4">
+                <h4 className="text-[11px] font-bold text-zinc-400 tracking-[0.18em] uppercase flex items-center gap-1.5 font-mono">
+                  <span className="w-1.5 h-1.5 rounded-full bg-purple-500" />
+                  {section.title}
                 </h4>
-                <ul className="space-y-4">
-                  {items.map((item) => (
+                <ul className="space-y-3">
+                  {section.links.map((item) => (
                     <li key={item.name}>
-                      {item.path.startsWith("/") ? (
-                        <Link to={item.path} className="text-sm font-medium text-zinc-300 hover:text-white transition-colors">
-                          {item.name}
-                        </Link>
-                      ) : (
-                        <a href={item.path} className="text-sm font-medium text-zinc-300 hover:text-white transition-colors">
-                          {item.name}
+                      {item.isExternal ? (
+                        <a
+                          href={item.path}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs sm:text-[13px] font-medium text-zinc-300 hover:text-white transition-all inline-flex items-center gap-1 group"
+                        >
+                          <span className="group-hover:translate-x-0.5 transition-transform">{item.name}</span>
+                          <ExternalLink size={10} className="text-purple-400 opacity-60 group-hover:opacity-100 transition-opacity shrink-0" />
                         </a>
+                      ) : (
+                        <Link
+                          to={item.path}
+                          className="text-xs sm:text-[13px] font-medium text-zinc-300 hover:text-white transition-all inline-flex items-center gap-1.5 group"
+                        >
+                          <span className="group-hover:translate-x-0.5 transition-transform">{item.name}</span>
+                          {item.badge && (
+                            <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                              {item.badge}
+                            </span>
+                          )}
+                        </Link>
                       )}
                     </li>
                   ))}
@@ -459,9 +487,9 @@ const Footer = () => {
           </div>
 
           {/* Newsletter & Status Column (Glassmorphism) */}
-          <div className="md:col-span-4 flex flex-col gap-8">
-            <div className="p-6 rounded-[32px] bg-[#0C0C12]/60 backdrop-blur-[40px] border border-white/10 shadow-2xl">
-              <h4 className="text-xs font-bold text-white mb-4 tracking-widest uppercase flex items-center gap-2">
+          <div className="md:col-span-12 lg:col-span-3 flex flex-col gap-6">
+            <div className="p-5 sm:p-6 rounded-[28px] bg-[#0C0C12]/60 backdrop-blur-[40px] border border-white/10 shadow-2xl">
+              <h4 className="text-xs font-bold text-white mb-3.5 tracking-widest uppercase flex items-center gap-2">
                 <Mail size={14} className="text-purple-500" /> Dispatch
               </h4>
               <NewsletterForm />
