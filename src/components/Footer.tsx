@@ -310,8 +310,7 @@ const Footer = () => {
       title: "Products",
       links: [
         { name: "Bizzbrain", path: "https://bizzbrain.buildicy.com/", isExternal: true },
-        { name: "Markeee", path: "https://markeee.buildicy.com/", isExternal: true },
-        { name: "B-Forms Platform", path: "https://bforms.buildicy.com/", isExternal: true }
+        { name: "Markeee", path: "https://markeee.buildicy.com/", isExternal: true }
       ]
     },
     {
