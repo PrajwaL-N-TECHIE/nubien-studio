@@ -31,6 +31,63 @@ export interface BFormResponse {
 }
 
 /**
+ * Recursively removes all `undefined` values from an object or array
+ * so that Firestore serialization never fails with:
+ * "Unsupported field value: undefined"
+ */
+export function cleanFirestorePayload<T>(data: T): T {
+  if (data === null || data === undefined) {
+    return null as any;
+  }
+  if (Array.isArray(data)) {
+    return data
+      .filter((item) => item !== undefined)
+      .map((item) => cleanFirestorePayload(item)) as any;
+  }
+  if (typeof data === 'object') {
+    // Preserve Firestore Sentinels (serverTimestamp, deleteField, FieldValue, Timestamp)
+    if (data.constructor && data.constructor.name !== 'Object') {
+      return data;
+    }
+    const cleanObj: Record<string, any> = {};
+    for (const [key, value] of Object.entries(data)) {
+      if (value !== undefined) {
+        cleanObj[key] = cleanFirestorePayload(value);
+      }
+    }
+    return cleanObj as any;
+  }
+  return data;
+}
+
+/**
+ * Ensures a question object contains only valid defined fields
+ * suitable for Firestore storage.
+ */
+export function sanitizeFormQuestion(q: Partial<BFormQuestion>, index: number = 0): BFormQuestion {
+  const type = q.type || 'short_text';
+  const cleanQ: BFormQuestion = {
+    id: q.id || `q_${Date.now()}_${index}`,
+    title: (q.title || '').trim(),
+    type,
+    required: Boolean(q.required)
+  };
+
+  if (type === 'radio' || type === 'checkbox') {
+    const validOptions = Array.isArray(q.options)
+      ? q.options.map((opt) => String(opt || '').trim()).filter(Boolean)
+      : [];
+    cleanQ.options = validOptions.length > 0 ? validOptions : ['Option 1', 'Option 2'];
+  }
+
+  if (type === 'rating') {
+    cleanQ.ratingMax = typeof q.ratingMax === 'number' && q.ratingMax > 0 ? q.ratingMax : 5;
+  }
+
+  return cleanQ;
+}
+
+/**
  * Universal file downloader for Desktop, Android, and iOS Safari.
  */
 export const triggerFileDownload = (blob: Blob, filename: string) => {

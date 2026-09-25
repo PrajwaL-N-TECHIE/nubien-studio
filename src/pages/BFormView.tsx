@@ -11,7 +11,7 @@ import {
 } from 'firebase/firestore';
 import { toast } from 'sonner';
 import confetti from 'canvas-confetti';
-import { BForm, BFormQuestion } from '@/utils/bformReports';
+import { BForm, BFormQuestion, cleanFirestorePayload } from '@/utils/bformReports';
 
 const BFormView = () => {
   const { id } = useParams<{ id: string }>();
@@ -134,10 +134,11 @@ const BFormView = () => {
 
     try {
       // 1. Record response in Firestore
+      const cleanAnswers = cleanFirestorePayload(answers);
       await addDoc(collection(db, 'b_forms_responses'), {
         formId: form.id,
         submittedAt: serverTimestamp(),
-        answers: answers,
+        answers: cleanAnswers,
         respondentName: respondentName.trim() || 'Anonymous',
         respondentEmail: respondentEmail.trim() || ''
       });
