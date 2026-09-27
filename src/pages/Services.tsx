@@ -1,6 +1,9 @@
 import SEO from "@/components/SEO";
-import FeaturesSection from "@/components/FeaturesSection";
+import ServicesHero from "@/components/ServicesHero";
 import ServicesSection from "@/components/ServicesSection";
+import ProductsDeepDive from "@/components/ProductsDeepDive";
+import VentureCollaborationSection from "@/components/VentureCollaborationSection";
+import EdutechDeepDive from "@/components/EdutechDeepDive";
 import TechStackSection from "@/components/TechStackSection";
 import PricingSection from "@/components/PricingSection";
 import FooterCTA from "@/components/FooterCTA";
@@ -59,11 +62,14 @@ const Services = () => {
           }
         })}
       />
-      <div className="pt-32"> {/* Spacer for Navbar */}
-        <FeaturesSection />
+      <div className="pt-28"> {/* Spacer for Navbar */}
+        <ServicesHero />
         <ServicesSection />
-        <TechStackSection />
+        <ProductsDeepDive />
+        <VentureCollaborationSection />
+        <EdutechDeepDive />
         <PricingSection />
+        <TechStackSection />
         <FooterCTA />
       </div>
     </PageTransition>

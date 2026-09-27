@@ -238,7 +238,7 @@ const SupportSection = () => {
             style={{ transform: "rotate(6deg)" }}
           >
             <CheckCircle2 size={16} className="text-white" />
-            Problem Solved ⚡
+            Problem Solved
 
             <motion.div
               animate={{ y: [0, 5, 0] }}

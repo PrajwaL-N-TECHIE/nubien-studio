@@ -304,10 +304,10 @@ const HeroSection = () => {
           className="flex flex-wrap justify-center gap-2 sm:gap-3 max-w-3xl z-20"
         >
           {[
-            { label: "🎓 Edutech & Internships", target: "domains" },
-            { label: "⚡ IT & AI Funnels", target: "domains" },
-            { label: "🚀 Markeee & BizBrain", target: "domains" },
-            { label: "🤝 Profit-Sharing Dev", target: "domains" }
+            { label: "Edutech & Internships", target: "domains" },
+            { label: "IT & AI Funnels", target: "domains" },
+            { label: "Markeee & BizBrain", target: "domains" },
+            { label: "Profit-Sharing Dev", target: "domains" }
           ].map((item, idx) => (
             <button
               key={idx}

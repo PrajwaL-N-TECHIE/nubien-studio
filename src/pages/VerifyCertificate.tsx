@@ -359,7 +359,7 @@ const VerifyCertificate = () => {
               ) : (
                 <div className="mt-6 p-4 rounded-xl bg-purple-950/20 border border-purple-500/20 text-left">
                   <p className="text-sm text-purple-300">
-                    💡 <strong>Note:</strong> Your internship credentials are verified! The downloadable E-Certificate is currently being processed and will be available here shortly.
+                    <strong>Note:</strong> Your internship credentials are verified! The downloadable E-Certificate is currently being processed and will be available here shortly.
                   </p>
                 </div>
               )}
