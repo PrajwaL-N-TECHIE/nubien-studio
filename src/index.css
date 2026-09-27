@@ -171,6 +171,18 @@
   .light .bg-\[radial-gradient\(circle_at_50%_50\%2Ctransparent_0\%2C%23050507_100\%\)\] {
     background: radial-gradient(circle at 50% 50%, transparent 0%, var(--bg-primary) 100%) !important;
   }
+  .light [class*="bg-[#141224]"] { background-color: var(--surface-bg) !important; }
+  .light [class*="bg-[#0e0c1a]"] { background-color: var(--card-bg) !important; }
+  .light [class*="bg-[#18152c]"] { background-color: var(--surface-2-bg) !important; }
+  .light input,
+  .light textarea,
+  .light select {
+    color: var(--text-inverse) !important;
+  }
+  .light input::placeholder,
+  .light textarea::placeholder {
+    color: #94a3b8 !important;
+  }
 }
 
 @layer base {

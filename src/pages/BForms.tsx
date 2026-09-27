@@ -6,7 +6,8 @@ import {
   CircleDot, AlignLeft, Type, BarChart3, Users, Clock, Shield,
   Eye, EyeOff, Save, Layers, RefreshCw, X, AlertCircle, LogOut, MessageSquare,
   Edit, ChevronUp, ChevronDown, ArrowRight, Upload,
-  TrendingUp, Activity, PieChart as PieChartIcon, BarChart2, List, Database
+  TrendingUp, Activity, PieChart as PieChartIcon, BarChart2, List, Database,
+  Sun, Moon
 } from 'lucide-react';
 import { bformsSupabase as supabase, isBFormsSupabaseConfigured as isSupabaseConfigured } from '@/lib/supabase';
 import { SUPABASE_SCHEMA_SQL } from '@/utils/supabaseSql';
@@ -126,7 +127,7 @@ export const OFFICIAL_FEEDBACK_FORM: BForm = {
       type: 'radio',
       required: true,
       options: [
-        'Interactive Google Forms-style question builder',
+        'Interactive modern question builder',
         'Real-time response tracking & analytics',
         'One-click PDF & CSV data export',
         'Instant shareable links for mobile & desktop',
@@ -156,6 +157,31 @@ export const OFFICIAL_FEEDBACK_FORM: BForm = {
 };
 
 const BForms = () => {
+  // Theme state: Default to Light theme
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('bforms_theme');
+      if (stored === 'dark' || stored === 'light') return stored;
+    }
+    return 'light'; // Default to light theme
+  });
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === 'light') {
+      root.classList.add('light');
+      root.classList.remove('dark');
+    } else {
+      root.classList.add('dark');
+      root.classList.remove('light');
+    }
+    localStorage.setItem('bforms_theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
+  };
+
   // Auth state
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [email, setEmail] = useState('');
@@ -960,11 +986,30 @@ const BForms = () => {
                 Host Studio
               </span>
             </div>
-            <p className="text-xs text-zinc-400">Google Forms-style feedback engine with live analytics</p>
+            <p className="text-xs text-zinc-400">Feedback & survey engine with live analytics</p>
           </div>
         </div>
 
         <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
+          {/* Theme Toggle (Light default) */}
+          <button
+            onClick={toggleTheme}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 text-purple-600 dark:text-purple-300 text-xs font-semibold transition-all cursor-pointer"
+            title={`Switch to ${theme === 'light' ? 'Dark Mode' : 'Light Mode (Default)'}`}
+          >
+            {theme === 'light' ? (
+              <>
+                <Sun size={13} className="text-amber-500" />
+                <span>Light</span>
+              </>
+            ) : (
+              <>
+                <Moon size={13} className="text-purple-400" />
+                <span>Dark</span>
+              </>
+            )}
+          </button>
+
           {/* Supabase Database Connection Badge */}
           {isSupabaseConfigured ? (
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold">
@@ -1178,7 +1223,7 @@ VITE_SUPABASE_ANON_KEY=your-anon-key
               </div>
               <h3 className="text-lg font-bold text-white mb-1">No Feedback Forms Yet</h3>
               <p className="text-xs text-zinc-400 max-w-md mx-auto mb-6">
-                Create your first Google Forms-style survey with cover banner, customizable questions, and one-click shareable links!
+                Create your first dynamic survey with cover banner, customizable questions, and one-click shareable links!
               </p>
               <button
                 onClick={handleCreateNewForm}

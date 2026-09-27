@@ -35,6 +35,21 @@ const BFormView = () => {
   // References for scrolling to invalid questions
   const questionRefs = useRef<{ [qId: string]: HTMLDivElement | null }>({});
 
+  // Ensure Light theme is active by default
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('bforms_theme') || 'light';
+      const root = document.documentElement;
+      if (saved === 'light') {
+        root.classList.add('light');
+        root.classList.remove('dark');
+      } else {
+        root.classList.add('dark');
+        root.classList.remove('light');
+      }
+    } catch (e) {}
+  }, []);
+
   useEffect(() => {
     if (!id) {
       setError('Invalid Form Link');
