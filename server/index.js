@@ -450,7 +450,7 @@ app.post('/api/generate-campaign', async (req, res) => {
 // AI-SDR: Internship Recruitment Pipeline (Manual Data Input)
 app.post('/api/generate-internship-campaign', async (req, res) => {
   try {
-    const { rawData, systemPrompt, variationOf } = req.body;
+    const { rawData, variationOf } = req.body;
 
     if (!rawData) {
       return res.status(400).json({ error: 'Raw student data is required.' });
