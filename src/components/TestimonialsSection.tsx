@@ -5,14 +5,11 @@ import {
   Quote,
   CheckCircle2,
   GraduationCap,
-  Sparkles,
   ArrowRight,
-  SlidersHorizontal,
   Search,
   School,
   Brain,
-  Wand2,
-  Users
+  Wand2
 } from "lucide-react";
 
 export interface StudentReview {
@@ -68,7 +65,7 @@ export const workshopReviews: StudentReview[] = [
     confidence: "Very Confident",
     primaryTool: "Logic Quiz & Business AI",
     activity: "Practical Demonstrations & Logic Quiz",
-    quote: "Thank you for an amazing and informative workshop! I liked the practical demonstrations and hands-on activities the most. Before this workshop, I thought AI was complicated and difficult. Now I think AI is an easy and powerful tool.",
+    quote: "Thank you for an amazing and informative workshop! I liked the practical demonstrations and hands-on activities the most. Before this workshop, I thought AI was complicated and difficult. Now I think AI is an easy and powerful tool for business.",
     trainerFeedback: "They interacted closely with us and explained every concept with clarity.",
     beforePerception: "Thought AI was complicated & difficult",
     afterPerception: "Now I think AI is an easy and powerful tool",
@@ -94,7 +91,7 @@ export const workshopReviews: StudentReview[] = [
     afterPerception: "Anyone can use AI very easily for business",
     verdict: "Very Good Session",
     finalMessage: "Congratulations for the startup company. All the best guys!",
-    category: "general",
+    category: "trainers",
     avatar: "AN"
   },
   {
@@ -107,7 +104,7 @@ export const workshopReviews: StudentReview[] = [
     engagement: "Extremely Engaging",
     confidence: "Extremely Confident",
     primaryTool: "ChatGPT & Gamma",
-    activity: "Logo quiz activity & HR/marketing concepts",
+    activity: "Logo quiz activity & HR / marketing concepts",
     quote: "I thought AI was hard — now I think AI is crazy good! I really liked Mayur's training and Prajwal's ideas. Thank you for the amazing class both of you and best wishes for your future!",
     trainerFeedback: "Liked Mayur's structured training and Prajwal's innovative ideas.",
     beforePerception: "Thought AI was hard and intimidating",
@@ -148,12 +145,12 @@ export const workshopReviews: StudentReview[] = [
     confidence: "Extremely Confident",
     primaryTool: "ChatGPT & Gamma",
     activity: "Brand identification & AI business productivity",
-    quote: "Before this workshop, I thought AI was complicated. Now I think AI is useful and easy to use. I loved learning about the new AI tools they introduced to us.",
+    quote: "Before this workshop, I thought AI was complicated. Now I think AI is useful and easy to use. I loved learning about the new AI tools they introduced to us!",
     trainerFeedback: "Energetic dynamic between the trainers and great delivery.",
     beforePerception: "Thought AI was complicated",
     afterPerception: "Useful and easy to use for daily business",
     verdict: "Fantastic",
-    finalMessage: "Buildicy is making tech simple",
+    finalMessage: "Buildicy",
     category: "tools",
     avatar: "HA"
   },
@@ -233,11 +230,11 @@ export const workshopReviews: StudentReview[] = [
     afterPerception: "Powerful tool for enterprise productivity",
     verdict: "A1 & Practical",
     finalMessage: "Buildicy is enough",
-    category: "general",
+    category: "mindset",
     avatar: "NM"
   },
   {
-    id: "fathimafidha",
+    id: "fathimafidhas",
     name: "Fathimafidha S",
     role: "1st Year MBA Candidate",
     institution: "Monti International Institute of Management Studies",
@@ -311,7 +308,7 @@ export const workshopReviews: StudentReview[] = [
     trainerFeedback: "Prajwal and Mayur broke down unfamiliar AI tools with great clarity.",
     beforePerception: "Unfamiliar and skeptical about AI tools",
     afterPerception: "Empowered to use AI for market pitches and strategy",
-    verdict: "Eye-Opening",
+    verdict: "Insightful",
     finalMessage: "Thank you for the session",
     category: "tools",
     avatar: "SM"
@@ -353,8 +350,244 @@ export const workshopReviews: StudentReview[] = [
     afterPerception: "Extremely useful for MBA studies and business",
     verdict: "Excellent",
     finalMessage: "It's very helpful for my studies",
-    category: "general",
+    category: "tools",
     avatar: "MR"
+  },
+  {
+    id: "muneer",
+    name: "Mohammed Muneer",
+    role: "1st Year MBA Candidate",
+    institution: "Monti International Institute of Management Studies",
+    rating: 5,
+    usefulness: "Very Useful",
+    engagement: "Very Engaging",
+    confidence: "Very Confident",
+    primaryTool: "NotebookLM & Gamma",
+    activity: "Interactive sessions & NotebookLM exploration",
+    quote: "Interactive sessions with practical tools like NotebookLM and Gamma made AI approachable. I thought AI was hard — now I think AI is good and practical for management!",
+    trainerFeedback: "Engaging discussions and clear tool walkthroughs.",
+    beforePerception: "Thought AI was hard",
+    afterPerception: "Now I think AI is good, approachable, and actionable",
+    verdict: "Ideas & Practical",
+    category: "mindset",
+    avatar: "MM"
+  },
+  {
+    id: "rihaba",
+    name: "Rihaba A",
+    role: "1st Year MBA Candidate",
+    institution: "Monti International Institute of Management Studies",
+    rating: 5,
+    usefulness: "Very Useful",
+    engagement: "Very Engaging",
+    confidence: "Very Confident",
+    primaryTool: "NotebookLM",
+    activity: "Interactive game sessions & research",
+    quote: "They teach us very clearly and with great understanding! I thought AI was just a tool for answering questions. Now I think AI is a powerful tool that helps us learn, research, and present.",
+    trainerFeedback: "Clear, patient teaching with deep domain knowledge.",
+    beforePerception: "Just a tool for answering questions",
+    afterPerception: "Powerful tool that can help us learn and lead",
+    verdict: "Excellent",
+    finalMessage: "Thank you for the session",
+    category: "tools",
+    avatar: "RA"
+  },
+  {
+    id: "anushree",
+    name: "Anushree K P",
+    role: "1st Year MBA Candidate",
+    institution: "Monti International Institute of Management Studies",
+    rating: 5,
+    usefulness: "Very Useful",
+    engagement: "Very Engaging",
+    confidence: "Very Confident",
+    primaryTool: "Canva AI & Video Tools",
+    activity: "Making AI video & slide preparation",
+    quote: "Good presentation, interactive quiz, and exciting activities! Creating AI presentations was difficult to do before, now it's super easy to use.",
+    trainerFeedback: "Interactive delivery with high student participation.",
+    beforePerception: "Difficult to use",
+    afterPerception: "Easy to use for presentations and projects",
+    verdict: "Awesome",
+    finalMessage: "Keep growing",
+    category: "tools",
+    avatar: "KP"
+  },
+  {
+    id: "fidhas2",
+    name: "Fathima Fidha S",
+    role: "1st Year MBA Candidate",
+    institution: "Monti International Institute of Management Studies",
+    rating: 5,
+    usefulness: "Very Useful",
+    engagement: "Very Engaging",
+    confidence: "Very Confident",
+    primaryTool: "Gamma AI",
+    activity: "AI video and PPT generation",
+    quote: "Good activities and quiz sessions! Creating presentations with AI was very exciting. I thought AI was difficult — now I think AI is good and approachable.",
+    trainerFeedback: "Engaging activities and approachable atmosphere.",
+    beforePerception: "Thought AI was difficult",
+    afterPerception: "Now I think AI is good and approachable",
+    verdict: "Good & Interactive",
+    finalMessage: "Keep know",
+    category: "tools",
+    avatar: "FS"
+  },
+  {
+    id: "ronaoff",
+    name: "Ronaoff",
+    role: "1st Year MBA Candidate",
+    institution: "Monti International Institute of Management Studies",
+    rating: 5,
+    usefulness: "Very Useful",
+    engagement: "Very Engaging",
+    confidence: "Very Confident",
+    primaryTool: "Video & Prompt AI",
+    activity: "AI editing & prompt engineering",
+    quote: "The hands-on editing and AI presentation tools were very engaging. I thought AI was hard and difficult, but now I think it is easy, useful, and good.",
+    trainerFeedback: "Hands-on guidance and clear demonstrations.",
+    beforePerception: "Thought AI was hard and difficult",
+    afterPerception: "Now I think it is easy, useful, and good",
+    verdict: "Great Improvement",
+    category: "mindset",
+    avatar: "RF"
+  },
+  {
+    id: "shadha",
+    name: "Fathima Shadha",
+    role: "1st Year MBA Candidate",
+    institution: "Monti International Institute of Management Studies",
+    rating: 5,
+    usefulness: "Very Useful",
+    engagement: "Very Engaging",
+    confidence: "Very Confident",
+    primaryTool: "ChatGPT & Visual AI",
+    activity: "Creating AI videos & presentations",
+    quote: "Good, nice, and very engaging activities! I thought AI was difficult — now I think AI is good and very helpful.",
+    trainerFeedback: "Active mentoring and helpful feedback.",
+    beforePerception: "Thought AI was difficult",
+    afterPerception: "Now I think AI is good and very helpful",
+    verdict: "Good & Helpful",
+    finalMessage: "Overall good",
+    category: "tools",
+    avatar: "SD"
+  },
+  {
+    id: "hasna",
+    name: "Fathimath Hasna K",
+    role: "1st Year MBA Candidate",
+    institution: "Monti International Institute of Management Studies",
+    rating: 5,
+    usefulness: "Very Useful",
+    engagement: "Very Engaging",
+    confidence: "Very Confident",
+    primaryTool: "Gamma AI & NotebookLM",
+    activity: "Hands-on activities & NotebookLM",
+    quote: "Both trainers explained everything so well! Becoming familiar with new AI tools and testing activities was marvelous. Thank you for the session!",
+    trainerFeedback: "Both Prajwal and Mayur taught with enthusiasm and clarity.",
+    beforePerception: "Unsure of how AI tools function",
+    afterPerception: "Familiar and confident with new AI tools",
+    verdict: "Marvelous",
+    finalMessage: "Thank you for the session",
+    category: "trainers",
+    avatar: "HK"
+  },
+  {
+    id: "fidhap",
+    name: "Fathima Fidha P",
+    role: "1st Year MBA Candidate",
+    institution: "Monti International Institute of Management Studies",
+    rating: 5,
+    usefulness: "Very Useful",
+    engagement: "Very Engaging",
+    confidence: "Very Confident",
+    primaryTool: "NotebookLM & Gamma",
+    activity: "Presentation & new AI tools exploration",
+    quote: "Their presentation and communication with us was great! I thought AI was not fully helpful — now I think AI is very useful for our MBA careers.",
+    trainerFeedback: "Strong presentation and open communication.",
+    beforePerception: "Thought AI was not fully helpful",
+    afterPerception: "Now I think AI is very useful for our MBA careers",
+    verdict: "Very Useful",
+    finalMessage: "Nice workshop",
+    category: "mindset",
+    avatar: "FP"
+  },
+  {
+    id: "famisa",
+    name: "Famisa Vanna",
+    role: "1st Year MBA Candidate",
+    institution: "Monti International Institute of Management Studies",
+    rating: 5,
+    usefulness: "Very Useful",
+    engagement: "Very Engaging",
+    confidence: "Very Confident",
+    primaryTool: "ChatGPT",
+    activity: "Interactive AI learning",
+    quote: "Taught all the topics very well with high focus on student understanding. I thought AI was basic — now I think AI is amazing!",
+    trainerFeedback: "High focus and patience with student queries.",
+    beforePerception: "Thought AI was basic",
+    afterPerception: "Now I think AI is amazing and comprehensive",
+    verdict: "Great Session",
+    category: "trainers",
+    avatar: "FV"
+  },
+  {
+    id: "hashir",
+    name: "Mohammed Hashir KA",
+    role: "1st Year MBA Candidate",
+    institution: "Monti International Institute of Management Studies",
+    rating: 5,
+    usefulness: "Very Useful",
+    engagement: "Very Engaging",
+    confidence: "Very Confident",
+    primaryTool: "ChatGPT",
+    activity: "Interactive sessions",
+    quote: "Very nice trainers and engaging class! I thought AI was tough — now I think AI is much easier.",
+    trainerFeedback: "Friendly and highly communicative throughout.",
+    beforePerception: "Thought AI was tough",
+    afterPerception: "Now I think AI is much easier and accessible",
+    verdict: "Engaging",
+    finalMessage: "Thank you for everything",
+    category: "trainers",
+    avatar: "HK"
+  },
+  {
+    id: "hashim",
+    name: "Hashim",
+    role: "1st Year MBA Candidate",
+    institution: "Monti International Institute of Management Studies",
+    rating: 5,
+    usefulness: "Very Useful",
+    engagement: "Very Engaging",
+    confidence: "Very Confident",
+    primaryTool: "ChatGPT & Business AI",
+    activity: "AI tools for productivity",
+    quote: "Very useful and engaging session on AI tools for business productivity. The instructors made complex workflows simple to follow.",
+    trainerFeedback: "Structured presentation and actionable takeaways.",
+    beforePerception: "Theoretical understanding only",
+    afterPerception: "Hands-on practical business competence",
+    verdict: "Very Useful",
+    category: "tools",
+    avatar: "HM"
+  },
+  {
+    id: "nayan",
+    name: "Nayan Pradeep",
+    role: "1st Year MBA Candidate",
+    institution: "Monti International Institute of Management Studies",
+    rating: 5,
+    usefulness: "Very Useful",
+    engagement: "Extremely Engaging",
+    confidence: "Extremely Confident",
+    primaryTool: "ChatGPT & AI Suite",
+    activity: "AI tools mastery",
+    quote: "All good! From hard to use, to easy to use in business workflows. Prajwal and Mayur made the concepts super accessible and practical.",
+    trainerFeedback: "Clear, friendly, and practical guidance.",
+    beforePerception: "Hard to use",
+    afterPerception: "Easy to use in business workflows",
+    verdict: "All Good",
+    finalMessage: "All good",
+    category: "mindset",
+    avatar: "NP"
   }
 ];
 
@@ -494,8 +727,9 @@ const TestimonialsSection = () => {
   });
 
   // Split into two sets for dual-row marquee
-  const rowOne = workshopReviews.slice(0, 8);
-  const rowTwo = workshopReviews.slice(8, 16);
+  const midPoint = Math.ceil(workshopReviews.length / 2);
+  const rowOne = workshopReviews.slice(0, midPoint);
+  const rowTwo = workshopReviews.slice(midPoint);
 
   return (
     <section className="relative py-28 md:py-36 overflow-hidden bg-[#050507]">
@@ -545,7 +779,7 @@ const TestimonialsSection = () => {
             </div>
             <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 text-center">
               <div className="text-2xl font-bold text-purple-400 mb-1">MBA Y1</div>
-              <div className="text-xs text-zinc-400">Management Cohort</div>
+              <div className="text-xs text-zinc-400">{workshopReviews.length} Student Reviews</div>
             </div>
             <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 text-center">
               <div className="text-2xl font-bold text-indigo-400 mb-1">Hands-On</div>
@@ -559,9 +793,9 @@ const TestimonialsSection = () => {
           {/* Category Tabs */}
           <div className="flex flex-wrap items-center justify-center gap-2">
             {[
-              { id: "all", label: "All Reviews" },
+              { id: "all", label: `All Reviews (${workshopReviews.length})` },
               { id: "mindset", label: "Mindset Transformation" },
-              { id: "trainers", label: "Prajwal & Mayur Feedback" },
+              { id: "trainers", label: "Prajwal & Mayur Praise" },
               { id: "tools", label: "AI Tools Mastery" }
             ].map((tab) => (
               <button
@@ -639,11 +873,11 @@ const TestimonialsSection = () => {
               100% { transform: translateX(0); }
             }
             .animate-marquee-left {
-              animation: testimonial-scroll-left 65s linear infinite;
+              animation: testimonial-scroll-left 75s linear infinite;
               will-change: transform;
             }
             .animate-marquee-right {
-              animation: testimonial-scroll-right 65s linear infinite;
+              animation: testimonial-scroll-right 75s linear infinite;
               will-change: transform;
             }
             .animate-marquee-left:hover, .animate-marquee-right:hover {
