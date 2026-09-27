@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Users, Play, Trophy, Copy, CheckCircle2, Target, StopCircle, Plus, Lock, Trash2, Save, Eye, EyeOff, Zap, Clock, Grid3X3, ArrowLeft, Download, FileSpreadsheet, FileText, Search, ChevronDown, ChevronUp, Award, RotateCcw, BarChart3, Sliders, Check, ChevronRight, Sparkles, Edit3 } from 'lucide-react';
 import { db, auth } from '@/lib/firebase';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { doc, setDoc, onSnapshot, collection, updateDoc, getDocs, deleteDoc, addDoc, getDoc } from 'firebase/firestore';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { QUESTIONS } from '@/data/questions';
@@ -80,7 +81,48 @@ const BuizHost = () => {
   useEffect(() => {
     if (!pin) return;
 
-    // Listen to players joining
+    if (isSupabaseConfigured) {
+      const fetchSupabasePlayers = async () => {
+        const { data, error } = await supabase
+          .from('buiz_players')
+          .select('*')
+          .eq('room_pin', pin)
+          .order('score', { ascending: false });
+
+        if (!error && data) {
+          const playersData: Player[] = data.map((p: any) => ({
+            id: p.id,
+            name: p.name,
+            score: p.score || 0,
+            streak: p.streak || 0,
+            progress: Number(p.progress) || 0,
+            avatar: p.avatar,
+            currentQIndex: p.current_q_index,
+            answers: p.answers || {}
+          }));
+          setPlayers(playersData);
+        }
+      };
+
+      fetchSupabasePlayers();
+
+      const channel = supabase
+        .channel(`buiz_host_players_${pin}`)
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'buiz_players', filter: `room_pin=eq.${pin}` },
+          () => {
+            fetchSupabasePlayers();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
+
+    // Fallback: Firestore
     const unsubscribe = onSnapshot(collection(db, `buiz_rooms/${pin}/players`), (snapshot) => {
       const playersData: Player[] = [];
       snapshot.forEach((doc) => {
@@ -94,6 +136,31 @@ const BuizHost = () => {
     return () => unsubscribe();
   }, [pin]);
 
+  const syncRoomUpdate = async (updates: any) => {
+    if (!pin) return;
+    if (isSupabaseConfigured) {
+      const sbUpdates: any = { updated_at: new Date().toISOString() };
+      if (updates.status !== undefined) sbUpdates.status = updates.status;
+      if (updates.currentQIndex !== undefined) sbUpdates.current_q_index = updates.currentQIndex;
+      if (updates.questionStatus !== undefined) sbUpdates.question_status = updates.questionStatus;
+      if (updates.gameMode !== undefined) sbUpdates.game_mode = updates.gameMode;
+
+      supabase
+        .from('buiz_rooms')
+        .update(sbUpdates)
+        .eq('pin', pin)
+        .then(({ error }) => {
+          if (error) console.warn("Supabase room update warning:", error);
+        });
+    }
+
+    try {
+      await updateDoc(doc(db, "buiz_rooms", pin), updates);
+    } catch (err) {
+      console.warn("Firestore room update warning:", err);
+    }
+  };
+
   // 1. Host Timer Logic (Max 20s per question in Host-Paced mode)
   useEffect(() => {
     if (gameMode === 'ownPace') return;
@@ -105,7 +172,7 @@ const BuizHost = () => {
             clearInterval(timer);
             // Time's up! Force reveal
             setQuestionStatus('revealed');
-            if (pin) updateDoc(doc(db, "buiz_rooms", pin), { questionStatus: 'revealed' });
+            syncRoomUpdate({ questionStatus: 'revealed' });
             return 0;
           }
           return prev - 1;
@@ -125,7 +192,7 @@ const BuizHost = () => {
       if (answeredCount === players.length) {
         // Everyone has answered! Skip the timer and reveal
         setQuestionStatus('revealed');
-        if (pin) updateDoc(doc(db, "buiz_rooms", pin), { questionStatus: 'revealed' });
+        syncRoomUpdate({ questionStatus: 'revealed' });
       }
     }
   }, [players, status, questionStatus, currentQIndex, roomQuestions.length, pin, gameMode]);
@@ -138,7 +205,7 @@ const BuizHost = () => {
         if (currentQIndex + 1 < roomQuestions.length) {
           setCurrentQIndex(prev => prev + 1);
           setQuestionStatus('answering');
-          if (pin) updateDoc(doc(db, "buiz_rooms", pin), {
+          syncRoomUpdate({
             currentQIndex: currentQIndex + 1,
             questionStatus: 'answering'
           });
@@ -153,21 +220,76 @@ const BuizHost = () => {
   useEffect(() => {
     if (status === 'setup') {
       const fetchQuizzes = async () => {
+        let quizzes: any[] = [];
+        let history: any[] = [];
+
+        // 1. Fetch from Supabase (if configured)
+        if (isSupabaseConfigured) {
+          try {
+            const { data: sbQuizzes } = await supabase
+              .from('buiz_saved_quizzes')
+              .select('*')
+              .order('created_at', { ascending: false });
+
+            if (sbQuizzes) {
+              quizzes = sbQuizzes.map((q: any) => ({
+                id: q.id,
+                name: q.name,
+                questions: q.questions || [],
+                totalPossiblePoints: q.total_possible_points || 0,
+                createdAt: q.created_at
+              }));
+            }
+
+            const { data: sbHistory } = await supabase
+              .from('buiz_history')
+              .select('*')
+              .order('date', { ascending: false });
+
+            if (sbHistory) {
+              history = sbHistory.map((h: any) => ({
+                id: h.id,
+                quizName: h.quiz_name,
+                pin: h.pin,
+                date: h.date,
+                gameMode: h.game_mode,
+                questionsCount: h.questions_count,
+                totalPossiblePoints: h.total_possible_points,
+                totalPlayers: h.total_players,
+                players: h.players || [],
+                winners: h.winners || [],
+                questions: h.questions || []
+              }));
+            }
+          } catch (sbErr) {
+            console.warn("Supabase fetch warning, falling back:", sbErr);
+          }
+        }
+
+        // 2. Merge with Firestore so ZERO data is ever lost
         try {
           const snap = await getDocs(collection(db, 'buiz_saved_quizzes'));
-          const quizzes: any[] = [];
-          snap.forEach(doc => quizzes.push({ id: doc.id, ...doc.data() }));
-          setSavedQuizzes(quizzes);
+          snap.forEach(doc => {
+            const data = doc.data();
+            if (!quizzes.some(q => q.id === doc.id || q.name === data.name)) {
+              quizzes.push({ id: doc.id, ...data });
+            }
+          });
 
           const histSnap = await getDocs(collection(db, 'buiz_history'));
-          const history: any[] = [];
-          histSnap.forEach(doc => history.push({ id: doc.id, ...doc.data() }));
-          // sort by date descending
+          histSnap.forEach(doc => {
+            const data = doc.data();
+            if (!history.some(h => h.id === doc.id || (h.pin && h.pin === data.pin))) {
+              history.push({ id: doc.id, ...data });
+            }
+          });
           history.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-          setQuizHistory(history);
-        } catch (err) {
-          console.error("Failed to fetch saved quizzes", err);
+        } catch (fsErr) {
+          console.warn("Firestore fetch note:", fsErr);
         }
+
+        setSavedQuizzes(quizzes);
+        setQuizHistory(history);
       };
       fetchQuizzes();
     }
@@ -203,25 +325,51 @@ const BuizHost = () => {
       const finalPayload = [...selectedQs, ...finalCustomQs];
       const totalPossiblePoints = finalPayload.reduce((sum, q) => sum + (q.points || 1000), 0);
 
-      await setDoc(doc(db, "buiz_rooms", newPin), {
-        pin: newPin,
-        status: 'waiting',
-        hostId: 'admin',
-        quizName: quizName || 'Buiz Arena Quiz',
-        questions: finalPayload,
-        totalPossiblePoints: totalPossiblePoints,
-        currentQIndex: 0,
-        questionStatus: 'answering',
-        gameMode: gameMode,
-        createdAt: new Date()
-      });
+      // 1. Supabase Room Creation
+      if (isSupabaseConfigured) {
+        try {
+          await supabase.from('buiz_rooms').upsert({
+            pin: newPin,
+            status: 'waiting',
+            host_id: 'admin',
+            quiz_name: quizName || 'Buiz Arena Quiz',
+            questions: finalPayload,
+            total_possible_points: totalPossiblePoints,
+            current_q_index: 0,
+            question_status: 'answering',
+            game_mode: gameMode,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
+        } catch (sbErr) {
+          console.warn("Supabase room create warning:", sbErr);
+        }
+      }
+
+      // 2. Firestore mirror for full backward compatibility
+      try {
+        await setDoc(doc(db, "buiz_rooms", newPin), {
+          pin: newPin,
+          status: 'waiting',
+          hostId: 'admin',
+          quizName: quizName || 'Buiz Arena Quiz',
+          questions: finalPayload,
+          totalPossiblePoints: totalPossiblePoints,
+          currentQIndex: 0,
+          questionStatus: 'answering',
+          gameMode: gameMode,
+          createdAt: new Date()
+        });
+      } catch (fsErr) {
+        console.warn("Firestore room create warning:", fsErr);
+      }
 
       setRoomQuestions(finalPayload);
       setPin(newPin);
       setStatus('waiting');
     } catch (err) {
       console.error("Failed to create room", err);
-      toast.error("Make sure you updated your Firebase Rules to allow writing to buiz_rooms!");
+      toast.error("Failed to create room.");
     }
   };
 
@@ -246,13 +394,35 @@ const BuizHost = () => {
       }));
       const finalPayload = [...selectedQs, ...finalCustomQs];
       const totalPossiblePoints = finalPayload.reduce((sum, q) => sum + (q.points || 1000), 0);
+      const newQuizId = `quiz_${Date.now()}`;
+      const createdAt = new Date().toISOString();
 
-      await addDoc(collection(db, "buiz_saved_quizzes"), {
-        name: quizName,
-        questions: finalPayload,
-        totalPossiblePoints: totalPossiblePoints,
-        createdAt: new Date().toISOString()
-      });
+      // 1. Supabase
+      if (isSupabaseConfigured) {
+        try {
+          await supabase.from('buiz_saved_quizzes').insert({
+            id: newQuizId,
+            name: quizName,
+            questions: finalPayload,
+            total_possible_points: totalPossiblePoints,
+            created_at: createdAt
+          });
+        } catch (sbErr) {
+          console.warn("Supabase save quiz warning:", sbErr);
+        }
+      }
+
+      // 2. Firestore mirror
+      try {
+        await setDoc(doc(db, "buiz_saved_quizzes", newQuizId), {
+          name: quizName,
+          questions: finalPayload,
+          totalPossiblePoints: totalPossiblePoints,
+          createdAt: createdAt
+        });
+      } catch (fsErr) {
+        console.warn("Firestore save quiz warning:", fsErr);
+      }
 
       toast.success("Quiz saved successfully!");
       setStatus('setup');
@@ -262,14 +432,18 @@ const BuizHost = () => {
       setQuestionPointsMap({});
     } catch (err) {
       console.error("Failed to save quiz", err);
-      toast.error("Failed to save. Check your Firebase permissions.");
+      toast.error("Failed to save quiz.");
     }
   };
 
   const deleteSavedQuiz = async (quizId: string) => {
     try {
-      await deleteDoc(doc(db, "buiz_saved_quizzes", quizId));
+      if (isSupabaseConfigured) {
+        await supabase.from('buiz_saved_quizzes').delete().eq('id', quizId);
+      }
+      await deleteDoc(doc(db, "buiz_saved_quizzes", quizId)).catch(() => {});
       setSavedQuizzes(savedQuizzes.filter(q => q.id !== quizId));
+      toast.success("Saved quiz removed.");
     } catch (err) {
       console.error("Failed to delete quiz", err);
     }
@@ -277,8 +451,12 @@ const BuizHost = () => {
 
   const deleteQuizHistory = async (historyId: string) => {
     try {
-      await deleteDoc(doc(db, "buiz_history", historyId));
+      if (isSupabaseConfigured) {
+        await supabase.from('buiz_history').delete().eq('id', historyId);
+      }
+      await deleteDoc(doc(db, "buiz_history", historyId)).catch(() => {});
       setQuizHistory(quizHistory.filter(h => h.id !== historyId));
+      toast.success("Session history removed.");
     } catch (err) {
       console.error("Failed to delete history", err);
     }
@@ -291,33 +469,59 @@ const BuizHost = () => {
       let questionsCount = hist.questionsCount || finalQuestions.length || 0;
       let totalPossiblePoints = hist.totalPossiblePoints || 0;
 
-      // If historical record has <= 3 players or missing questions, attempt recovery from room in Firestore
+      // If historical record has <= 3 players or missing questions, attempt recovery from room in Supabase or Firestore
       if (hist.pin && (finalPlayers.length <= 3 || finalQuestions.length === 0)) {
         try {
-          const roomDocSnap = await getDoc(doc(db, "buiz_rooms", hist.pin));
-          if (roomDocSnap.exists()) {
-            const roomData = roomDocSnap.data();
-            if ((!finalQuestions || finalQuestions.length === 0) && roomData.questions) {
-              finalQuestions = roomData.questions;
-              questionsCount = roomData.questions.length;
+          if (isSupabaseConfigured) {
+            const { data: sbRoom } = await supabase.from('buiz_rooms').select('*').eq('pin', hist.pin).maybeSingle();
+            if (sbRoom) {
+              if ((!finalQuestions || finalQuestions.length === 0) && sbRoom.questions) {
+                finalQuestions = sbRoom.questions;
+                questionsCount = sbRoom.questions.length;
+              }
+              if (!totalPossiblePoints && sbRoom.total_possible_points) {
+                totalPossiblePoints = sbRoom.total_possible_points;
+              }
             }
-            if (!totalPossiblePoints && roomData.totalPossiblePoints) {
-              totalPossiblePoints = roomData.totalPossiblePoints;
+            const { data: sbPlayers } = await supabase.from('buiz_players').select('*').eq('room_pin', hist.pin).order('score', { ascending: false });
+            if (sbPlayers && sbPlayers.length > finalPlayers.length) {
+              finalPlayers = sbPlayers.map((p: any, idx: number) => ({
+                rank: idx + 1,
+                name: p.name,
+                score: p.score,
+                streak: p.streak || 0,
+                progress: p.progress || 0,
+                answers: p.answers || {}
+              }));
             }
           }
 
-          const playersSnap = await getDocs(collection(db, "buiz_rooms", hist.pin, "players"));
-          if (!playersSnap.empty && playersSnap.size > finalPlayers.length) {
-            const fetched = playersSnap.docs.map(d => ({ id: d.id, ...d.data() } as any));
-            fetched.sort((a, b) => (b.score || 0) - (a.score || 0));
-            finalPlayers = fetched.map((p, idx) => ({
-              rank: idx + 1,
-              name: p.name,
-              score: p.score,
-              streak: p.streak || 0,
-              progress: p.progress || 0,
-              answers: p.answers || {}
-            }));
+          if (finalPlayers.length <= 3 || finalQuestions.length === 0) {
+            const roomDocSnap = await getDoc(doc(db, "buiz_rooms", hist.pin));
+            if (roomDocSnap.exists()) {
+              const roomData = roomDocSnap.data();
+              if ((!finalQuestions || finalQuestions.length === 0) && roomData.questions) {
+                finalQuestions = roomData.questions;
+                questionsCount = roomData.questions.length;
+              }
+              if (!totalPossiblePoints && roomData.totalPossiblePoints) {
+                totalPossiblePoints = roomData.totalPossiblePoints;
+              }
+            }
+
+            const playersSnap = await getDocs(collection(db, "buiz_rooms", hist.pin, "players"));
+            if (!playersSnap.empty && playersSnap.size > finalPlayers.length) {
+              const fetched = playersSnap.docs.map(d => ({ id: d.id, ...d.data() } as any));
+              fetched.sort((a, b) => (b.score || 0) - (a.score || 0));
+              finalPlayers = fetched.map((p, idx) => ({
+                rank: idx + 1,
+                name: p.name,
+                score: p.score,
+                streak: p.streak || 0,
+                progress: p.progress || 0,
+                answers: p.answers || {}
+              }));
+            }
           }
         } catch (fetchErr) {
           console.warn("Could not retrieve original room players for history", fetchErr);
@@ -364,25 +568,52 @@ const BuizHost = () => {
     const newPin = Math.floor(100000 + Math.random() * 900000).toString();
     try {
       const totalPossiblePoints = (quiz.questions || []).reduce((sum: number, q: any) => sum + (q.points || 1000), 0);
-      await setDoc(doc(db, "buiz_rooms", newPin), {
-        pin: newPin,
-        status: 'waiting',
-        hostId: 'admin',
-        quizName: quiz.name || 'Saved Quiz Session',
-        questions: quiz.questions,
-        totalPossiblePoints: totalPossiblePoints,
-        currentQIndex: 0,
-        questionStatus: 'answering',
-        gameMode: quiz.gameMode || gameMode || 'hostPaced',
-        createdAt: new Date()
-      });
+      
+      // 1. Supabase Room Creation
+      if (isSupabaseConfigured) {
+        try {
+          await supabase.from('buiz_rooms').upsert({
+            pin: newPin,
+            status: 'waiting',
+            host_id: 'admin',
+            quiz_name: quiz.name || 'Saved Quiz Session',
+            questions: quiz.questions,
+            total_possible_points: totalPossiblePoints,
+            current_q_index: 0,
+            question_status: 'answering',
+            game_mode: quiz.gameMode || gameMode || 'hostPaced',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
+        } catch (sbErr) {
+          console.warn("Supabase launch saved quiz warning:", sbErr);
+        }
+      }
+
+      // 2. Firestore mirror
+      try {
+        await setDoc(doc(db, "buiz_rooms", newPin), {
+          pin: newPin,
+          status: 'waiting',
+          hostId: 'admin',
+          quizName: quiz.name || 'Saved Quiz Session',
+          questions: quiz.questions,
+          totalPossiblePoints: totalPossiblePoints,
+          currentQIndex: 0,
+          questionStatus: 'answering',
+          gameMode: quiz.gameMode || gameMode || 'hostPaced',
+          createdAt: new Date()
+        });
+      } catch (fsErr) {
+        console.warn("Firestore launch saved quiz warning:", fsErr);
+      }
 
       setRoomQuestions(quiz.questions);
       setPin(newPin);
       setStatus('waiting');
     } catch (err) {
       console.error("Failed to create room from saved quiz", err);
-      toast.error("Failed to launch. Check your Firebase permissions.");
+      toast.error("Failed to launch quiz session.");
     }
   };
 
@@ -488,12 +719,12 @@ const BuizHost = () => {
     setCurrentQIndex(0);
     setQuestionStatus('answering');
     if (gameMode === 'ownPace') {
-      await updateDoc(doc(db, "buiz_rooms", pin), {
+      await syncRoomUpdate({
         status: 'playing',
         startedAt: new Date()
       });
     } else {
-      await updateDoc(doc(db, "buiz_rooms", pin), {
+      await syncRoomUpdate({
         status: 'playing',
         currentQIndex: 0,
         questionStatus: 'answering',
@@ -508,7 +739,7 @@ const BuizHost = () => {
     if (!pin || gameMode === 'ownPace') return;
     setQuestionStatus('revealed');
     try {
-      await updateDoc(doc(db, "buiz_rooms", pin), { questionStatus: 'revealed' });
+      await syncRoomUpdate({ questionStatus: 'revealed' });
     } catch (err) {
       console.error("Failed to manually reveal", err);
     }
@@ -521,7 +752,7 @@ const BuizHost = () => {
       setCurrentQIndex(nextIdx);
       setQuestionStatus('answering');
       try {
-        await updateDoc(doc(db, "buiz_rooms", pin), {
+        await syncRoomUpdate({
           currentQIndex: nextIdx,
           questionStatus: 'answering'
         });
@@ -535,7 +766,7 @@ const BuizHost = () => {
 
   const endGame = async () => {
     if (!pin) return;
-    await updateDoc(doc(db, "buiz_rooms", pin), {
+    await syncRoomUpdate({
       status: 'finished'
     });
     setStatus('finished');
@@ -549,30 +780,62 @@ const BuizHost = () => {
     // Save to history with all attended player results, question scores, and rankings
     try {
       let allCurrentPlayers = players;
-      try {
-        const playersSnap = await getDocs(collection(db, "buiz_rooms", pin, "players"));
-        if (!playersSnap.empty) {
-          const fetchedPlayers = playersSnap.docs.map(d => ({ id: d.id, ...d.data() } as Player));
-          fetchedPlayers.sort((a, b) => (b.score || 0) - (a.score || 0));
-          allCurrentPlayers = fetchedPlayers;
-          setPlayers(fetchedPlayers);
+      
+      // 1. Check Supabase for fresh players
+      if (isSupabaseConfigured) {
+        try {
+          const { data: freshSb } = await supabase
+            .from('buiz_players')
+            .select('*')
+            .eq('room_pin', pin)
+            .order('score', { ascending: false });
+          if (freshSb && freshSb.length > 0) {
+            allCurrentPlayers = freshSb.map((p: any) => ({
+              id: p.id,
+              name: p.name,
+              score: p.score || 0,
+              streak: p.streak || 0,
+              progress: Number(p.progress) || 0,
+              avatar: p.avatar,
+              currentQIndex: p.current_q_index,
+              answers: p.answers || {}
+            }));
+            setPlayers(allCurrentPlayers);
+          }
+        } catch (sbErr) {
+          console.warn("Supabase fresh player query warning:", sbErr);
         }
-      } catch (err) {
-        console.error("Failed to query fresh players for history", err);
+      }
+
+      // 2. Fallback to Firestore if empty
+      if (allCurrentPlayers.length === 0) {
+        try {
+          const playersSnap = await getDocs(collection(db, "buiz_rooms", pin, "players"));
+          if (!playersSnap.empty) {
+            const fetchedPlayers = playersSnap.docs.map(d => ({ id: d.id, ...d.data() } as Player));
+            fetchedPlayers.sort((a, b) => (b.score || 0) - (a.score || 0));
+            allCurrentPlayers = fetchedPlayers;
+            setPlayers(fetchedPlayers);
+          }
+        } catch (err) {
+          console.error("Failed to query fresh players for history", err);
+        }
       }
 
       const top3 = allCurrentPlayers.slice(0, 3).map(p => ({ name: p.name, score: p.score }));
       const totalPossiblePoints = roomQuestions.reduce((sum, q) => sum + (q.points || 1000), 0);
-      
-      await addDoc(collection(db, "buiz_history"), {
-        quizName: quizName || 'Quick Session',
-        date: new Date().toISOString(),
+      const newHistId = `hist_${Date.now()}`;
+      const histDate = new Date().toISOString();
+
+      const histPayload = {
+        quiz_name: quizName || 'Quick Session',
+        date: histDate,
         winners: top3,
-        totalPlayers: allCurrentPlayers.length,
+        total_players: allCurrentPlayers.length,
         pin: pin,
-        gameMode: gameMode,
-        questionsCount: roomQuestions.length,
-        totalPossiblePoints: totalPossiblePoints,
+        game_mode: gameMode,
+        questions_count: roomQuestions.length,
+        total_possible_points: totalPossiblePoints,
         questions: roomQuestions.map(q => ({
           id: q.id,
           question: q.question,
@@ -588,7 +851,38 @@ const BuizHost = () => {
           progress: p.progress || 0,
           answers: p.answers || {}
         }))
-      });
+      };
+
+      // 1. Supabase History
+      if (isSupabaseConfigured) {
+        try {
+          await supabase.from('buiz_history').insert({
+            id: newHistId,
+            ...histPayload,
+            created_at: histDate
+          });
+        } catch (sbErr) {
+          console.warn("Supabase save history warning:", sbErr);
+        }
+      }
+
+      // 2. Firestore mirror
+      try {
+        await setDoc(doc(db, "buiz_history", newHistId), {
+          quizName: histPayload.quiz_name,
+          date: histDate,
+          winners: histPayload.winners,
+          totalPlayers: histPayload.total_players,
+          pin: pin,
+          gameMode: gameMode,
+          questionsCount: histPayload.questions_count,
+          totalPossiblePoints: totalPossiblePoints,
+          questions: histPayload.questions,
+          players: histPayload.players
+        });
+      } catch (fsErr) {
+        console.warn("Firestore save history warning:", fsErr);
+      }
     } catch (e) {
       console.error("Failed to save history", e);
     }
@@ -680,7 +974,13 @@ const BuizHost = () => {
               <Target className="text-purple-400" size={32} />
             </div>
             <div>
-              <h1 className="text-3xl font-black text-white tracking-tight">Host Buiz Arena</h1>
+              <div className="flex items-center gap-2.5">
+                <h1 className="text-3xl font-black text-white tracking-tight">Host Buiz Arena</h1>
+                <span className="px-2.5 py-0.5 text-[11px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-full flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  DB: Supabase (Postgres)
+                </span>
+              </div>
               <p className="text-zinc-400 text-sm">Create a live multiplayer session or launch a saved quiz.</p>
             </div>
           </div>
@@ -1191,16 +1491,42 @@ const BuizHost = () => {
       try {
         let exportPlayers = players;
         if (pin) {
-          try {
-            const playersSnap = await getDocs(collection(db, "buiz_rooms", pin, "players"));
-            if (!playersSnap.empty) {
-              const freshList = playersSnap.docs.map(d => ({ id: d.id, ...d.data() } as Player));
-              freshList.sort((a, b) => (b.score || 0) - (a.score || 0));
-              exportPlayers = freshList;
-              setPlayers(freshList);
+          if (isSupabaseConfigured) {
+            try {
+              const { data: sbFresh } = await supabase
+                .from('buiz_players')
+                .select('*')
+                .eq('room_pin', pin)
+                .order('score', { ascending: false });
+              if (sbFresh && sbFresh.length > 0) {
+                exportPlayers = sbFresh.map((p: any) => ({
+                  id: p.id,
+                  name: p.name,
+                  score: p.score || 0,
+                  streak: p.streak || 0,
+                  progress: Number(p.progress) || 0,
+                  avatar: p.avatar,
+                  currentQIndex: p.current_q_index,
+                  answers: p.answers || {}
+                }));
+                setPlayers(exportPlayers);
+              }
+            } catch (e) {
+              console.warn("Supabase refresh for CSV warning:", e);
             }
-          } catch (e) {
-            console.error("Could not refresh players for CSV export", e);
+          }
+          if (exportPlayers.length === 0) {
+            try {
+              const playersSnap = await getDocs(collection(db, "buiz_rooms", pin, "players"));
+              if (!playersSnap.empty) {
+                const freshList = playersSnap.docs.map(d => ({ id: d.id, ...d.data() } as Player));
+                freshList.sort((a, b) => (b.score || 0) - (a.score || 0));
+                exportPlayers = freshList;
+                setPlayers(freshList);
+              }
+            } catch (e) {
+              console.error("Could not refresh players for CSV export", e);
+            }
           }
         }
         downloadLeaderboardCSV({
@@ -1227,16 +1553,42 @@ const BuizHost = () => {
       try {
         let exportPlayers = players;
         if (pin) {
-          try {
-            const playersSnap = await getDocs(collection(db, "buiz_rooms", pin, "players"));
-            if (!playersSnap.empty) {
-              const freshList = playersSnap.docs.map(d => ({ id: d.id, ...d.data() } as Player));
-              freshList.sort((a, b) => (b.score || 0) - (a.score || 0));
-              exportPlayers = freshList;
-              setPlayers(freshList);
+          if (isSupabaseConfigured) {
+            try {
+              const { data: sbFresh } = await supabase
+                .from('buiz_players')
+                .select('*')
+                .eq('room_pin', pin)
+                .order('score', { ascending: false });
+              if (sbFresh && sbFresh.length > 0) {
+                exportPlayers = sbFresh.map((p: any) => ({
+                  id: p.id,
+                  name: p.name,
+                  score: p.score || 0,
+                  streak: p.streak || 0,
+                  progress: Number(p.progress) || 0,
+                  avatar: p.avatar,
+                  currentQIndex: p.current_q_index,
+                  answers: p.answers || {}
+                }));
+                setPlayers(exportPlayers);
+              }
+            } catch (e) {
+              console.warn("Supabase refresh for PDF warning:", e);
             }
-          } catch (e) {
-            console.error("Could not refresh players for PDF export", e);
+          }
+          if (exportPlayers.length === 0) {
+            try {
+              const playersSnap = await getDocs(collection(db, "buiz_rooms", pin, "players"));
+              if (!playersSnap.empty) {
+                const freshList = playersSnap.docs.map(d => ({ id: d.id, ...d.data() } as Player));
+                freshList.sort((a, b) => (b.score || 0) - (a.score || 0));
+                exportPlayers = freshList;
+                setPlayers(freshList);
+              }
+            } catch (e) {
+              console.error("Could not refresh players for PDF export", e);
+            }
           }
         }
         downloadLeaderboardPDF({
