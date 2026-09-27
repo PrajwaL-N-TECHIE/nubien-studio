@@ -752,7 +752,7 @@ const TestimonialsSection = () => {
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-6 backdrop-blur-md">
             <School size={15} className="text-purple-400" />
             <span className="text-xs md:text-sm font-medium text-zinc-300 tracking-wide">
-              Campus Masterclass • Monti International Institute of Management Studies
+              Campus Masterclass • Monti International Institute of Management Studies • Sep 22–25, 2026
             </span>
           </div>
 
@@ -765,7 +765,7 @@ const TestimonialsSection = () => {
           </p>
 
           <p className="max-w-2xl mx-auto text-base md:text-lg text-zinc-400 font-normal leading-relaxed">
-            Conducted by Buildicy leadership (Prajwal & Mayur) at Monti International Institute of Management Studies, Perunthalmanna. Here is what the management cohort experienced firsthand.
+            4-Day Intensive Bootcamp conducted on September 22, 23, 24, and 25, 2026 by Buildicy leadership (Prajwal & Mayur) at Monti International Institute of Management Studies, Perunthalmanna. Here is what the management cohort experienced firsthand.
           </p>
 
           {/* Quick Metrics Bar */}

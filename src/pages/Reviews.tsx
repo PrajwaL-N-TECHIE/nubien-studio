@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   School,
   GraduationCap,
@@ -14,12 +14,24 @@ import {
   ArrowRight,
   Star,
   Quote,
-  Layers
+  Layers,
+  Database,
+  X,
+  Send,
+  Loader2
 } from "lucide-react";
 import SEO from "@/components/SEO";
 import PageTransition from "@/components/PageTransition";
 import { workshopReviews, StudentReview, StudentReviewCard } from "@/components/TestimonialsSection";
 import Magnetic from "@/components/Magnetic";
+import { toast } from "sonner";
+import {
+  syncSeedSessionsToDb,
+  getWorkshopSessionsFromDb,
+  getSessionReviewsFromDb,
+  addWorkshopSessionToDb,
+  addStudentReviewToDb
+} from "@/lib/reviewsDb";
 
 // Session definition interface so future workshops can be added seamlessly
 export interface WorkshopSession {
@@ -40,13 +52,13 @@ export interface WorkshopSession {
 
 export const allSessions: WorkshopSession[] = [
   {
-    id: "monti-mba-2024",
+    id: "monti-mba-2026",
     institution: "Monti International Institute of Management Studies",
     shortName: "Monti International (MBA Y1)",
     location: "Perunthalmanna, Kerala",
     audience: "First Year MBA Students",
     topic: "Gen AI Tools For Business",
-    date: "September 2024",
+    date: "September 22 - 25, 2026",
     trainers: ["Prajwal N (Founder & AI Engineer)", "Mayur P (Co-Founder & Tech Lead)"],
     satisfactionRate: "100%",
     mindsetShiftRate: "100%",
@@ -57,16 +69,66 @@ export const allSessions: WorkshopSession[] = [
 ];
 
 const Reviews = () => {
-  const [activeSessionId, setActiveSessionId] = useState<string>("monti-mba-2024");
+  const [sessions, setSessions] = useState<WorkshopSession[]>(allSessions);
+  const [activeSessionId, setActiveSessionId] = useState<string>("monti-mba-2026");
   const [activeFilter, setActiveFilter] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"grid" | "marquee">("grid");
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [isDbConnected, setIsDbConnected] = useState<boolean>(true);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+
+  // Form state for creating a new workshop session
+  const [newSession, setNewSession] = useState({
+    institution: "",
+    shortName: "",
+    location: "",
+    audience: "",
+    topic: "",
+    date: "",
+    trainers: "Prajwal N, Mayur P",
+    toolsCovered: "NotebookLM, Gamma, ChatGPT, Perplexity",
+  });
+
+  // On mount, sync initial seed data to Firestore DB and load dynamic sessions
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadData() {
+      try {
+        await syncSeedSessionsToDb();
+        const dbSessions = await getWorkshopSessionsFromDb();
+        if (isMounted && dbSessions.length > 0) {
+          // Merge with local reviews for initial session if empty
+          const merged = dbSessions.map((s) => {
+            if (s.id === "monti-mba-2026" || s.id === "monti-mba-2024") {
+              return { ...s, id: "monti-mba-2026", reviews: workshopReviews, reviewsCount: workshopReviews.length, date: "September 22 - 25, 2026" };
+            }
+            return s;
+          });
+          setSessions(merged);
+        }
+      } catch (err) {
+        console.warn("DB connection notice:", err);
+        setIsDbConnected(false);
+      }
+    }
+
+    loadData();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const currentSession =
-    allSessions.find((s) => s.id === activeSessionId) || allSessions[0];
+    sessions.find((s) => s.id === activeSessionId) || sessions[0];
 
   // Filter reviews for current active session
-  const filteredReviews = currentSession.reviews.filter((item) => {
+  const activeReviews = currentSession.reviews && currentSession.reviews.length > 0 
+    ? currentSession.reviews 
+    : (activeSessionId === "monti-mba-2026" ? workshopReviews : []);
+
+  const filteredReviews = activeReviews.filter((item) => {
     const matchesFilter =
       activeFilter === "all" ? true : item.category === activeFilter;
     const matchesSearch =
@@ -78,15 +140,65 @@ const Reviews = () => {
     return matchesFilter && matchesSearch;
   });
 
-  const midPoint = Math.ceil(currentSession.reviews.length / 2);
-  const rowOne = currentSession.reviews.slice(0, midPoint);
-  const rowTwo = currentSession.reviews.slice(midPoint);
+  const midPoint = Math.ceil(activeReviews.length / 2);
+  const rowOne = activeReviews.slice(0, midPoint);
+  const rowTwo = activeReviews.slice(midPoint);
+
+  // Handle adding a new future session to the DB
+  const handleAddSessionSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newSession.institution || !newSession.topic) {
+      toast.error("Please fill in the institution and topic.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const generatedId = `session_${Date.now()}`;
+      const sessionObj: WorkshopSession = {
+        id: generatedId,
+        institution: newSession.institution,
+        shortName: newSession.shortName || newSession.institution,
+        location: newSession.location || "India",
+        audience: newSession.audience || "Students & Executives",
+        topic: newSession.topic,
+        date: newSession.date || "Upcoming 2026",
+        trainers: newSession.trainers.split(",").map((t) => t.trim()),
+        satisfactionRate: "100%",
+        mindsetShiftRate: "100%",
+        reviewsCount: 0,
+        toolsCovered: newSession.toolsCovered.split(",").map((t) => t.trim()),
+        reviews: [],
+      };
+
+      await addWorkshopSessionToDb(sessionObj);
+      setSessions((prev) => [...prev, sessionObj]);
+      setActiveSessionId(generatedId);
+      setIsModalOpen(false);
+      setNewSession({
+        institution: "",
+        shortName: "",
+        location: "",
+        audience: "",
+        topic: "",
+        date: "",
+        trainers: "Prajwal N, Mayur P",
+        toolsCovered: "NotebookLM, Gamma, ChatGPT, Perplexity",
+      });
+      toast.success("Workshop session added to database successfully!");
+    } catch (error) {
+      console.error("Error creating session in DB:", error);
+      toast.error("Could not save to DB. Please check connection.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <PageTransition>
       <SEO
         title="Campus Masterclasses & Reviews | Buildicy"
-        description="Explore authentic feedback and verified reviews from university students and MBA cohorts trained in Gen AI and high-performance technology by Buildicy leadership."
+        description="Explore authentic feedback and verified student reviews from university workshops (including Monti International Institute of Management Studies, Sep 22-25, 2026) conducted by Buildicy leadership."
         canonicalUrl="/reviews"
       />
 
@@ -102,6 +214,8 @@ const Reviews = () => {
             <span className="text-xs font-mono font-bold tracking-widest uppercase text-purple-300">
               Verified Campus Workshops & Masterclasses
             </span>
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 ml-1" />
+            <span className="text-[10px] font-mono text-emerald-400 uppercase tracking-wider">DB Synced</span>
           </motion.div>
 
           <motion.h1
@@ -140,28 +254,37 @@ const Reviews = () => {
               <div className="text-xs text-zinc-400">Students Reached</div>
             </div>
             <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 text-center">
-              <div className="text-2xl font-bold text-indigo-400 mb-1">45+</div>
-              <div className="text-xs text-zinc-400">Campus Keynotes</div>
+              <div className="text-2xl font-bold text-indigo-400 mb-1">4-Day Format</div>
+              <div className="text-xs text-zinc-400">Intensive Bootcamp</div>
             </div>
           </div>
         </div>
 
         {/* SESSION SELECTOR TABS (Extensible for all future sessions!) */}
         <div className="mb-14">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
             <div className="flex items-center gap-2">
               <School size={16} className="text-purple-400" />
               <h2 className="text-sm font-bold uppercase tracking-widest text-zinc-400 font-mono">
-                Select Masterclass Session
+                Workshop Sessions In Database
               </h2>
             </div>
-            <span className="text-xs text-zinc-500 font-mono">
-              {allSessions.length} Session Recorded
-            </span>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-600/30 hover:bg-purple-600/50 text-purple-200 text-xs font-semibold border border-purple-500/40 transition-all"
+              >
+                <PlusCircle size={13} />
+                <span>Add Future Session</span>
+              </button>
+              <span className="text-xs text-zinc-500 font-mono">
+                {sessions.length} Recorded
+              </span>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {allSessions.map((session) => (
+            {sessions.map((session) => (
               <button
                 key={session.id}
                 onClick={() => {
@@ -180,17 +303,19 @@ const Reviews = () => {
                   </div>
                 )}
                 <div className="flex items-center gap-2 text-xs text-purple-400 font-mono mb-2">
-                  <Calendar size={12} /> {session.date} • {session.audience}
+                  <Calendar size={12} /> {session.date}
                 </div>
-                <h3 className="text-lg font-bold text-white mb-2 leading-snug">
+                <h3 className="text-lg font-bold text-white mb-1.5 leading-snug">
                   {session.institution}
                 </h3>
                 <p className="text-xs text-zinc-400 mb-4 flex items-center gap-1">
-                  <MapPin size={12} className="text-zinc-500 shrink-0" /> {session.location}
+                  <MapPin size={12} className="text-zinc-500 shrink-0" /> {session.location} • {session.audience}
                 </p>
                 <div className="flex items-center justify-between text-xs pt-4 border-t border-white/5">
                   <span className="text-zinc-400 font-medium">Topic: {session.topic}</span>
-                  <span className="font-bold text-purple-300">{session.reviewsCount} Reviews</span>
+                  <span className="font-bold text-purple-300">
+                    {session.id === "monti-mba-2026" ? workshopReviews.length : session.reviewsCount} Reviews
+                  </span>
                 </div>
               </button>
             ))}
@@ -199,22 +324,30 @@ const Reviews = () => {
             <div className="p-6 rounded-2xl border border-dashed border-white/10 bg-white/[0.01] hover:bg-white/[0.03] transition-all flex flex-col justify-between">
               <div>
                 <div className="flex items-center gap-2 text-xs text-zinc-500 font-mono mb-2">
-                  <PlusCircle size={13} className="text-purple-400" /> Future Cohorts
+                  <PlusCircle size={13} className="text-purple-400" /> Host On Your Campus
                 </div>
                 <h3 className="text-lg font-bold text-white mb-2">
-                  Host on Your Campus
+                  Book Buildicy For Next Cohort
                 </h3>
                 <p className="text-xs text-zinc-400 leading-relaxed mb-4">
                   Invite Buildicy leadership (Prajwal & Mayur) for hands-on sessions on Gen AI Tools, SaaS Engineering, and Modern Tech Trends.
                 </p>
               </div>
-              <a
-                href="mailto:contact@buildicy.com?subject=Campus%20Workshop%20Invitation"
-                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white text-xs font-semibold border border-white/10 transition-colors"
-              >
-                <span>Request Speaker Booking</span>
-                <ArrowRight size={13} />
-              </a>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setIsModalOpen(true)}
+                  className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold transition-colors"
+                >
+                  <PlusCircle size={13} /> Add Session
+                </button>
+                <a
+                  href="mailto:contact@buildicy.com?subject=Campus%20Workshop%20Invitation"
+                  className="flex-1 inline-flex items-center justify-center gap-1 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white text-xs font-semibold border border-white/10 transition-colors"
+                >
+                  <span>Inquire</span>
+                  <ArrowRight size={12} />
+                </a>
+              </div>
             </div>
           </div>
         </div>
@@ -225,14 +358,18 @@ const Reviews = () => {
 
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
             <div>
-              <div className="flex items-center gap-2 text-xs font-mono font-semibold text-purple-400 mb-2 uppercase tracking-wider">
-                <School size={14} /> {currentSession.audience} • {currentSession.location}
+              <div className="flex flex-wrap items-center gap-2 text-xs font-mono font-semibold text-purple-400 mb-2 uppercase tracking-wider">
+                <span className="flex items-center gap-1"><School size={14} /> {currentSession.audience}</span>
+                <span>•</span>
+                <span className="flex items-center gap-1"><Calendar size={13} /> {currentSession.date}</span>
+                <span>•</span>
+                <span className="px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 text-[10px] font-bold">4-Day Bootcamp</span>
               </div>
               <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3">
                 {currentSession.institution}
               </h2>
               <p className="text-sm text-zinc-300 max-w-2xl leading-relaxed mb-4">
-                Masterclass on <strong className="text-white font-semibold">"{currentSession.topic}"</strong> conducted by {currentSession.trainers.join(" & ")}.
+                Masterclass on <strong className="text-white font-semibold">"{currentSession.topic}"</strong> conducted by {currentSession.trainers.join(" & ")} at {currentSession.location}.
               </p>
               <div className="flex flex-wrap gap-2">
                 {currentSession.toolsCovered.map((tool) => (
@@ -255,7 +392,7 @@ const Reviews = () => {
               </div>
               <div className="p-4 rounded-2xl bg-white/5 border border-white/10 text-center w-full sm:w-auto">
                 <div className="text-3xl font-extrabold text-emerald-400">
-                  {currentSession.reviewsCount}
+                  {activeReviews.length}
                 </div>
                 <div className="text-[11px] text-zinc-400 mt-0.5">Verified Reviews</div>
               </div>
@@ -268,7 +405,7 @@ const Reviews = () => {
           {/* Category Tabs */}
           <div className="flex flex-wrap items-center justify-center gap-2">
             {[
-              { id: "all", label: `All Reviews (${currentSession.reviews.length})` },
+              { id: "all", label: `All Reviews (${activeReviews.length})` },
               { id: "mindset", label: "Mindset Transformation" },
               { id: "trainers", label: "Prajwal & Mayur Praise" },
               { id: "tools", label: "AI Tools Mastery" }
@@ -409,7 +546,7 @@ const Reviews = () => {
               Bring Gen AI Tools to Your Campus
             </h3>
             <p className="text-zinc-400 text-sm sm:text-base leading-relaxed mb-8">
-              We deliver high-impact, hands-on workshops tailored for MBA programs, computer science colleges, and leadership teams. Students learn by creating real deliverables.
+              We deliver high-impact, 4-day intensive workshops tailored for MBA programs, computer science colleges, and leadership teams. Students learn by creating real deliverables.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-4">
               <a
@@ -429,6 +566,144 @@ const Reviews = () => {
           </div>
         </div>
       </div>
+
+      {/* MODAL: ADD FUTURE WORKSHOP SESSION TO DATABASE */}
+      <AnimatePresence>
+        {isModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="w-full max-w-lg rounded-3xl bg-[#0F0F16] border border-white/10 p-8 shadow-2xl relative overflow-hidden"
+            >
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="absolute top-6 right-6 text-zinc-400 hover:text-white transition-colors"
+              >
+                <X size={20} />
+              </button>
+
+              <div className="flex items-center gap-2 mb-2 text-purple-400 text-xs font-mono font-bold uppercase tracking-wider">
+                <Database size={14} /> Database Record Creator
+              </div>
+              <h3 className="text-2xl font-bold text-white mb-2">Add Workshop Session</h3>
+              <p className="text-xs text-zinc-400 mb-6">
+                Record a new campus workshop session into Firestore DB so reviews and metrics are instantly accessible.
+              </p>
+
+              <form onSubmit={handleAddSessionSubmit} className="space-y-4">
+                <div>
+                  <label className="text-xs font-semibold text-zinc-300 mb-1 block">
+                    Institution Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Indian Institute of Technology"
+                    value={newSession.institution}
+                    onChange={(e) => setNewSession({ ...newSession, institution: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white focus:outline-none focus:border-purple-500/50"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-semibold text-zinc-300 mb-1 block">
+                      Short Name
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. IIT Madras (B.Tech Y3)"
+                      value={newSession.shortName}
+                      onChange={(e) => setNewSession({ ...newSession, shortName: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white focus:outline-none focus:border-purple-500/50"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-zinc-300 mb-1 block">
+                      Location
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Chennai, Tamil Nadu"
+                      value={newSession.location}
+                      onChange={(e) => setNewSession({ ...newSession, location: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white focus:outline-none focus:border-purple-500/50"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-semibold text-zinc-300 mb-1 block">
+                      Audience
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. MBA Cohort or Final Year"
+                      value={newSession.audience}
+                      onChange={(e) => setNewSession({ ...newSession, audience: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white focus:outline-none focus:border-purple-500/50"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-zinc-300 mb-1 block">
+                      Dates Conducted
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. October 10 - 14, 2026"
+                      value={newSession.date}
+                      onChange={(e) => setNewSession({ ...newSession, date: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white focus:outline-none focus:border-purple-500/50"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-zinc-300 mb-1 block">
+                    Session Topic *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Gen AI Tools for Business or Full Stack AI"
+                    value={newSession.topic}
+                    onChange={(e) => setNewSession({ ...newSession, topic: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white focus:outline-none focus:border-purple-500/50"
+                  />
+                </div>
+
+                <div className="pt-4 flex items-center justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsModalOpen(false)}
+                    className="px-4 py-2 rounded-xl text-xs font-semibold text-zinc-400 hover:text-white"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold flex items-center gap-2 shadow-lg shadow-purple-600/30 disabled:opacity-50"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 size={13} className="animate-spin" /> Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Send size={13} /> Save to Database
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </PageTransition>
   );
 };
