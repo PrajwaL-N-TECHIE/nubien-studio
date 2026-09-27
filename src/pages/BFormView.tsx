@@ -6,7 +6,7 @@ import {
   ArrowRight, ShieldCheck, RefreshCw, User, Mail, HelpCircle
 } from 'lucide-react';
 import { db } from '@/lib/firebase';
-import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { bformsSupabase as supabase, isBFormsSupabaseConfigured as isSupabaseConfigured } from '@/lib/supabase';
 import {
   doc, getDoc, addDoc, collection, serverTimestamp, updateDoc, increment
 } from 'firebase/firestore';

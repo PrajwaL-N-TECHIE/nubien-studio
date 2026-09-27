@@ -8,7 +8,7 @@ import {
   Edit, ChevronUp, ChevronDown, ArrowRight, Upload,
   TrendingUp, Activity, PieChart as PieChartIcon, BarChart2, List, Database
 } from 'lucide-react';
-import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { bformsSupabase as supabase, isBFormsSupabaseConfigured as isSupabaseConfigured } from '@/lib/supabase';
 import { SUPABASE_SCHEMA_SQL } from '@/utils/supabaseSql';
 import {
   ResponsiveContainer,

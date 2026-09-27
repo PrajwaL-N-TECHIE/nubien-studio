@@ -1,8 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 
-const SUPABASE_URL = process.env.VITE_SUPABASE_URL || 'https://uwygbhokcixvalkmvvck.supabase.co';
-const SUPABASE_KEY = process.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV3eWdiaG9rY2l4dmFsa212dmNrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA0ODQ0NzcsImV4cCI6MjEwNjA2MDQ3N30.SUiHez2vk50xlBzpNIB1305wY1PNhE0v0uKa83xDJ2g';
+const SUPABASE_URL = process.env.VITE_BUIZ_SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://paigrnspffprttxtprev.supabase.co';
+const SUPABASE_KEY = process.env.VITE_BUIZ_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBhaWdybnNwZmZwcnR0eHRwcmV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA0ODExMjUsImV4cCI6MjEwNjA1NzEyNX0.jbBQhysqY9L6-ChYmuvUIFFnGTN2-Fco7OVli11b5Bs';
 
 const backupFile = path.join(__dirname, '..', 'backups', 'buiz_firestore_backup.json');
 
