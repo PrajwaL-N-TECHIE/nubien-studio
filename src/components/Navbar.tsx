@@ -22,6 +22,7 @@ import {
   Mail,
   Briefcase,
   ShieldCheck,
+  Layers,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import Magnetic from "./Magnetic";
