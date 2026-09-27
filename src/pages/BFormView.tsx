@@ -359,13 +359,13 @@ const BFormView = () => {
 
       <div className="max-w-2xl w-full relative z-10 space-y-6">
         {/* Dynamic Cover Image Banner */}
-        <div className="relative w-full rounded-3xl overflow-hidden border border-purple-500/30 shadow-2xl bg-[#0C0C12]/90 flex items-center justify-center transition-all duration-300">
+        <div className="relative w-full h-52 sm:h-64 rounded-3xl overflow-hidden border border-purple-500/30 shadow-xl bg-purple-500/10 flex items-center justify-center transition-all duration-300">
           <img
             src={form.coverImage || DEFAULT_BANNER_IMAGE}
             alt={form.title}
-            className="w-full h-auto max-h-[480px] object-contain rounded-3xl block transition-all"
+            className="w-full h-full object-cover rounded-3xl block transition-all"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0C0C12]/60 via-transparent to-transparent pointer-events-none rounded-3xl" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none rounded-3xl" />
         </div>
 
         {/* Form Title & Description Card */}
@@ -408,14 +408,14 @@ const BFormView = () => {
               placeholder="Your Name (Optional)"
               value={respondentName}
               onChange={(e) => setRespondentName(e.target.value)}
-              className="w-full bg-[#141224] border border-white/10 focus:border-purple-500 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none"
+              className="w-full bg-white dark:bg-[#141224] border border-zinc-200 dark:border-white/10 focus:border-purple-500 rounded-xl px-3.5 py-2.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none shadow-sm"
             />
             <input
               type="email"
               placeholder="Your Email (Optional)"
               value={respondentEmail}
               onChange={(e) => setRespondentEmail(e.target.value)}
-              className="w-full bg-[#141224] border border-white/10 focus:border-purple-500 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none"
+              className="w-full bg-white dark:bg-[#141224] border border-zinc-200 dark:border-white/10 focus:border-purple-500 rounded-xl px-3.5 py-2.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none shadow-sm"
             />
           </div>
         </div>
@@ -462,7 +462,7 @@ const BFormView = () => {
                       placeholder="Your answer..."
                       value={answers[q.id] || ''}
                       onChange={(e) => handleAnswerChange(q.id, e.target.value)}
-                      className="w-full bg-[#141224] border border-purple-500/30 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-500 focus:outline-none transition-all"
+                      className="w-full bg-white dark:bg-[#141224] border border-purple-500/30 focus:border-purple-600 focus:ring-2 focus:ring-purple-500/20 rounded-xl px-4 py-3 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none transition-all shadow-sm"
                     />
                   )}
 
@@ -473,7 +473,7 @@ const BFormView = () => {
                       placeholder="Type your detailed thoughts here..."
                       value={answers[q.id] || ''}
                       onChange={(e) => handleAnswerChange(q.id, e.target.value)}
-                      className="w-full bg-[#141224] border border-purple-500/30 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-500 focus:outline-none transition-all resize-y"
+                      className="w-full bg-white dark:bg-[#141224] border border-purple-500/30 focus:border-purple-600 focus:ring-2 focus:ring-purple-500/20 rounded-xl px-4 py-3 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none transition-all resize-y shadow-sm"
                     />
                   )}
 
@@ -488,8 +488,8 @@ const BFormView = () => {
                             onClick={() => handleAnswerChange(q.id, opt)}
                             className={`flex items-center gap-3 p-3.5 rounded-xl border cursor-pointer transition-all ${
                               isSelected
-                                ? 'bg-purple-600/20 border-purple-500 text-white shadow-sm'
-                                : 'bg-[#141224]/50 border-white/10 hover:bg-[#141224] text-zinc-300'
+                                ? 'bg-purple-50 border-purple-500 text-purple-900 dark:bg-purple-600/20 dark:border-purple-500 dark:text-white shadow-sm'
+                                : 'bg-white border-zinc-200 hover:bg-zinc-50 text-zinc-800 dark:bg-[#141224]/50 dark:border-white/10 dark:hover:bg-[#141224] dark:text-zinc-300'
                             }`}
                           >
                             <div className={`w-5 h-5 rounded-full border flex items-center justify-center shrink-0 transition-colors ${
@@ -517,8 +517,8 @@ const BFormView = () => {
                             onClick={() => handleCheckboxToggle(q.id, opt)}
                             className={`flex items-center gap-3 p-3.5 rounded-xl border cursor-pointer transition-all ${
                               isChecked
-                                ? 'bg-purple-600/20 border-purple-500 text-white shadow-sm'
-                                : 'bg-[#141224]/50 border-white/10 hover:bg-[#141224] text-zinc-300'
+                                ? 'bg-purple-50 border-purple-500 text-purple-900 dark:bg-purple-600/20 dark:border-purple-500 dark:text-white shadow-sm'
+                                : 'bg-white border-zinc-200 hover:bg-zinc-50 text-zinc-800 dark:bg-[#141224]/50 dark:border-white/10 dark:hover:bg-[#141224] dark:text-zinc-300'
                             }`}
                           >
                             <div className={`w-5 h-5 rounded-md border flex items-center justify-center shrink-0 transition-colors ${

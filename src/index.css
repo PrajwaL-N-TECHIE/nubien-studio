@@ -171,17 +171,38 @@
   .light .bg-\[radial-gradient\(circle_at_50%_50\%2Ctransparent_0\%2C%23050507_100\%\)\] {
     background: radial-gradient(circle at 50% 50%, transparent 0%, var(--bg-primary) 100%) !important;
   }
-  .light [class*="bg-[#141224]"] { background-color: var(--surface-bg) !important; }
+  .light [class*="bg-[#161424]"] { background-color: #ffffff !important; border-color: #cbd5e1 !important; color: #0f172a !important; }
+  .light [class*="bg-[#141224]"] { background-color: #f8fafc !important; border-color: #e2e8f0 !important; }
+  .light [class*="bg-[#1A1A28]"] { background-color: #ffffff !important; border-color: #cbd5e1 !important; color: #0f172a !important; }
   .light [class*="bg-[#0e0c1a]"] { background-color: var(--card-bg) !important; }
   .light [class*="bg-[#18152c]"] { background-color: var(--surface-2-bg) !important; }
-  .light input,
+  .light [class*="bg-purple-950"] { background-color: #f3e8ff !important; color: #7e22ce !important; border-color: #d8b4fe !important; }
+  .light [class*="bg-purple-900"] { background-color: #ede9fe !important; color: #6b21a8 !important; border-color: #c4b5fd !important; }
+
+  /* Universal inputs, textareas, selects in Light Mode */
+  .light input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
   .light textarea,
   .light select {
-    color: var(--text-inverse) !important;
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    border-color: #cbd5e1 !important;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+  }
+  .light input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus,
+  .light textarea:focus,
+  .light select:focus {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    border-color: #9333ea !important;
+    box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.15) !important;
   }
   .light input::placeholder,
   .light textarea::placeholder {
     color: #94a3b8 !important;
+  }
+  .light select option {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
   }
 }
 

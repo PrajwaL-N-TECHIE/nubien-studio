@@ -917,26 +917,26 @@ const BForms = () => {
 
           <form onSubmit={handleLogin} className="space-y-4 text-left">
             <div>
-              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider block mb-1.5">Admin Email</label>
+              <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider block mb-1.5">Admin Email</label>
               <input
                 type="email"
                 required
                 placeholder="admin@buildicy.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-[#161424] border border-purple-500/30 rounded-xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500 text-sm"
+                className="w-full bg-white dark:bg-[#161424] border border-purple-500/40 rounded-xl px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:border-purple-600 text-sm shadow-sm"
               />
             </div>
 
             <div className="relative">
-              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider block mb-1.5">Password</label>
+              <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider block mb-1.5">Password</label>
               <input
                 type={showPassword ? 'text' : 'password'}
                 required
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-[#161424] border border-purple-500/30 rounded-xl px-4 py-3 pr-11 text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500 text-sm"
+                className="w-full bg-white dark:bg-[#161424] border border-purple-500/40 rounded-xl px-4 py-3 pr-11 text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:border-purple-600 text-sm shadow-sm"
               />
               <button
                 type="button"
@@ -1375,7 +1375,7 @@ VITE_SUPABASE_ANON_KEY=your-anon-key
                 setEditingFormId(null);
                 setView('dashboard');
               }}
-              className="px-3.5 py-2 bg-purple-950/40 hover:bg-purple-900/60 text-purple-300 hover:text-white rounded-xl border border-purple-500/30 text-xs font-bold transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
+              className="px-3.5 py-2 bg-purple-500/10 hover:bg-purple-500/20 text-purple-700 dark:text-purple-300 rounded-xl border border-purple-500/30 text-xs font-bold transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
             >
               <ArrowLeft size={16} /> Back to Dashboard
             </button>
@@ -1426,11 +1426,11 @@ VITE_SUPABASE_ANON_KEY=your-anon-key
 
               {/* Dynamic banner preview frame that resizes dynamically to any uploaded image */}
               <div className="space-y-3">
-                <div className="relative w-full rounded-2xl overflow-hidden border border-purple-500/30 group bg-[#161424] flex items-center justify-center transition-all duration-300 shadow-lg">
+                <div className="relative w-full h-56 sm:h-72 rounded-2xl overflow-hidden border-2 border-purple-500/30 group bg-purple-500/10 flex items-center justify-center transition-all duration-300 shadow-md">
                   <img
                     src={coverImage || DEFAULT_BANNER_IMAGE}
                     alt="Cover Preview"
-                    className="w-full h-auto max-h-[420px] object-contain rounded-2xl block transition-all"
+                    className="w-full h-full object-cover rounded-2xl block transition-all group-hover:scale-105 duration-500"
                   />
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
                     <label className="cursor-pointer px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-bold border border-white/20 transition-all flex items-center gap-1.5 shadow-lg">
@@ -1455,7 +1455,7 @@ VITE_SUPABASE_ANON_KEY=your-anon-key
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
-                  <label className="cursor-pointer px-3.5 py-2 bg-purple-900/40 hover:bg-purple-800/60 text-purple-200 hover:text-white rounded-xl text-xs font-bold border border-purple-500/40 transition-all flex items-center gap-1.5 cursor-pointer">
+                  <label className="cursor-pointer px-3.5 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm">
                     <Upload size={14} /> Upload Any Image File
                     <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
                   </label>
@@ -1464,13 +1464,13 @@ VITE_SUPABASE_ANON_KEY=your-anon-key
                     placeholder="Or paste custom image URL (https://...)..."
                     value={coverImage.startsWith('data:') ? '' : coverImage}
                     onChange={(e) => setCoverImage(e.target.value)}
-                    className="flex-1 min-w-[220px] bg-[#161424] border border-purple-500/30 focus:border-purple-500 rounded-xl px-3.5 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none"
+                    className="flex-1 min-w-[220px] bg-white dark:bg-[#161424] border border-purple-500/30 focus:border-purple-500 rounded-xl px-3.5 py-2 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none shadow-sm"
                   />
                   {coverImage && (
                     <button
                       type="button"
                       onClick={() => setCoverImage('')}
-                      className="px-3.5 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 rounded-xl text-xs font-bold border border-red-500/20 transition-all flex items-center gap-1.5 cursor-pointer"
+                      className="px-3.5 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 hover:text-red-400 rounded-xl text-xs font-bold border border-red-500/20 transition-all flex items-center gap-1.5 cursor-pointer"
                     >
                       <Trash2 size={13} /> Reset Default
                     </button>
@@ -1481,7 +1481,7 @@ VITE_SUPABASE_ANON_KEY=your-anon-key
 
             {/* Form Title & Description */}
             <div>
-              <label className="text-xs font-black uppercase tracking-wider text-purple-300 block mb-1.5">
+              <label className="text-xs font-black uppercase tracking-wider text-purple-700 dark:text-purple-300 block mb-1.5">
                 Form Title <span className="text-red-400">*</span>
               </label>
               <input
@@ -1489,12 +1489,12 @@ VITE_SUPABASE_ANON_KEY=your-anon-key
                 value={formTitle}
                 onChange={(e) => setFormTitle(e.target.value)}
                 placeholder="e.g. Buildicy Workshop Feedback Survey..."
-                className="w-full bg-[#161424] border-2 border-purple-500/40 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 rounded-xl px-4 py-3 text-lg font-black text-white placeholder-zinc-500 focus:outline-none transition-all"
+                className="w-full bg-white dark:bg-[#161424] border-2 border-purple-500/30 dark:border-purple-500/40 focus:border-purple-600 focus:ring-2 focus:ring-purple-500/20 rounded-xl px-4 py-3 text-lg font-black text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none transition-all shadow-sm"
               />
             </div>
 
             <div>
-              <label className="text-xs font-bold uppercase tracking-wider text-zinc-400 block mb-1.5">
+              <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 block mb-1.5">
                 Description & Instructions
               </label>
               <textarea
@@ -1502,7 +1502,7 @@ VITE_SUPABASE_ANON_KEY=your-anon-key
                 value={formDescription}
                 onChange={(e) => setFormDescription(e.target.value)}
                 placeholder="Describe the purpose of this form and guidelines for respondents..."
-                className="w-full bg-[#161424] border border-white/10 focus:border-purple-500/50 rounded-xl px-4 py-2.5 text-sm text-zinc-300 placeholder-zinc-500 focus:outline-none transition-all"
+                className="w-full bg-white dark:bg-[#161424] border border-zinc-200 dark:border-white/10 focus:border-purple-500/50 rounded-xl px-4 py-2.5 text-sm text-zinc-800 dark:text-zinc-300 placeholder-zinc-400 focus:outline-none transition-all shadow-sm"
               />
             </div>
           </div>
@@ -1536,13 +1536,13 @@ VITE_SUPABASE_ANON_KEY=your-anon-key
                       value={q.title}
                       onChange={(e) => updateQuestion(q.id, { title: e.target.value })}
                       placeholder="Type your question prompt here..."
-                      className="w-full bg-[#161424] border border-purple-500/30 focus:border-purple-500 rounded-xl px-3.5 py-2 text-sm md:text-base font-bold text-white placeholder-zinc-500 focus:outline-none"
+                      className="w-full bg-white dark:bg-[#161424] border border-purple-500/30 focus:border-purple-600 rounded-xl px-3.5 py-2 text-sm md:text-base font-bold text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none shadow-sm"
                     />
                   </div>
 
                   {/* Type Selector Dropdown */}
                   <div className="sm:w-48 shrink-0">
-                    <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider block mb-1.5">Question Type</label>
+                    <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider block mb-1.5">Question Type</label>
                     <select
                       value={q.type}
                       onChange={(e) => {
@@ -1562,7 +1562,7 @@ VITE_SUPABASE_ANON_KEY=your-anon-key
                           return nextQ;
                         }));
                       }}
-                      className="w-full bg-[#161424] border border-purple-500/40 rounded-xl px-3 py-2 text-xs font-bold text-purple-200 focus:outline-none focus:border-purple-500 cursor-pointer"
+                      className="w-full bg-white dark:bg-[#161424] border border-purple-500/40 rounded-xl px-3 py-2 text-xs font-bold text-purple-700 dark:text-purple-200 focus:outline-none focus:border-purple-600 cursor-pointer shadow-sm"
                     >
                       <option value="short_text">Short Answer</option>
                       <option value="paragraph">Paragraph (Long Text)</option>
@@ -1575,21 +1575,21 @@ VITE_SUPABASE_ANON_KEY=your-anon-key
 
                 {/* Specific Options Builder based on type */}
                 {(q.type === 'radio' || q.type === 'checkbox') && (
-                  <div className="bg-[#141224]/70 p-4 rounded-xl border border-purple-500/20 space-y-2.5">
-                    <p className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">Options List:</p>
+                  <div className="bg-purple-50/60 dark:bg-[#141224]/70 p-4 rounded-xl border border-purple-500/20 space-y-2.5">
+                    <p className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2">Options List:</p>
                     {q.options?.map((opt, optIdx) => (
                       <div key={optIdx} className="flex items-center gap-2.5">
                         {q.type === 'radio' ? (
-                          <CircleDot size={16} className="text-purple-400 shrink-0" />
+                          <CircleDot size={16} className="text-purple-500 shrink-0" />
                         ) : (
-                          <CheckSquare size={16} className="text-purple-400 shrink-0" />
+                          <CheckSquare size={16} className="text-purple-500 shrink-0" />
                         )}
                         <input
                           type="text"
                           value={opt}
                           onChange={(e) => updateOption(q.id, optIdx, e.target.value)}
                           placeholder={`Option ${optIdx + 1}`}
-                          className="flex-1 bg-[#1A1A28] border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500"
+                          className="flex-1 bg-white dark:bg-[#1A1A28] border border-zinc-200 dark:border-white/10 rounded-lg px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:border-purple-500 shadow-sm"
                         />
                         <button
                           type="button"
