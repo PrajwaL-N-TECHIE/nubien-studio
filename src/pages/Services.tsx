@@ -4,6 +4,7 @@ import ServicesSection from "@/components/ServicesSection";
 import ProductsDeepDive from "@/components/ProductsDeepDive";
 import VentureCollaborationSection from "@/components/VentureCollaborationSection";
 import EdutechDeepDive from "@/components/EdutechDeepDive";
+import TestimonialsSection from "@/components/TestimonialsSection";
 import TechStackSection from "@/components/TechStackSection";
 import PricingSection from "@/components/PricingSection";
 import FooterCTA from "@/components/FooterCTA";
@@ -68,6 +69,7 @@ const Services = () => {
         <ProductsDeepDive />
         <VentureCollaborationSection />
         <EdutechDeepDive />
+        <TestimonialsSection />
         <PricingSection />
         <TechStackSection />
         <FooterCTA />
