@@ -229,14 +229,37 @@ const BForms = () => {
   const [showSupabaseModal, setShowSupabaseModal] = useState<boolean>(false);
   const [copiedSql, setCopiedSql] = useState<boolean>(false);
 
-  // Check existing auth on mount
+  // Check existing auth on mount (Supabase Auth first, then Firebase fallback)
   useEffect(() => {
+    let mounted = true;
+    if (isSupabaseConfigured) {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (mounted && session?.user) {
+          setIsAuthenticated(true);
+        }
+      }).catch(() => {});
+
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        if (mounted && session?.user) {
+          setIsAuthenticated(true);
+        }
+      });
+
+      return () => {
+        mounted = false;
+        subscription.unsubscribe();
+      };
+    }
+
     const unsub = auth.onAuthStateChanged((user) => {
-      if (user) {
+      if (mounted && user) {
         setIsAuthenticated(true);
       }
     });
-    return () => unsub();
+    return () => {
+      mounted = false;
+      unsub();
+    };
   }, []);
 
   // Fetch all forms from Supabase (or Firestore fallback)
@@ -434,7 +457,7 @@ const BForms = () => {
     }
   }, [view, activeForm, forms]);
 
-  // Handle Login
+  // Handle Login (Admin bypass + Supabase Auth + Firebase fallback)
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError('');
@@ -444,19 +467,40 @@ const BForms = () => {
     const validEmails = ['admin@buildicy.com', 'buildicy@gmail.com', 'admin@buiz.com', 'host@buiz.com', 'admin@buildicy.in'];
     const validPasswords = ['PrAjWaL@123MaYuR@123', 'admin123', 'buildicy@123', 'admin'];
 
+    // 1. Host Admin credentials bypass (Always works instantly)
     if (validEmails.includes(cleanEmail) && validPasswords.includes(cleanPass)) {
       setIsAuthenticated(true);
       toast.success('Authenticated as Host Admin!');
-      signInWithEmailAndPassword(auth, 'buildicy@gmail.com', 'PrAjWaL@123MaYuR@123').catch(() => {});
       return;
     }
 
+    // 2. Supabase Auth (if configured)
+    if (isSupabaseConfigured) {
+      try {
+        const { data, error: sbAuthErr } = await supabase.auth.signInWithPassword({
+          email: cleanEmail,
+          password: cleanPass
+        });
+        if (data?.user && !sbAuthErr) {
+          setIsAuthenticated(true);
+          toast.success('Authenticated via Supabase!');
+          return;
+        }
+        if (sbAuthErr) {
+          console.warn('Supabase auth note:', sbAuthErr.message);
+        }
+      } catch (err) {
+        console.warn('Supabase sign-in caught error:', err);
+      }
+    }
+
+    // 3. Fallback: Firebase Auth
     try {
       await signInWithEmailAndPassword(auth, cleanEmail, cleanPass);
       setIsAuthenticated(true);
       toast.success('Authenticated as Host Admin!');
     } catch (err: any) {
-      console.error(err);
+      console.error('Login error:', err);
       setLoginError('Invalid credentials. Please verify your host email and password.');
     }
   };
@@ -958,7 +1002,10 @@ const BForms = () => {
 
           <button
             onClick={() => {
-              auth.signOut();
+              if (isSupabaseConfigured) {
+                supabase.auth.signOut().catch(() => {});
+              }
+              auth.signOut().catch(() => {});
               setIsAuthenticated(false);
               toast.info('Signed out from Host Studio');
             }}
