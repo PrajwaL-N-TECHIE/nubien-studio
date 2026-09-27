@@ -2,10 +2,10 @@ import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
 
 const stats = [
-  { value: "500+", label: "Global Projects" },
-  { value: "99.9%", label: "Uptime" },
-  { value: "250+", label: "Happy Partners" },
-  { value: "Zero", label: "Speed Bottlenecks" },
+  { value: "4", label: "Core Domains" },
+  { value: "2,500+", label: "Students Trained" },
+  { value: "50+", label: "Apps Shipped" },
+  { value: "Profit-Sharing", label: "Aligned Venture Model" },
 ];
 
 const AboutSection = () => {
@@ -52,8 +52,8 @@ const AboutSection = () => {
     }),
   } as any;
 
-  const words = "Built on trust, simple logic, and dedicated teamwork, Buildicy is a passionate team".split(" ");
-  const fadedWords = "of engineering experts here to help you make a real impact in the world...".split(" ");
+  const words = "Pioneering Edutech, enterprise IT consulting, proprietary products like Markeee and BizBrain,".split(" ");
+  const fadedWords = "and partnering with organizations as their dedicated profit-sharing dev team...".split(" ");
 
   // Split words into characters for advanced reveal
   const allWords = [...words, ...fadedWords];

@@ -155,23 +155,23 @@ const LiquidMetalLab = () => {
 
 const milestones = [
     {
-        year: "The Beginning",
-        title: "A Vision",
-        description: "Our team, driven by a passion for technology and design, decided to build something that truly helps people.",
+        year: "Domain 1 & 2",
+        title: "Edutech & IT Consulting",
+        description: "Training 2,500+ students through paid internships and seminars, while engineering high-performance custom web systems, AI funnels, and enterprise automation.",
         icon: Heart,
         color: "#A855F7"
     },
     {
-        year: "2026",
-        title: "Buildicy is Born",
-        description: "Founded in 2026, the studio was established to combine engineering precision with human-centered design.",
+        year: "Domain 3",
+        title: "Markeee & BizBrain",
+        description: "Launching proprietary SaaS products — Markeee (the autonomous AI marketing platform) and BizBrain (WhatsApp-native SME finance in 12+ languages).",
         icon: Rocket,
         color: "#7C3AED"
     },
     {
-        year: "Forward",
-        title: "The Next Chapter",
-        description: "Today, we continue to grow, building simple yet powerful systems for people around the world.",
+        year: "Domain 4",
+        title: "Profit-Sharing Venture Dev",
+        description: "Partnering with ambitious founders and organizations as their dedicated fractional engineering team, turning ideas into scalable products on a profit-sharing model.",
         icon: Star,
         color: "#6D28D9"
     }

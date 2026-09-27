@@ -12,6 +12,26 @@ const customEase = [0.22, 1, 0.36, 1];
 // High-end abstract/architectural placeholders for projects
 const projects = [
   {
+    id: 101,
+    title: "Markeee",
+    client: "Buildicy Proprietary Product",
+    description: "Autonomous AI marketing platform engineered to replace traditional marketing teams with end-to-end creative generation, distribution, and real-time ROI tracking.",
+    image: "https://image.thum.io/get/width/1200/crop/800/https://markeee.buildicy.com",
+    tags: ["Autonomous AI", "Marketing Platform", "SaaS"],
+    span: "col-span-1 lg:col-span-2",
+    link: "https://markeee.buildicy.com/"
+  },
+  {
+    id: 102,
+    title: "BizBrain",
+    client: "Buildicy Proprietary Product",
+    description: "WhatsApp-native finance and billing management system for retail shops and SMEs. Zero app download, operating inside WhatsApp with 12+ language support.",
+    image: "https://image.thum.io/get/width/1200/crop/800/https://bizzbrainn.vercel.app",
+    tags: ["WhatsApp Native", "SME Finance", "12+ Languages"],
+    span: "col-span-1",
+    link: "https://bizzbrainn.vercel.app"
+  },
+  {
     id: 1,
     title: "Kindred Drop Site",
     client: "E-Commerce",
@@ -50,16 +70,6 @@ const projects = [
     tags: ["CRM", "Enterprise", "React"],
     span: "col-span-1 lg:col-span-2",
     link: "https://clientsyncos.vercel.app"
-  },
-  {
-    id: 6,
-    title: "BizzBrain",
-    client: "AI Platform",
-    description: "AI-powered business intelligence and analytics.",
-    image: "https://image.thum.io/get/width/1200/crop/800/https://bizzbrainn.vercel.app",
-    tags: ["AI", "Analytics", "SaaS"],
-    span: "col-span-1 lg:col-span-2",
-    link: "https://bizzbrainn.vercel.app"
   },
   {
     id: 7,

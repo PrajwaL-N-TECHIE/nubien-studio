@@ -3,7 +3,8 @@ import { motion, AnimatePresence, useScroll, useTransform, useMotionValue, useSp
 import {
     ChevronRight, ArrowLeft, Send, Sparkles,
     Rocket, Lightbulb, Zap, CheckCircle2,
-    Users, Globe, Layout, Code2, Cpu, Scan, Activity
+    Users, Globe, Layout, Code2, Cpu, Scan, Activity,
+    GraduationCap, Handshake
 } from "lucide-react";
 import Magnetic from "./Magnetic";
 import { usePerformance } from "@/context/PerformanceContext";
@@ -613,10 +614,10 @@ const ContactScouter = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => v
                                     {currentStep === 1 && (
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-2">
                                             {[
-                                                { id: 'web', label: 'Web Development', icon: Layout, desc: 'High-performance platforms.' },
-                                                { id: 'app', label: 'Mobile Apps', icon: Rocket, desc: 'Next-gen mobile solutions.' },
-                                                { id: 'branding', label: 'Design & Branding', icon: Sparkles, desc: 'Elite visual identities.' },
-                                                { id: 'custom', label: 'Custom Labs', icon: Code2, desc: 'Complex logic & AI.' }
+                                                { id: 'it-consulting', label: 'IT & Consulting', icon: Globe, desc: 'Websites, AI Funnels & Automation' },
+                                                { id: 'collaborations', label: 'Venture Dev Partner', icon: Handshake, desc: 'Dev Team on Profit-Sharing' },
+                                                { id: 'products', label: 'Markeee & BizBrain', icon: Rocket, desc: 'AI Marketing & WhatsApp Finance' },
+                                                { id: 'edutech', label: 'Edutech & Training', icon: GraduationCap, desc: 'Internships, School Coding & Seminars' }
                                             ].map((item) => (
                                                 <button
                                                     key={item.id}

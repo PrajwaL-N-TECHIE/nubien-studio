@@ -31,7 +31,8 @@ import Magnetic from "./Magnetic";
 // --------------------------------------------------------------------------
 const navLinks = [
   { name: "Home", path: "/", icon: Sparkles },
-  { name: "Services", path: "/services", icon: Zap },
+  { name: "Domains", path: "/#domains", icon: Zap },
+  { name: "Services", path: "/services", icon: Layers },
   { name: "Internships", path: "/internship-registration", icon: Briefcase },
   { name: "Verify", path: "/verify", icon: ShieldCheck },
   { name: "Portfolio", path: "/portfolio", icon: Globe },

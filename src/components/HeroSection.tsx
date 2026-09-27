@@ -82,7 +82,7 @@ const HeroSection = () => {
   const [isConnecting, setIsConnecting] = useState(false);
   const containerRef = useRef<HTMLElement>(null);
 
-  const swapWords = ["SaaS Products", "B2B Platforms", "Software Systems", "Enterprise Apps"];
+  const swapWords = ["Edutech & Training", "IT & AI Consulting", "Proprietary Products", "Venture Dev Partners"];
 
   useEffect(() => {
     setIsMounted(true);
@@ -288,12 +288,38 @@ const HeroSection = () => {
             className="text-base sm:text-lg md:text-xl leading-relaxed text-zinc-300 font-medium relative z-10 drop-shadow-md"
           >
             <motion.span variants={lineVariants} className="block">
-              Architecting high-performance <span className="text-white font-bold">custom software and SaaS platforms</span>.
+              Pioneering four targeted domains: <span className="text-white font-bold">Edutech, IT & AI Consulting, Proprietary Products (Markeee & BizBrain)</span>,
             </motion.span>
             <motion.span variants={lineVariants} className="block mt-2 md:mt-0">
-              We build scalable enterprise systems that dominate industries.
+              and <span className="text-purple-400 font-bold">Venture Engineering Collaborations</span> on a profit-sharing basis.
             </motion.span>
           </motion.p>
+        </motion.div>
+
+        {/* 4 Interactive Domain Quick Pills */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.85 }}
+          className="flex flex-wrap justify-center gap-2 sm:gap-3 max-w-3xl z-20"
+        >
+          {[
+            { label: "🎓 Edutech & Internships", target: "domains" },
+            { label: "⚡ IT & AI Funnels", target: "domains" },
+            { label: "🚀 Markeee & BizBrain", target: "domains" },
+            { label: "🤝 Profit-Sharing Dev", target: "domains" }
+          ].map((item, idx) => (
+            <button
+              key={idx}
+              onClick={() => {
+                const el = document.getElementById(item.target);
+                if (el) el.scrollIntoView({ behavior: "smooth" });
+              }}
+              className="px-3.5 py-1.5 rounded-full bg-white/5 hover:bg-purple-600/20 border border-white/10 hover:border-purple-500/40 text-xs font-semibold text-zinc-300 hover:text-white transition-all shadow-md cursor-pointer backdrop-blur-md"
+            >
+              {item.label}
+            </button>
+          ))}
         </motion.div>
 
         {/* -------------------------------------------------------------------------- */}

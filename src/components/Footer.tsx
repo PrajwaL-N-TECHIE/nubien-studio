@@ -292,43 +292,50 @@ const Footer = () => {
 
   const linkSections = [
     {
-      title: "Buildicy Ecosystem",
+      title: "Edutech Hub",
       links: [
-        { name: "Buiz Arena", path: "/buiz", isExternal: false, badge: "Live" },
-        { name: "Host Buiz Studio", path: "/buiz/host", isExternal: false },
-        { name: "B-Forms Engine", path: "https://bforms.buildicy.com", isExternal: true },
-        { name: "AI SDR Dashboard", path: "/ai-sdr", isExternal: false }
-      ]
-    },
-    {
-      title: "Products",
-      links: [
-        { name: "Bizzbrain", path: "https://bizzbrain.buildicy.com/", isExternal: true },
-        { name: "Markeee", path: "https://markeee.buildicy.com/", isExternal: true }
-      ]
-    },
-    {
-      title: "Academic Hub",
-      links: [
-        { name: "Apply for Internship", path: "/internship-registration", isExternal: false },
+        { name: "Paid Internships", path: "/internship-registration", isExternal: false, badge: "Stipend" },
+        { name: "School Coding Classes", path: "/#domains", isExternal: false },
+        { name: "Webinars & Seminars", path: "/#domains", isExternal: false },
         { name: "Verify Certificate", path: "/verify", isExternal: false },
         { name: "Student Dashboard", path: "/student-login", isExternal: false }
       ]
     },
     {
-      title: "Portals & Tools",
+      title: "IT & Consulting",
       links: [
-        { name: "Admin Portal", path: "/admin", isExternal: false },
-        { name: "Internal Portal", path: "/finance", isExternal: false, badge: "Host" },
+        { name: "Custom Websites", path: "/services", isExternal: false },
+        { name: "AI Funnel Systems", path: "/services", isExternal: false },
+        { name: "AI Automation", path: "/services", isExternal: false },
+        { name: "Technical SEO", path: "/services", isExternal: false },
         { name: "SaaS ROI Calculator", path: "/roi-calculator", isExternal: false }
+      ]
+    },
+    {
+      title: "Our Products",
+      links: [
+        { name: "Markeee (AI Marketing)", path: "https://markeee.buildicy.com/", isExternal: true, badge: "Auto" },
+        { name: "BizBrain (WhatsApp)", path: "https://bizzbrainn.vercel.app", isExternal: true, badge: "12+ Lang" },
+        { name: "B-Forms Engine", path: "https://bforms.buildicy.com", isExternal: true },
+        { name: "Buiz Arena", path: "/buiz", isExternal: false, badge: "500+ Live" }
+      ]
+    },
+    {
+      title: "Collaborations",
+      links: [
+        { name: "Fractional Dev Team", path: "/#domains", isExternal: false },
+        { name: "Idea to Product", path: "/#domains", isExternal: false },
+        { name: "Profit-Sharing Model", path: "/#domains", isExternal: false, badge: "Partner" },
+        { name: "Host Buiz Studio", path: "/buiz/host", isExternal: false }
       ]
     },
     {
       title: "Company",
       links: [
-        { name: "About Us", path: "/company", isExternal: false },
-        { name: "Portfolio", path: "/portfolio", isExternal: false },
-        { name: "Services", path: "/services", isExternal: false }
+        { name: "About Buildicy", path: "/company", isExternal: false },
+        { name: "Selected Works", path: "/portfolio", isExternal: false },
+        { name: "Internal Finance", path: "/finance", isExternal: false, badge: "Host" },
+        { name: "Admin Portal", path: "/admin", isExternal: false }
       ]
     }
   ];

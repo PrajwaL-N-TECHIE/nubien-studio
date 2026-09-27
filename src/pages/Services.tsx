@@ -10,13 +10,13 @@ const Services = () => {
   return (
     <PageTransition>
       <SEO 
-        title="SaaS & Custom Software Engineering Services in Coimbatore | Buildicy"
-        description="Explore our elite software development services in Coimbatore. We specialize in building scalable SaaS applications, Web3 smart contracts, AI Chatbots, Predictive Analytics, and Computer Vision."
+        title="Domains & Services | Edutech, IT Consulting, Products & Venture Dev | Buildicy"
+        description="Explore Buildicy's 4 core domains: Edutech & Paid Internships, IT Consulting & AI Funnel Systems, Proprietary SaaS Products (Markeee & BizBrain), and Venture Engineering on a Profit-Sharing basis."
         canonicalUrl="/services"
         schema={JSON.stringify({
           "@context": "https://schema.org",
           "@type": "Service",
-          "serviceType": "Software Development & Design",
+          "serviceType": "Technology & Education Ecosystem",
           "provider": {
             "@type": "Organization",
             "name": "Buildicy",
@@ -25,27 +25,34 @@ const Services = () => {
           "areaServed": "Worldwide",
           "hasOfferCatalog": {
             "@type": "OfferCatalog",
-            "name": "Buildicy Services",
+            "name": "Buildicy Offerings",
             "itemListElement": [
               {
                 "@type": "Offer",
                 "itemOffered": {
                   "@type": "Service",
-                  "name": "Cinematic UI/UX Design"
+                  "name": "Edutech & Paid Internship Training"
                 }
               },
               {
                 "@type": "Offer",
                 "itemOffered": {
                   "@type": "Service",
-                  "name": "AI Automation & Intelligence"
+                  "name": "IT & AI Funnel Consulting"
                 }
               },
               {
                 "@type": "Offer",
                 "itemOffered": {
                   "@type": "Service",
-                  "name": "Full Stack Engineering"
+                  "name": "Proprietary Products (Markeee & BizBrain)"
+                }
+              },
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": "Venture Dev Team on Profit-Sharing Basis"
                 }
               }
             ]
