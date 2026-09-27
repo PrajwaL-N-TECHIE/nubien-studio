@@ -25,6 +25,13 @@ const PAGES = [
     canonical: 'https://www.buildicy.com/services',
   },
   {
+    path: '/reviews',
+    title: 'Campus Masterclasses & Reviews | Buildicy',
+    description: 'Explore authentic feedback and verified student reviews from universities and MBA cohorts trained in Gen AI by Buildicy leadership.',
+    keywords: 'Gen AI Masterclass, MBA AI Workshop, Monti International, Student Reviews, Buildicy Campus Workshops',
+    canonical: 'https://www.buildicy.com/reviews',
+  },
+  {
     path: '/portfolio',
     title: 'Portfolio | Buildicy - Client Projects & Case Studies',
     description: 'Explore Buildicy\'s portfolio of high-performance custom software, AI, and Web3 projects. See how we engineer digital products for B2B and enterprise clients.',

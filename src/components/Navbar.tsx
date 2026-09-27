@@ -23,6 +23,7 @@ import {
   Briefcase,
   ShieldCheck,
   Layers,
+  GraduationCap,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import Magnetic from "./Magnetic";
@@ -33,6 +34,7 @@ import Magnetic from "./Magnetic";
 const navLinks = [
   { name: "Home", path: "/", icon: Sparkles },
   { name: "Services", path: "/services", icon: Layers },
+  { name: "Reviews", path: "/reviews", icon: GraduationCap },
   { name: "Internships", path: "/internship-registration", icon: Briefcase },
   { name: "Verify", path: "/verify", icon: ShieldCheck },
   { name: "Portfolio", path: "/portfolio", icon: Globe },

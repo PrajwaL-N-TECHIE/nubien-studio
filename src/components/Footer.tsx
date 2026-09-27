@@ -295,6 +295,7 @@ const Footer = () => {
       title: "Edutech Hub",
       links: [
         { name: "Paid Internships", path: "/internship-registration", isExternal: false, badge: "Stipend" },
+        { name: "Campus Reviews", path: "/reviews", isExternal: false, badge: "MBA" },
         { name: "School Coding Classes", path: "/#domains", isExternal: false },
         { name: "Webinars & Seminars", path: "/#domains", isExternal: false },
         { name: "Verify Certificate", path: "/verify", isExternal: false },

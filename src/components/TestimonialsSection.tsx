@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { motion, useInView, useMotionTemplate, useMotionValue } from "framer-motion";
 import {
   Star,
@@ -942,12 +943,21 @@ const TestimonialsSection = () => {
               </p>
             </div>
           </div>
-          <a
-            href="mailto:contact@buildicy.com?subject=Inquiry:%20Gen%20AI%20Campus%20Workshop"
-            className="px-5 py-2.5 rounded-xl bg-white text-black text-xs font-semibold hover:bg-zinc-200 transition-colors flex-shrink-0"
-          >
-            Invite Buildicy as Speaker
-          </a>
+          <div className="flex items-center gap-3">
+            <Link
+              to="/reviews"
+              className="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-lg shadow-purple-600/20"
+            >
+              <span>View Reviews Tab</span>
+              <ArrowRight size={13} />
+            </Link>
+            <a
+              href="mailto:contact@buildicy.com?subject=Inquiry:%20Gen%20AI%20Campus%20Workshop"
+              className="px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-semibold transition-colors border border-white/10 flex-shrink-0"
+            >
+              Invite as Speaker
+            </a>
+          </div>
         </div>
       </div>
     </section>

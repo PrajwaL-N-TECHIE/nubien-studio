@@ -22,6 +22,7 @@ import { PerformanceProvider } from "@/context/PerformanceContext";
 // Pages - Lazy loaded
 const Home = lazy(() => import("./pages/Home"));
 const Services = lazy(() => import("./pages/Services"));
+const Reviews = lazy(() => import("./pages/Reviews"));
 const Portfolio = lazy(() => import("./pages/Portfolio"));
 const Company = lazy(() => import("./pages/Company"));
 const InternshipRegistration = lazy(() => import("./pages/InternshipRegistration"));
@@ -51,6 +52,7 @@ const AnimatedRoutes = () => {
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={<Home />} />
           <Route path="/services" element={<Services />} />
+          <Route path="/reviews" element={<Reviews />} />
           <Route path="/portfolio" element={<Portfolio />} />
           <Route path="/company" element={<Company />} />
           <Route path="/internship-registration" element={<InternshipRegistration />} />
