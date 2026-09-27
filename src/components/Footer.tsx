@@ -296,7 +296,7 @@ const Footer = () => {
       links: [
         { name: "Buiz Arena", path: "/buiz", isExternal: false, badge: "Live" },
         { name: "Host Buiz Studio", path: "/buiz/host", isExternal: false },
-        { name: "B-Forms Engine", path: "/b-forms", isExternal: false },
+        { name: "B-Forms Engine", path: "https://bforms.buildicy.com", isExternal: true },
         { name: "AI SDR Dashboard", path: "/ai-sdr", isExternal: false }
       ]
     },

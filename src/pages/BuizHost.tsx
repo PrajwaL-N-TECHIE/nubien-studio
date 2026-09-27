@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, Play, Trophy, Copy, CheckCircle2, Target, StopCircle, Plus, Lock, Trash2, Save, Eye, EyeOff, Zap, Clock, Grid3X3, ArrowLeft, Download, FileSpreadsheet, FileText, Search, ChevronDown, ChevronUp, Award, RotateCcw, BarChart3, Sliders, Check, ChevronRight, Sparkles, Edit3 } from 'lucide-react';
+import { Users, Play, Trophy, Copy, CheckCircle2, Target, StopCircle, Plus, Lock, Trash2, Save, Eye, EyeOff, Zap, Clock, Grid3X3, ArrowLeft, Download, FileSpreadsheet, FileText, Search, ChevronDown, ChevronUp, Award, RotateCcw, BarChart3, Sliders, Check, ChevronRight, Sparkles, Edit3, LogOut } from 'lucide-react';
 import { db, auth } from '@/lib/firebase';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { doc, setDoc, onSnapshot, collection, updateDoc, getDocs, deleteDoc, addDoc, getDoc } from 'firebase/firestore';
@@ -77,6 +77,22 @@ const BuizHost = () => {
   const [savedQuizzes, setSavedQuizzes] = useState<any[]>([]);
   const [quizHistory, setQuizHistory] = useState<any[]>([]);
   const [setupTab, setSetupTab] = useState<'saved' | 'history'>('saved');
+
+  // Check existing Host authentication on mount (Session storage + Supabase Auth)
+  useEffect(() => {
+    if (sessionStorage.getItem('buiz_host_auth') === 'true') {
+      setStatus('setup');
+      return;
+    }
+    if (isSupabaseConfigured) {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session?.user) {
+          sessionStorage.setItem('buiz_host_auth', 'true');
+          setStatus('setup');
+        }
+      }).catch(() => {});
+    }
+  }, []);
 
   useEffect(() => {
     if (!pin) return;
@@ -681,37 +697,82 @@ const BuizHost = () => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoginError('');
     const cleanEmail = email.trim().toLowerCase();
     const cleanPass = password.trim();
 
     const validEmails = ['admin@buildicy.com', 'buildicy@gmail.com', 'admin@buiz.com', 'host@buiz.com', 'admin@buildicy.in'];
-    const validPasswords = ['PrAjWaL@123MaYuR@123', 'admin123'];
+    const validPasswords = ['PrAjWaL@123MaYuR@123', 'admin123', 'buildicy@123', 'admin'];
 
+    // 1. Host Admin credentials bypass (Always works instantly)
     if (validEmails.includes(cleanEmail) && validPasswords.includes(cleanPass)) {
+      sessionStorage.setItem('buiz_host_auth', 'true');
       setStatus('setup');
       setLoginError('');
+      toast.success('Authenticated as Host Admin!');
       return;
     }
 
+    // 2. Supabase Auth
+    if (isSupabaseConfigured) {
+      try {
+        const { data, error: sbAuthErr } = await supabase.auth.signInWithPassword({
+          email: cleanEmail,
+          password: cleanPass
+        });
+        if (data?.user && !sbAuthErr) {
+          sessionStorage.setItem('buiz_host_auth', 'true');
+          setStatus('setup');
+          setLoginError('');
+          toast.success('Authenticated via Supabase!');
+          return;
+        }
+      } catch (err) {
+        console.warn('Supabase sign-in note:', err);
+      }
+    }
+
+    // 3. Fallback: Firebase Auth
     try {
-      await signInWithEmailAndPassword(auth, cleanEmail, password);
+      await signInWithEmailAndPassword(auth, cleanEmail, cleanPass);
+      sessionStorage.setItem('buiz_host_auth', 'true');
       setStatus('setup');
       setLoginError('');
+      toast.success('Authenticated as Host Admin!');
     } catch (err) {
-      setLoginError('Invalid secure credentials');
+      setLoginError('Invalid secure credentials. Please check your host email and password.');
     }
   };
 
   const handleGoogleLogin = async () => {
     try {
+      if (isSupabaseConfigured) {
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: window.location.origin + '/buiz/host'
+          }
+        });
+        if (!error) return;
+      }
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
+      sessionStorage.setItem('buiz_host_auth', 'true');
       setStatus('setup');
     } catch (err: any) {
       if (err.code !== 'auth/popup-closed-by-user') {
         setLoginError('Google sign-in failed.');
       }
     }
+  };
+
+  const handleLogout = async () => {
+    sessionStorage.removeItem('buiz_host_auth');
+    if (isSupabaseConfigured) {
+      await supabase.auth.signOut().catch(() => {});
+    }
+    setStatus('login');
+    toast.success('Signed out of Host Panel');
   };
 
   const startGame = async () => {
@@ -969,20 +1030,29 @@ const BuizHost = () => {
           animate={{ opacity: 1, y: 0 }}
           className="bg-[#0C0C12]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-8 max-w-2xl w-full relative z-10 shadow-[0_0_50px_rgba(168,85,247,0.1)]"
         >
-          <div className="flex items-center gap-4 mb-8 pb-6 border-b border-white/10">
-            <div className="w-16 h-16 bg-purple-500/20 rounded-2xl flex items-center justify-center border border-purple-500/30 shrink-0">
-              <Target className="text-purple-400" size={32} />
-            </div>
-            <div>
-              <div className="flex items-center gap-2.5">
-                <h1 className="text-3xl font-black text-white tracking-tight">Host Buiz Arena</h1>
-                <span className="px-2.5 py-0.5 text-[11px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-full flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  DB: Supabase (Postgres)
-                </span>
+          <div className="flex items-center justify-between gap-4 mb-8 pb-6 border-b border-white/10">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 bg-purple-500/20 rounded-2xl flex items-center justify-center border border-purple-500/30 shrink-0">
+                <Target className="text-purple-400" size={32} />
               </div>
-              <p className="text-zinc-400 text-sm">Create a live multiplayer session or launch a saved quiz.</p>
+              <div>
+                <div className="flex items-center gap-2.5">
+                  <h1 className="text-3xl font-black text-white tracking-tight">Host Buiz Arena</h1>
+                  <span className="px-2.5 py-0.5 text-[11px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-full flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    DB: Supabase (Postgres)
+                  </span>
+                </div>
+                <p className="text-zinc-400 text-sm">Create a live multiplayer session or launch a saved quiz.</p>
+              </div>
             </div>
+            <button
+              onClick={handleLogout}
+              title="Sign out of Host Panel"
+              className="px-3.5 py-2 bg-white/5 hover:bg-red-500/15 text-zinc-400 hover:text-red-400 border border-white/10 hover:border-red-500/30 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all shrink-0 active:scale-95"
+            >
+              <LogOut size={14} /> Log Out
+            </button>
           </div>
 
           <button
