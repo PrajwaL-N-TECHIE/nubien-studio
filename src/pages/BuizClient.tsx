@@ -378,16 +378,18 @@ const BuizClient = () => {
         });
     }
 
-    // 2. Firestore Mirror
-    try {
-      await updateDoc(doc(db, `buiz_rooms/${pin}/players`, playerId), {
-        score: newScore,
-        streak: newStreak,
-        progress: progress,
-        ...(answersData ? { answers: answersData } : {})
-      });
-    } catch (err) {
-      console.error("Failed to sync score to Firestore", err);
+    // 2. Firestore Mirror (Fallback only when Supabase is not configured)
+    if (!isSupabaseConfigured) {
+      try {
+        await updateDoc(doc(db, `buiz_rooms/${pin}/players`, playerId), {
+          score: newScore,
+          streak: newStreak,
+          progress: progress,
+          ...(answersData ? { answers: answersData } : {})
+        });
+      } catch (err) {
+        console.error("Failed to sync score to Firestore", err);
+      }
     }
   };
 

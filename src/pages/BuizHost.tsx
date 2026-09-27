@@ -122,18 +122,56 @@ const BuizHost = () => {
 
       fetchSupabasePlayers();
 
+      // Debounce timer so 500 simultaneous answers don't fire 500 SELECT queries
+      let debounceTimer: any = null;
+      const scheduleFullSync = () => {
+        if (debounceTimer) clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+          fetchSupabasePlayers();
+        }, 600);
+      };
+
       const channel = supabase
         .channel(`buiz_host_players_${pin}`)
         .on(
           'postgres_changes',
           { event: '*', schema: 'public', table: 'buiz_players', filter: `room_pin=eq.${pin}` },
-          () => {
-            fetchSupabasePlayers();
+          (payload: any) => {
+            // Instant in-memory state update for immediate 60fps UI responsiveness
+            if (payload.new && (payload.eventType === 'UPDATE' || payload.eventType === 'INSERT')) {
+              const updated = payload.new;
+              setPlayers(prev => {
+                const idx = prev.findIndex(p => p.id === updated.id);
+                const mappedPlayer: Player = {
+                  id: updated.id,
+                  name: updated.name,
+                  score: updated.score || 0,
+                  streak: updated.streak || 0,
+                  progress: Number(updated.progress) || 0,
+                  avatar: updated.avatar,
+                  currentQIndex: updated.current_q_index,
+                  answers: updated.answers || {}
+                };
+                let next;
+                if (idx >= 0) {
+                  next = [...prev];
+                  next[idx] = mappedPlayer;
+                } else {
+                  next = [...prev, mappedPlayer];
+                }
+                return next.sort((a, b) => b.score - a.score);
+              });
+            } else if (payload.old && payload.eventType === 'DELETE') {
+              setPlayers(prev => prev.filter(p => p.id !== payload.old.id));
+            }
+            // Schedule debounced full fetch to ensure eventual consistency
+            scheduleFullSync();
           }
         )
         .subscribe();
 
       return () => {
+        if (debounceTimer) clearTimeout(debounceTimer);
         supabase.removeChannel(channel);
       };
     }
