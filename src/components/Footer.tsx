@@ -188,31 +188,25 @@ const LiveStatus = () => {
           localStorage.setItem('bld_real_visited_v2', 'true');
         }
 
-        // Fetch first to see if we need to seed the base numbers
-        let snap = await getDoc(statsRef);
-        if (!snap.exists()) {
-          // Seed the database with realistic baseline numbers to look legitimate
+        // Only increment counter once per browser session to preserve Firestore quota
+        const hasSessionCounted = sessionStorage.getItem('bld_pv_session');
+        if (!hasSessionCounted) {
+          sessionStorage.setItem('bld_pv_session', 'true');
           await setDoc(statsRef, {
-            pageViews: 1243,
-            uniqueVisitors: 784
-          });
+            pageViews: increment(1),
+            uniqueVisitors: increment(isUnique ? 1 : 0)
+          }, { merge: true });
         }
 
-        // Increment in real-time
-        await setDoc(statsRef, {
-          pageViews: increment(1),
-          uniqueVisitors: increment(isUnique ? 1 : 0)
-        }, { merge: true });
-
-        // Get final synced numbers
-        snap = await getDoc(statsRef);
+        // Get synced numbers
+        const snap = await getDoc(statsRef);
         if (snap.exists()) {
           const data = snap.data();
           setPageViews(data.pageViews || 0);
           setVisitorCount(data.uniqueVisitors || 0);
         }
       } catch (err) {
-        // Silent fail on permission error for analytics
+        // Silent fail on quota or permission error
       }
     };
     
