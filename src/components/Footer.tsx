@@ -299,7 +299,7 @@ const Footer = () => {
         { name: "School Coding Classes", path: "/#domains", isExternal: false },
         { name: "Webinars & Seminars", path: "/#domains", isExternal: false },
         { name: "Verify Certificate", path: "/verify", isExternal: false },
-        { name: "Student Dashboard", path: "/student-login", isExternal: false }
+        { name: "Student Dashboard", path: "https://student.buildicy.com/", isExternal: true, badge: "Portal" }
       ]
     },
     {
