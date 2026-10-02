@@ -17,6 +17,168 @@ const PAGES = [
     description: 'Buildicy is Coimbatore\'s premier AI Studio & Custom Software Development Agency. We architect Generative AI automation, B2B SaaS platforms, Web3 solutions, and cinematic digital products.',
     keywords: 'AI Studio Coimbatore, Software Development Company Coimbatore, Custom SaaS Development, AI Automation Agency, Generative AI Solutions India, Web3 Development India, UI UX Design Agency Coimbatore, Startup MVP Development, IT Consulting Coimbatore, Paid AI Internships, Buildicy',
     canonical: 'https://www.buildicy.com',
+    schema: {
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': 'Organization',
+          '@id': 'https://www.buildicy.com/#organization',
+          'name': 'Buildicy',
+          'url': 'https://www.buildicy.com',
+          'logo': 'https://www.buildicy.com/logo.png',
+          'image': 'https://www.buildicy.com/og-image.png',
+          'description': 'Coimbatore\'s premier AI Studio & Custom Software Development Agency specializing in AI Automation, B2B SaaS Platforms, and Edutech Training.',
+          'sameAs': [
+            'https://twitter.com/BuildicyStudio',
+            'https://www.linkedin.com/company/buildicy',
+            'https://www.instagram.com/_buildicy'
+          ],
+          'hasOfferCatalog': {
+            '@type': 'OfferCatalog',
+            'name': 'Buildicy Core Capabilities',
+            'itemListElement': [
+              {
+                '@type': 'Offer',
+                'itemOffered': {
+                  '@type': 'Service',
+                  'name': 'Custom SaaS Development & Web Architecture',
+                  'description': 'High-performance full-stack web platforms and bespoke enterprise SaaS systems designed to replace expensive subscription software.'
+                }
+              },
+              {
+                '@type': 'Offer',
+                'itemOffered': {
+                  '@type': 'Service',
+                  'name': 'AI Automation & Autonomous SDR Funnels',
+                  'description': 'Autonomous lead qualification, AI sales development representatives, and intelligent business process automation.'
+                }
+              },
+              {
+                '@type': 'Offer',
+                'itemOffered': {
+                  '@type': 'Service',
+                  'name': 'Edutech Masterclasses & Paid Internships',
+                  'description': 'Practical Generative AI masterclasses for university MBA cohorts and paid, stipend-backed software development internships in Coimbatore.'
+                }
+              },
+              {
+                '@type': 'Offer',
+                'itemOffered': {
+                  '@type': 'Service',
+                  'name': 'Venture Engineering & Profit-Sharing Co-Development',
+                  'description': 'Technical co-founding and rapid MVP production engineering for ambitious startups on a profit-sharing basis.'
+                }
+              }
+            ]
+          }
+        },
+        {
+          '@type': 'LocalBusiness',
+          '@id': 'https://www.buildicy.com/#localbusiness',
+          'name': 'Buildicy Software & AI Studio',
+          'url': 'https://www.buildicy.com',
+          'telephone': '+91-9843315832',
+          'priceRange': '$$$',
+          'address': {
+            '@type': 'PostalAddress',
+            'addressLocality': 'Coimbatore',
+            'addressRegion': 'Tamil Nadu',
+            'addressCountry': 'IN'
+          },
+          'geo': {
+            '@type': 'GeoCoordinates',
+            'latitude': 11.0168,
+            'longitude': 76.9558
+          },
+          'aggregateRating': {
+            '@type': 'AggregateRating',
+            'ratingValue': '4.98',
+            'reviewCount': '150',
+            'bestRating': '5',
+            'worstRating': '1'
+          },
+          'review': [
+            {
+              '@type': 'Review',
+              'author': { '@type': 'Person', 'name': 'Amaljith P' },
+              'reviewRating': { '@type': 'Rating', 'ratingValue': '5', 'bestRating': '5' },
+              'reviewBody': 'They are young but they know a lot of things. Before this workshop, I thought AI was difficult. Now I think AI is an amazing practical business tool!'
+            },
+            {
+              '@type': 'Review',
+              'author': { '@type': 'Person', 'name': 'Nellamreth Jawahara KK' },
+              'reviewRating': { '@type': 'Rating', 'ratingValue': '5', 'bestRating': '5' },
+              'reviewBody': 'Extremely useful session. The trainers made complex AI architectures feel effortless and practical for modern business.'
+            }
+          ]
+        },
+        {
+          '@type': 'FAQPage',
+          '@id': 'https://www.buildicy.com/#faq',
+          'mainEntity': [
+            {
+              '@type': 'Question',
+              'name': 'What AI and custom software development services does Buildicy offer in Coimbatore?',
+              'acceptedAnswer': {
+                '@type': 'Answer',
+                'text': 'Buildicy is an elite AI Studio and custom software engineering firm based in Coimbatore, Tamil Nadu. We specialize in bespoke Generative AI models, autonomous multi-agent workflows, full-stack B2B SaaS architecture, high-performance web applications, and enterprise automation.'
+              }
+            },
+            {
+              '@type': 'Question',
+              'name': 'How does custom software save businesses money compared to monthly SaaS subscriptions?',
+              'acceptedAnswer': {
+                '@type': 'Answer',
+                'text': 'Commercial SaaS platforms charge steep per-seat monthly subscription fees that escalate exponentially as your team scales. By engineering custom, company-owned software, your organization pays once for development and owns the IP 100%, typically saving $45,000 to $200,000+ over 3-5 years.'
+              }
+            },
+            {
+              '@type': 'Question',
+              'name': 'Can Buildicy engineer autonomous AI SDRs and automated sales funnels?',
+              'acceptedAnswer': {
+                '@type': 'Answer',
+                'text': 'Yes. Our proprietary AI SDR Suite automates B2B lead enrichment, account qualification, prospect intelligence, and hyper-personalized cold outreach sequencing using state-of-the-art LLMs (Groq LLaMA 3.3, OpenAI GPT-4o) and multi-channel messaging APIs.'
+              }
+            },
+            {
+              '@type': 'Question',
+              'name': 'How does the Buildicy venture co-development and profit-sharing model work?',
+              'acceptedAnswer': {
+                '@type': 'Answer',
+                'text': 'For select high-potential startups and visionary founders, Buildicy acts as an aligned fractional technical co-founder. Rather than demanding massive upfront capital, we partner on a hybrid equity or revenue/profit-sharing model, architecting and maintaining the entire tech stack.'
+              }
+            },
+            {
+              '@type': 'Question',
+              'name': 'Where is Buildicy located and do you accept local client consultations in Coimbatore?',
+              'acceptedAnswer': {
+                '@type': 'Answer',
+                'text': 'Our core engineering studio is located in Coimbatore, Tamil Nadu, India. We frequently host in-person strategy sessions and technical architecture reviews with clients across Coimbatore, Tirupur, Erode, Bangalore, and Kerala, while also serving international clients globally.'
+              }
+            },
+            {
+              '@type': 'Question',
+              'name': 'Who owns the intellectual property (IP), source code, and data after deployment?',
+              'acceptedAnswer': {
+                '@type': 'Answer',
+                'text': 'You do—100%. Upon project completion, all Git repositories, infrastructure accounts, API credentials, databases, and intellectual property rights are unconditionally transferred to your organization with zero vendor lock-in.'
+              }
+            }
+          ]
+        },
+        {
+          '@type': 'BreadcrumbList',
+          'itemListElement': [
+            {
+              '@type': 'ListItem',
+              'position': 1,
+              'name': 'Home',
+              'item': 'https://www.buildicy.com'
+            }
+          ]
+        }
+      ]
+    }
   },
   {
     path: '/services',
@@ -24,6 +186,72 @@ const PAGES = [
     description: 'Explore Buildicy\'s 4 core domains: Edutech & Paid Internships, IT Consulting & AI Funnel Systems, Proprietary SaaS Products (Markeee & BizBrain), and Venture Engineering on a Profit-Sharing basis.',
     keywords: 'AI Automation Services, Enterprise IT Consulting, Paid AI Internships Coimbatore, WhatsApp Billing Systems, Venture Engineering Profit Sharing, Full Stack Software Engineering, Custom LLM Development, Web3 Blockchain Services, Buildicy',
     canonical: 'https://www.buildicy.com/services',
+    schema: {
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': 'Service',
+          'serviceType': 'Technology & Education Ecosystem',
+          'provider': {
+            '@type': 'Organization',
+            'name': 'Buildicy',
+            'sameAs': 'https://www.buildicy.com'
+          },
+          'areaServed': 'Worldwide',
+          'hasOfferCatalog': {
+            '@type': 'OfferCatalog',
+            'name': 'Buildicy Offerings',
+            'itemListElement': [
+              {
+                '@type': 'Offer',
+                'itemOffered': {
+                  '@type': 'Service',
+                  'name': 'Edutech & Paid Internship Training'
+                }
+              },
+              {
+                '@type': 'Offer',
+                'itemOffered': {
+                  '@type': 'Service',
+                  'name': 'IT & AI Funnel Consulting'
+                }
+              },
+              {
+                '@type': 'Offer',
+                'itemOffered': {
+                  '@type': 'Service',
+                  'name': 'Proprietary Products (Markeee & BizBrain)'
+                }
+              },
+              {
+                '@type': 'Offer',
+                'itemOffered': {
+                  '@type': 'Service',
+                  'name': 'Venture Dev Team on Profit-Sharing Basis'
+                }
+              }
+            ]
+          }
+        },
+        {
+          '@type': 'BreadcrumbList',
+          'itemListElement': [
+            {
+              '@type': 'ListItem',
+              'position': 1,
+              'name': 'Home',
+              'item': 'https://www.buildicy.com'
+            },
+            {
+              '@type': 'ListItem',
+              'position': 2,
+              'name': 'Domains & Services',
+              'item': 'https://www.buildicy.com/services'
+            }
+          ]
+        }
+      ]
+    }
   },
   {
     path: '/reviews',
@@ -33,21 +261,42 @@ const PAGES = [
     canonical: 'https://www.buildicy.com/reviews',
     schema: {
       '@context': 'https://schema.org',
-      '@type': 'Course',
-      name: 'Generative AI for Enterprise & Management Masterclass',
-      description: 'Comprehensive practical masterclass and workshop training university and MBA cohorts in generative AI, prompt engineering, agentic workflows, and automated product systems.',
-      provider: {
-        '@type': 'Organization',
-        name: 'Buildicy',
-        sameAs: 'https://www.buildicy.com',
-      },
-      aggregateRating: {
-        '@type': 'AggregateRating',
-        ratingValue: '5.0',
-        reviewCount: '150',
-        bestRating: '5',
-        worstRating: '1',
-      },
+      '@graph': [
+        {
+          '@type': 'Course',
+          'name': 'Generative AI for Enterprise & Management Masterclass',
+          'description': 'Comprehensive practical masterclass and workshop training university and MBA cohorts in generative AI, prompt engineering, agentic workflows, and automated product systems.',
+          'provider': {
+            '@type': 'Organization',
+            'name': 'Buildicy',
+            'sameAs': 'https://www.buildicy.com',
+          },
+          'aggregateRating': {
+            '@type': 'AggregateRating',
+            'ratingValue': '5.0',
+            'reviewCount': '150',
+            'bestRating': '5',
+            'worstRating': '1',
+          }
+        },
+        {
+          '@type': 'BreadcrumbList',
+          'itemListElement': [
+            {
+              '@type': 'ListItem',
+              'position': 1,
+              'name': 'Home',
+              'item': 'https://www.buildicy.com'
+            },
+            {
+              '@type': 'ListItem',
+              'position': 2,
+              'name': 'Campus Reviews',
+              'item': 'https://www.buildicy.com/reviews'
+            }
+          ]
+        }
+      ]
     },
   },
   {
@@ -56,6 +305,48 @@ const PAGES = [
     description: 'View our portfolio of custom software applications, B2B SaaS platforms, Web3 dApps, and Computer Vision solutions built by Coimbatore\'s top engineering agency.',
     keywords: 'Markeee Autonomous AI Marketing, BizBrain WhatsApp Billing, Buildicy Portfolio, B2B SaaS Case Studies, AI Products Showcase, Custom Web Applications, Web3 dApps, High Performance Software Projects, Coimbatore Software Agency',
     canonical: 'https://www.buildicy.com/portfolio',
+    schema: {
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': 'CollectionPage',
+          'name': 'Buildicy Product Portfolio & Engineering Case Studies',
+          'description': 'Showcase of custom SaaS applications, AI pipelines, autonomous SDR agents, and Web3 architectures developed by Buildicy.',
+          'url': 'https://www.buildicy.com/portfolio'
+        },
+        {
+          '@type': 'SoftwareApplication',
+          'name': 'Markeee',
+          'applicationCategory': 'BusinessApplication',
+          'operatingSystem': 'Web',
+          'description': 'Autonomous AI marketing engine for high-velocity social content and campaign optimization.'
+        },
+        {
+          '@type': 'SoftwareApplication',
+          'name': 'BizBrain',
+          'applicationCategory': 'BusinessApplication',
+          'operatingSystem': 'Web',
+          'description': 'WhatsApp-native automated billing and customer engagement platform supporting 12+ regional languages.'
+        },
+        {
+          '@type': 'BreadcrumbList',
+          'itemListElement': [
+            {
+              '@type': 'ListItem',
+              'position': 1,
+              'name': 'Home',
+              'item': 'https://www.buildicy.com'
+            },
+            {
+              '@type': 'ListItem',
+              'position': 2,
+              'name': 'Portfolio',
+              'item': 'https://www.buildicy.com/portfolio'
+            }
+          ]
+        }
+      ]
+    }
   },
   {
     path: '/company',
@@ -65,49 +356,40 @@ const PAGES = [
     canonical: 'https://www.buildicy.com/company',
     schema: {
       '@context': 'https://schema.org',
-      '@type': 'FAQPage',
-      mainEntity: [
+      '@graph': [
         {
-          '@type': 'Question',
-          name: 'What AI services does Buildicy offer?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'We offer a comprehensive suite of AI services including custom neural network development, computer vision, advanced NLP, predictive analytics, autonomous agents, and enterprise-grade automation solutions.',
-          },
+          '@type': 'AboutPage',
+          'name': 'About Buildicy AI Studio',
+          'description': 'Meet the engineering leadership behind Buildicy, Coimbatore\'s top AI software agency.'
         },
         {
-          '@type': 'Question',
-          name: 'How long does a typical AI project take?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'Project timelines scale with complexity. A streamlined AI integration or custom agent typically deploys in 2-4 weeks. Enterprise-scale custom model training and infrastructure development ranges from 8-16 weeks. We map exact milestones during discovery.',
-          },
+          '@type': 'Organization',
+          'name': 'Buildicy',
+          'url': 'https://www.buildicy.com',
+          'founder': {
+            '@type': 'Person',
+            'name': 'Prajwal N',
+            'jobTitle': 'Founder & CEO'
+          }
         },
         {
-          '@type': 'Question',
-          name: 'Do you offer ongoing support after deployment?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'Yes. AI requires continuous optimization. All our deployments include dedicated neural monitoring, model drift correction, security patches, and 24/7 technical oversight to ensure peak performance.',
-          },
-        },
-        {
-          '@type': 'Question',
-          name: 'Can Buildicy integrate with our existing systems?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'Absolutely. Our architectures are framework-agnostic. We build secure API layers, GraphQL endpoints, and Webhooks that plug seamlessly into your existing tech stack—whether it is AWS, Azure, Salesforce, or bespoke internal systems.',
-          },
-        },
-        {
-          '@type': 'Question',
-          name: 'What industries do you specialize in?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'Our core expertise spans Fintech, Healthcare tech, Enterprise SaaS, and advanced E-commerce. However, our fundamental AI methodologies are designed to adapt and scale across any data-rich industry.',
-          },
-        },
-      ],
+          '@type': 'BreadcrumbList',
+          'itemListElement': [
+            {
+              '@type': 'ListItem',
+              'position': 1,
+              'name': 'Home',
+              'item': 'https://www.buildicy.com'
+            },
+            {
+              '@type': 'ListItem',
+              'position': 2,
+              'name': 'Company & Leadership',
+              'item': 'https://www.buildicy.com/company'
+            }
+          ]
+        }
+      ]
     },
   },
   {
@@ -132,16 +414,37 @@ const PAGES = [
     canonical: 'https://www.buildicy.com/roi-calculator',
     schema: {
       '@context': 'https://schema.org',
-      '@type': 'WebApplication',
-      name: 'Buildicy SaaS vs Custom Software Cost ROI Calculator',
-      applicationCategory: 'BusinessApplication',
-      operatingSystem: 'All',
-      description: 'Calculate how much your business can save by building custom software instead of paying monthly recurring SaaS subscriptions.',
-      offers: {
-        '@type': 'Offer',
-        price: '0',
-        priceCurrency: 'USD',
-      },
+      '@graph': [
+        {
+          '@type': 'WebApplication',
+          'name': 'Buildicy SaaS vs Custom Software Cost ROI Calculator',
+          'applicationCategory': 'BusinessApplication',
+          'operatingSystem': 'All',
+          'description': 'Calculate how much your business can save by building custom software instead of paying monthly recurring SaaS subscriptions.',
+          'offers': {
+            '@type': 'Offer',
+            'price': '0',
+            'priceCurrency': 'USD',
+          }
+        },
+        {
+          '@type': 'BreadcrumbList',
+          'itemListElement': [
+            {
+              '@type': 'ListItem',
+              'position': 1,
+              'name': 'Home',
+              'item': 'https://www.buildicy.com'
+            },
+            {
+              '@type': 'ListItem',
+              'position': 2,
+              'name': 'SaaS vs Custom Software ROI Calculator',
+              'item': 'https://www.buildicy.com/roi-calculator'
+            }
+          ]
+        }
+      ]
     },
   },
   {

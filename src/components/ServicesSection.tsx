@@ -73,6 +73,20 @@ const allServiceCards = [
     actionLabel: "Book Guest Speaker",
     badge: "Keynote Speaking",
   },
+  {
+    domain: "edutech",
+    domainLabel: "Edutech",
+    icon: Sparkles,
+    title: "Campus AI Reviews & Outcomes",
+    subtitle: "5.0 Rating from 150+ Students",
+    description: "Browse verified student feedback and transformational mindset reviews from our campus Gen AI workshops at Monti International and leading engineering institutions.",
+    stats: ["100% Satisfaction", "Verified Testimonials"],
+    actionType: "link",
+    actionPath: "/reviews",
+    actionLabel: "Read Campus Reviews",
+    isExternal: false,
+    badge: "Verified Outcomes",
+  },
 
   // 2. IT AND CONSULTING
   {
@@ -88,6 +102,20 @@ const allServiceCards = [
     actionLabel: "View Web Portfolio",
     isExternal: false,
     badge: "Custom Web & SaaS",
+  },
+  {
+    domain: "it-consulting",
+    domainLabel: "IT & Consulting",
+    icon: DollarSign,
+    title: "SaaS vs Custom Software Cost Analysis",
+    subtitle: "Build vs Buy Software ROI",
+    description: "Calculate your exact 5-year savings when replacing expensive recurring SaaS subscriptions with custom-built, proprietary software systems.",
+    stats: ["Save up to 80%", "Zero Recurring Fees"],
+    actionType: "link",
+    actionPath: "/roi-calculator",
+    actionLabel: "Calculate Software ROI",
+    isExternal: false,
+    badge: "Cost Analyzer",
   },
   {
     domain: "it-consulting",

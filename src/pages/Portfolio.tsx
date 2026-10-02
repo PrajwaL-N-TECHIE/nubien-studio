@@ -146,15 +146,52 @@ const Portfolio = () => {
         keywords="Markeee Autonomous AI Marketing, BizBrain WhatsApp Billing, Buildicy Portfolio, B2B SaaS Case Studies, AI Products Showcase, Custom Web Applications, Web3 dApps, High Performance Software Projects, Coimbatore Software Agency"
         schema={JSON.stringify({
           "@context": "https://schema.org",
-          "@type": "CollectionPage",
-          "name": "Buildicy Portfolio",
-          "url": "https://www.buildicy.com/portfolio",
-          "description": "A curated selection of our most ambitious projects, featuring AI integrations, Web3 platforms, and high-performance engineering.",
-          "isPartOf": {
-            "@type": "WebSite",
-            "name": "Buildicy",
-            "url": "https://www.buildicy.com"
-          }
+          "@graph": [
+            {
+              "@type": "CollectionPage",
+              "name": "Buildicy Portfolio & Software Case Studies",
+              "url": "https://www.buildicy.com/portfolio",
+              "description": "A curated selection of our most ambitious projects, featuring AI integrations, Web3 platforms, and high-performance engineering.",
+              "isPartOf": {
+                "@type": "WebSite",
+                "name": "Buildicy",
+                "url": "https://www.buildicy.com"
+              }
+            },
+            {
+              "@type": "SoftwareApplication",
+              "name": "Markeee",
+              "applicationCategory": "BusinessApplication",
+              "operatingSystem": "Web",
+              "description": "Autonomous AI marketing platform engineered to replace traditional marketing teams with end-to-end creative generation, distribution, and real-time ROI tracking.",
+              "url": "https://markeee.buildicy.com/"
+            },
+            {
+              "@type": "SoftwareApplication",
+              "name": "BizBrain",
+              "applicationCategory": "BusinessApplication",
+              "operatingSystem": "Web",
+              "description": "WhatsApp-native finance and billing management system for retail shops and SMEs with 12+ language support.",
+              "url": "https://bizzbrainn.vercel.app"
+            },
+            {
+              "@type": "BreadcrumbList",
+              "itemListElement": [
+                {
+                  "@type": "ListItem",
+                  "position": 1,
+                  "name": "Home",
+                  "item": "https://www.buildicy.com"
+                },
+                {
+                  "@type": "ListItem",
+                  "position": 2,
+                  "name": "Portfolio",
+                  "item": "https://www.buildicy.com/portfolio"
+                }
+              ]
+            }
+          ]
         })}
       />
       <div className="pt-32 pb-40 min-h-screen bg-[#050507] text-white overflow-hidden selection:bg-purple-500/30">
@@ -245,7 +282,7 @@ const Portfolio = () => {
                   <div className="relative h-64 md:h-80 w-full rounded-2xl overflow-hidden bg-[#1A1A1E] border border-white/5 shadow-2xl">
                     <LazyImage
                       src={project.image}
-                      alt={project.title}
+                      alt={`${project.title} - Custom Software & AI Product built by Buildicy AI Studio Coimbatore`}
                       aspectRatio="h-full w-full"
                       className="group-hover:scale-105 transition-transform duration-700 ease-[0.22,1,0.36,1] object-cover object-top opacity-90 group-hover:opacity-100"
                     />
@@ -256,21 +293,39 @@ const Portfolio = () => {
             ))}
           </div>
 
-          {/* BOTTOM CTA */}
+          {/* BOTTOM CTA WITH CONTEXTUAL INTERNAL LINKS */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 1, ease: customEase }}
-            className="mt-32 text-center"
+            className="mt-32 text-center max-w-3xl mx-auto"
           >
-            <h2 className="text-3xl md:text-5xl font-bold mb-8 tracking-tight">Have a project in mind?</h2>
-            <Magnetic strength={0.3} scale={1.05}>
-              <button className="group px-10 py-5 rounded-full bg-purple-600 text-white font-bold text-base flex items-center gap-4 transition-all shadow-[0_0_40px_rgba(147,51,234,0.4)] hover:bg-purple-500 border border-purple-400/50">
-                Start the Conversation
-                <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
-              </button>
-            </Magnetic>
+            <h2 className="text-3xl md:text-5xl font-bold mb-4 tracking-tight font-['Syne']">
+              Ready to Build Your Custom Software Ecosystem?
+            </h2>
+            <p className="text-base text-zinc-400 mb-8 font-light">
+              Stop paying recurring monthly fees for off-the-shelf software. Calculate your 5-year savings with our{" "}
+              <Link to="/roi-calculator" className="text-purple-400 underline hover:text-purple-300 font-medium">
+                SaaS vs Custom Software ROI Calculator
+              </Link>
+              , or explore our{" "}
+              <Link to="/services" className="text-purple-400 underline hover:text-purple-300 font-medium">
+                4 Core Engineering Domains
+              </Link>
+              .
+            </p>
+            <div className="flex justify-center">
+              <Magnetic strength={0.3} scale={1.05}>
+                <button
+                  onClick={() => window.dispatchEvent(new CustomEvent("open-scouter"))}
+                  className="group px-10 py-5 rounded-full bg-purple-600 text-white font-bold text-base flex items-center gap-4 transition-all shadow-[0_0_40px_rgba(147,51,234,0.4)] hover:bg-purple-500 border border-purple-400/50"
+                >
+                  Start the Conversation
+                  <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                </button>
+              </Magnetic>
+            </div>
           </motion.div>
 
         </div>

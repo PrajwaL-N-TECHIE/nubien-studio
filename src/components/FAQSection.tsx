@@ -5,26 +5,87 @@ import { Plus, Minus, Cpu, HelpCircle } from "lucide-react";
 // --------------------------------------------------------------------------
 // DATA
 // --------------------------------------------------------------------------
-const faqs = [
+import { Link } from "react-router-dom";
+
+// --------------------------------------------------------------------------
+// DATA (Optimized for High-Intent Organic Search & Rich Snippets)
+// --------------------------------------------------------------------------
+interface FAQData {
+  question: string;
+  answer: string | React.ReactNode;
+}
+
+const faqs: FAQData[] = [
   {
-    question: "What AI services does Buildicy offer?",
-    answer: "We offer a comprehensive suite of AI services including custom neural network development, computer vision, advanced NLP, predictive analytics, autonomous agents, and enterprise-grade automation solutions.",
+    question: "What AI and custom software development services does Buildicy offer in Coimbatore?",
+    answer: (
+      <>
+        Buildicy is an elite AI Studio and custom software engineering firm based in Coimbatore, Tamil Nadu. We specialize in bespoke Generative AI models, autonomous multi-agent workflows, full-stack B2B SaaS architecture, high-performance web applications, and enterprise automation. Unlike traditional outsourcing agencies, every system we craft is engineered for high concurrency, zero bloat, and total IP independence.{" "}
+        <Link to="/services" className="text-purple-400 hover:text-purple-300 underline font-semibold ml-1 inline-flex items-center">
+          Explore our 4 core domains &rarr;
+        </Link>
+      </>
+    ),
   },
   {
-    question: "How long does a typical AI project take?",
-    answer: "Project timelines scale with complexity. A streamlined AI integration or custom agent typically deploys in 2-4 weeks. Enterprise-scale custom model training and infrastructure development ranges from 8-16 weeks. We map exact milestones during discovery.",
+    question: "How does custom software save businesses money compared to monthly SaaS subscriptions?",
+    answer: (
+      <>
+        Commercial SaaS platforms charge steep per-seat monthly subscription fees ($50–$300/user/month) that escalate exponentially as your team scales. By engineering custom, company-owned software, your organization pays once for development and owns the IP 100%. Over 3 to 5 years, this typically saves companies $45,000 to $200,000+ in recurring licensing overhead while eliminating artificial feature gates.{" "}
+        <Link to="/roi-calculator" className="text-purple-400 hover:text-purple-300 underline font-semibold ml-1 inline-flex items-center">
+          Calculate your exact savings with our SaaS vs Custom ROI Calculator &rarr;
+        </Link>
+      </>
+    ),
   },
   {
-    question: "Do you offer ongoing support after deployment?",
-    answer: "Yes. AI requires continuous optimization. All our deployments include dedicated neural monitoring, model drift correction, security patches, and 24/7 technical oversight to ensure peak performance.",
+    question: "Can Buildicy engineer autonomous AI SDRs and automated sales funnels?",
+    answer: (
+      <>
+        Yes. Our proprietary AI SDR Suite automates B2B lead enrichment, account qualification, prospect intelligence, and hyper-personalized cold outreach sequencing using state-of-the-art LLMs (Groq LLaMA 3.3, OpenAI GPT-4o) and multi-channel messaging APIs. It runs 24/7 without manual intervention, feeding qualified sales meetings straight into your pipeline.{" "}
+        <a href="https://sdr.buildicy.com" target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300 underline font-semibold ml-1 inline-flex items-center">
+          Access the live AI SDR Suite &rarr;
+        </a>
+      </>
+    ),
   },
   {
-    question: "Can Buildicy integrate with our existing systems?",
-    answer: "Absolutely. Our architectures are framework-agnostic. We build secure API layers, GraphQL endpoints, and Webhooks that plug seamlessly into your existing tech stack—whether it's AWS, Azure, Salesforce, or bespoke internal systems.",
+    question: "How does the Buildicy venture co-development and profit-sharing model work?",
+    answer: (
+      <>
+        For select high-potential startups and visionary founders, Buildicy acts as an aligned fractional technical co-founder. Rather than demanding massive upfront capital, we partner on a hybrid equity or revenue/profit-sharing model. We architect, launch, and maintain the entire technology stack—ensuring our engineering incentives are 100% aligned with your business growth and revenue.{" "}
+        <Link to="/portfolio" className="text-purple-400 hover:text-purple-300 underline font-semibold ml-1 inline-flex items-center">
+          View ventures and products built by Buildicy &rarr;
+        </Link>
+      </>
+    ),
   },
   {
-    question: "What industries do you specialize in?",
-    answer: "Our core expertise spans Fintech, Healthcare tech, Enterprise SaaS, and advanced E-commerce. However, our fundamental AI methodologies are designed to adapt and scale across any data-rich industry.",
+    question: "Where is Buildicy located and do you accept local client consultations in Coimbatore?",
+    answer: "Our core engineering studio is located in Coimbatore, Tamil Nadu, India. We frequently host in-person strategy sessions and technical architecture reviews with clients across Coimbatore, Tirupur, Erode, Bangalore, and Kerala, while also serving international clients across the US, UK, and UAE through encrypted async channels and high-velocity sprints.",
+  },
+  {
+    question: "How fast can Buildicy deliver an MVP or custom enterprise automation system?",
+    answer: "Speed is our core competitive advantage. A focused AI workflow, autonomous agent, or interactive product prototype typically deploys in 10 to 21 days. Full-scale custom SaaS platforms and enterprise management systems deploy in 4 to 8 weeks. We practice continuous CI/CD deployment so you test working software from week one.",
+  },
+  {
+    question: "Who owns the intellectual property (IP), source code, and data after deployment?",
+    answer: "You do—100%. Upon project completion, all Git repositories, infrastructure accounts, API credentials, databases, and intellectual property rights are unconditionally transferred to your organization. Buildicy implements zero vendor lock-in and zero ongoing licensing royalties.",
+  },
+  {
+    question: "How can students and graduates apply for paid AI internships at Buildicy?",
+    answer: (
+      <>
+        We run elite, hands-on masterclasses and stipend-backed internship cohorts in Generative AI, Full-Stack Architecture, and Autonomous Agents in Coimbatore. Students work directly on production applications and ship code to live users.{" "}
+        <Link to="/reviews" className="text-purple-400 hover:text-purple-300 underline font-semibold ml-1 inline-flex items-center">
+          Read verified student reviews &rarr;
+        </Link>
+        {" or "}
+        <Link to="/internship-registration" className="text-purple-400 hover:text-purple-300 underline font-semibold ml-1 inline-flex items-center">
+          Apply for the upcoming internship cohort &rarr;
+        </Link>
+      </>
+    ),
   },
 ];
 

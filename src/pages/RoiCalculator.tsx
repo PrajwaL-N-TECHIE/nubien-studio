@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Calculator, Plus, Trash2, ArrowRight, CheckCircle2, Lock, Sparkles, X } from "lucide-react";
 import PageTransition from "@/components/PageTransition";
@@ -371,6 +372,48 @@ const RoiCalculator = () => {
               )}
             </motion.div>
 
+          </div>
+
+          {/* SEO & Topical Educational Guide */}
+          <div className="mt-24 pt-16 border-t border-white/10 text-left">
+            <h2 className="text-2xl sm:text-4xl font-bold tracking-tight font-['Syne'] text-white mb-6">
+              Build vs Buy: Why High-Growth Companies Switch from SaaS to Custom Software
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-zinc-400 font-light leading-relaxed mb-10">
+              <div className="p-6 rounded-2xl bg-[#09090F] border border-white/5">
+                <h3 className="text-lg font-bold text-white mb-2 font-['Syne']">1. Eliminate Subscription Creep</h3>
+                <p>
+                  As your team scales, seat-based SaaS licensing compounds exponentially. A custom software build freezes your core tech spend permanently while giving your company full data sovereignty.
+                </p>
+              </div>
+              <div className="p-6 rounded-2xl bg-[#09090F] border border-white/5">
+                <h3 className="text-lg font-bold text-white mb-2 font-['Syne']">2. 100% Equity & IP Ownership</h3>
+                <p>
+                  Every dollar spent on third-party SaaS is a sunk expense with zero asset value. Custom web applications engineered by Buildicy become permanent balance-sheet assets that increase enterprise valuation.
+                </p>
+              </div>
+              <div className="p-6 rounded-2xl bg-[#09090F] border border-white/5">
+                <h3 className="text-lg font-bold text-white mb-2 font-['Syne']">3. Zero Workflow Workarounds</h3>
+                <p>
+                  Standard off-the-shelf software forces your team to bend processes around arbitrary software limits. Bespoke solutions are architected around your exact operations, boosting team efficiency.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3 text-sm text-zinc-400">
+              <span>Explore more Buildicy capabilities:</span>
+              <Link to="/services" className="text-purple-400 underline hover:text-purple-300 font-medium">
+                Custom Software & AI Consulting Services
+              </Link>
+              <span>•</span>
+              <Link to="/portfolio" className="text-purple-400 underline hover:text-purple-300 font-medium">
+                View Shipped Client Software Platforms
+              </Link>
+              <span>•</span>
+              <Link to="/company" className="text-purple-400 underline hover:text-purple-300 font-medium">
+                Meet the Engineering Lab
+              </Link>
+            </div>
           </div>
         </div>
       </div>

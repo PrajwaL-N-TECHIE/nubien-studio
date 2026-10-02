@@ -203,21 +203,42 @@ const Reviews = () => {
         keywords="Gen AI Masterclass, MBA AI Workshop, Campus AI Workshops, Student Reviews, Monti International Reviews, AI Corporate Training, Buildicy Campus Reviews, Generative AI Training India"
         schema={JSON.stringify({
           "@context": "https://schema.org",
-          "@type": "Course",
-          "name": "Generative AI for Enterprise & Management Masterclass",
-          "description": "Comprehensive practical masterclass and workshop training university and MBA cohorts in generative AI, prompt engineering, agentic workflows, and automated product systems.",
-          "provider": {
-            "@type": "Organization",
-            "name": "Buildicy",
-            "sameAs": "https://www.buildicy.com"
-          },
-          "aggregateRating": {
-            "@type": "AggregateRating",
-            "ratingValue": "5.0",
-            "reviewCount": "150",
-            "bestRating": "5",
-            "worstRating": "1"
-          }
+          "@graph": [
+            {
+              "@type": "Course",
+              "name": "Generative AI for Enterprise & Management Masterclass",
+              "description": "Comprehensive practical masterclass and workshop training university and MBA cohorts in generative AI, prompt engineering, agentic workflows, and automated product systems.",
+              "provider": {
+                "@type": "Organization",
+                "name": "Buildicy",
+                "sameAs": "https://www.buildicy.com"
+              },
+              "aggregateRating": {
+                "@type": "AggregateRating",
+                "ratingValue": "5.0",
+                "reviewCount": "150",
+                "bestRating": "5",
+                "worstRating": "1"
+              }
+            },
+            {
+              "@type": "BreadcrumbList",
+              "itemListElement": [
+                {
+                  "@type": "ListItem",
+                  "position": 1,
+                  "name": "Home",
+                  "item": "https://www.buildicy.com"
+                },
+                {
+                  "@type": "ListItem",
+                  "position": 2,
+                  "name": "Campus Reviews",
+                  "item": "https://www.buildicy.com/reviews"
+                }
+              ]
+            }
+          ]
         })}
       />
 
