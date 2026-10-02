@@ -24,7 +24,7 @@ export const PORTAL_LINKS = {
   admin: "https://admin.buildicy.com",
 
   // 7. Internship Application & Screening Engine
-  internship: "https://apply.buildicy.com",
+  internship: "https://internship.buildicy.com",
 
   // 8. Public Credential & E-Certificate Verification
   verify: "https://verify.buildicy.com",
