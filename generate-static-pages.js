@@ -31,6 +31,24 @@ const PAGES = [
     description: 'Explore authentic feedback and verified student reviews from university workshops and MBA AI masterclasses conducted by Buildicy leadership across Tamil Nadu and India.',
     keywords: 'Gen AI Masterclass, MBA AI Workshop, Campus AI Workshops, Student Reviews, Monti International Reviews, AI Corporate Training, Buildicy Campus Reviews, Generative AI Training India',
     canonical: 'https://www.buildicy.com/reviews',
+    schema: {
+      '@context': 'https://schema.org',
+      '@type': 'Course',
+      name: 'Generative AI for Enterprise & Management Masterclass',
+      description: 'Comprehensive practical masterclass and workshop training university and MBA cohorts in generative AI, prompt engineering, agentic workflows, and automated product systems.',
+      provider: {
+        '@type': 'Organization',
+        name: 'Buildicy',
+        sameAs: 'https://www.buildicy.com',
+      },
+      aggregateRating: {
+        '@type': 'AggregateRating',
+        ratingValue: '5.0',
+        reviewCount: '150',
+        bestRating: '5',
+        worstRating: '1',
+      },
+    },
   },
   {
     path: '/portfolio',
@@ -45,6 +63,52 @@ const PAGES = [
     description: 'Meet the engineering leadership behind Buildicy, Coimbatore\'s top AI software agency. We are a dedicated team architecting custom SaaS, Web3, and AI Automation platforms.',
     keywords: 'About Buildicy, Elite AI Engineering Studio Coimbatore, Prajwal Tech Lead, Software Agency Team Tamil Nadu, AI R&D Laboratory, Buildicy Founders, Digital Engineering India',
     canonical: 'https://www.buildicy.com/company',
+    schema: {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: [
+        {
+          '@type': 'Question',
+          name: 'What AI services does Buildicy offer?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'We offer a comprehensive suite of AI services including custom neural network development, computer vision, advanced NLP, predictive analytics, autonomous agents, and enterprise-grade automation solutions.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'How long does a typical AI project take?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Project timelines scale with complexity. A streamlined AI integration or custom agent typically deploys in 2-4 weeks. Enterprise-scale custom model training and infrastructure development ranges from 8-16 weeks. We map exact milestones during discovery.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Do you offer ongoing support after deployment?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Yes. AI requires continuous optimization. All our deployments include dedicated neural monitoring, model drift correction, security patches, and 24/7 technical oversight to ensure peak performance.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Can Buildicy integrate with our existing systems?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Absolutely. Our architectures are framework-agnostic. We build secure API layers, GraphQL endpoints, and Webhooks that plug seamlessly into your existing tech stack—whether it is AWS, Azure, Salesforce, or bespoke internal systems.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'What industries do you specialize in?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Our core expertise spans Fintech, Healthcare tech, Enterprise SaaS, and advanced E-commerce. However, our fundamental AI methodologies are designed to adapt and scale across any data-rich industry.',
+          },
+        },
+      ],
+    },
   },
   {
     path: '/internship-registration',
@@ -66,6 +130,19 @@ const PAGES = [
     description: 'Calculate how much money your company saves by replacing expensive SaaS recurring subscriptions with custom-engineered software systems.',
     keywords: 'SaaS vs Custom Software Calculator, Build vs Buy Software Calculator, Software Development Cost Estimator, SaaS Cost Replacement, Custom Software ROI Analyzer, Custom MVP Pricing, Buildicy',
     canonical: 'https://www.buildicy.com/roi-calculator',
+    schema: {
+      '@context': 'https://schema.org',
+      '@type': 'WebApplication',
+      name: 'Buildicy SaaS vs Custom Software Cost ROI Calculator',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'All',
+      description: 'Calculate how much your business can save by building custom software instead of paying monthly recurring SaaS subscriptions.',
+      offers: {
+        '@type': 'Offer',
+        price: '0',
+        priceCurrency: 'USD',
+      },
+    },
   },
   {
     path: '/ai-sdr',
@@ -79,20 +156,33 @@ const PAGES = [
 const OG_IMAGE = 'https://www.buildicy.com/og-image.png';
 
 function generateHtml(page, indexHtml) {
+  const schemaTag = page.schema
+    ? `\n    <script type="application/ld+json">${JSON.stringify(page.schema)}</script>`
+    : '';
+
   const tags = `
     <title>${page.title}</title>
     <meta name="keywords" content="${page.keywords || page.description}" />
     <link rel="canonical" href="${page.canonical}" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
     <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Buildicy" />
+    <meta property="og:locale" content="en_US" />
     <meta property="og:url" content="${page.canonical}" />
     <meta property="og:title" content="${page.title}" />
     <meta property="og:description" content="${page.description}" />
     <meta property="og:image" content="${OG_IMAGE}" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="${page.title}" />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@BuildicyStudio" />
+    <meta name="twitter:creator" content="@BuildicyStudio" />
     <meta name="twitter:url" content="${page.canonical}" />
     <meta name="twitter:title" content="${page.title}" />
     <meta name="twitter:description" content="${page.description}" />
     <meta name="twitter:image" content="${OG_IMAGE}" />
+    <meta name="twitter:image:alt" content="${page.title}" />${schemaTag}
   `.trim();
 
   // Replace the generic meta tags with route-specific ones

@@ -47,21 +47,30 @@ const SEO = ({
       <title>{title}</title>
       <meta name="description" content={description} />
       <meta name="keywords" content={keywords} />
+      <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
       {canonicalUrl && <link rel="canonical" href={fullUrl} />}
 
       {/* Open Graph / Facebook */}
       <meta property="og:type" content="website" />
+      <meta property="og:site_name" content="Buildicy" />
+      <meta property="og:locale" content="en_US" />
       <meta property="og:url" content={fullUrl} />
       <meta property="og:title" content={title} />
       <meta property="og:description" content={description} />
       <meta property="og:image" content={ogImage} />
+      <meta property="og:image:width" content="1200" />
+      <meta property="og:image:height" content="630" />
+      <meta property="og:image:alt" content={title} />
 
       {/* Twitter */}
       <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:site" content="@BuildicyStudio" />
+      <meta name="twitter:creator" content="@BuildicyStudio" />
       <meta name="twitter:url" content={fullUrl} />
       <meta name="twitter:title" content={title} />
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={ogImage} />
+      <meta name="twitter:image:alt" content={title} />
 
       {/* JSON-LD Schema */}
       <script type="application/ld+json">

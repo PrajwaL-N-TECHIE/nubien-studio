@@ -5,4 +5,24 @@ Disallow: /student-login
 Disallow: /student-dashboard
 Disallow: /buiz
 
+# Optimized directives for major search engines & AI crawlers
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+Host: https://www.buildicy.com
 Sitemap: https://www.buildicy.com/sitemap.xml

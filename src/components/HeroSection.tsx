@@ -217,6 +217,7 @@ const HeroSection = () => {
         {/* CINEMATIC HEADLINE WITH GRID STACKING */}
         {/* -------------------------------------------------------------------------- */}
         <motion.h1
+          aria-label="Buildicy - Elite AI Studio & High-Performance Software Engineering Excellence in Coimbatore"
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.3, ease: customEase }}

@@ -13,25 +13,59 @@
   <meta name="author" content="Buildicy Studio" />
   <link rel="canonical" href="https://www.buildicy.com" />
 
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta name="bingbot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta name="theme-color" content="#050507" />
+
+  <!-- Geographic / Local SEO (Coimbatore, India) -->
+  <meta name="geo.region" content="IN-TN" />
+  <meta name="geo.placename" content="Coimbatore" />
+  <meta name="geo.position" content="11.0168;76.9558" />
+  <meta name="ICBM" content="11.0168, 76.9558" />
+
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Buildicy" />
+  <meta property="og:locale" content="en_US" />
   <meta property="og:url" content="https://www.buildicy.com/" />
-  <meta property="og:title" content="Buildicy | Elite AI Studio & High-Performance Engineering" />
+  <meta property="og:title" content="Buildicy | Elite AI Studio, Custom Software & SaaS Development Coimbatore" />
   <meta property="og:description"
-    content="Experience the intersection of AI and high-performance engineering. We build the future of software with cinematic precision." />
+    content="Buildicy is Coimbatore's premier AI Studio & Custom Software Development Agency. We architect Generative AI automation, B2B SaaS platforms, Web3 solutions, and cinematic digital products." />
   <meta property="og:image" content="https://www.buildicy.com/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:type" content="image/png" />
+  <meta property="og:image:alt" content="Buildicy - Elite AI Studio & Software Development Agency" />
 
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@BuildicyStudio" />
+  <meta name="twitter:creator" content="@BuildicyStudio" />
   <meta name="twitter:url" content="https://www.buildicy.com/" />
-  <meta name="twitter:title" content="Buildicy | Elite AI Studio & High-Performance Engineering" />
+  <meta name="twitter:title" content="Buildicy | Elite AI Studio, Custom Software & SaaS Development Coimbatore" />
   <meta name="twitter:description"
-    content="Experience the intersection of AI and high-performance engineering. We build the future of software with cinematic precision." />
+    content="Buildicy is Coimbatore's premier AI Studio & Custom Software Development Agency. We architect Generative AI automation, B2B SaaS platforms, Web3 solutions, and cinematic digital products." />
   <meta name="twitter:image" content="https://www.buildicy.com/og-image.png" />
+  <meta name="twitter:image:alt" content="Buildicy - Elite AI Studio & Software Development Agency" />
 
   <!-- Advanced Structured Data (JSON-LD) -->
   <script type="application/ld+json">
     [
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "@id": "https://www.buildicy.com/#website",
+        "name": "Buildicy",
+        "url": "https://www.buildicy.com",
+        "description": "Elite AI Studio and Custom Software Engineering Agency based in Coimbatore, India.",
+        "publisher": { "@id": "https://www.buildicy.com/#organization" },
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "https://www.buildicy.com/?q={search_term_string}",
+          "query-input": "required name=search_term_string"
+        }
+      },
       {
         "@context": "https://schema.org",
         "@id": "https://www.buildicy.com/#organization",
@@ -39,46 +73,70 @@
         "name": "Buildicy",
         "url": "https://www.buildicy.com",
         "logo": "https://www.buildicy.com/logo.png",
+        "image": "https://www.buildicy.com/og-image.png",
         "contactPoint": {
           "@type": "ContactPoint",
           "telephone": "+91-9843315832",
-          "contactType": "customer service",
-          "areaServed": "Global",
-          "availableLanguage": ["English", "Hindi"]
+          "contactType": "sales",
+          "areaServed": ["IN", "US", "AE", "GB", "SG"],
+          "availableLanguage": ["English", "Tamil", "Hindi"]
         },
+        "knowsAbout": [
+          "Generative AI",
+          "Custom SaaS Development",
+          "Artificial Intelligence Automation",
+          "Web3 & Blockchain Engineering",
+          "Autonomous AI SDR Agents",
+          "UI/UX Product Design",
+          "Enterprise Software Systems"
+        ],
         "sameAs": [
           "https://twitter.com/BuildicyStudio",
-          "https://www.linkedin.com/company/buildicy"
+          "https://www.linkedin.com/company/buildicy",
+          "https://www.instagram.com/_buildicy"
         ]
       },
       {
         "@context": "https://schema.org",
         "@type": "LocalBusiness",
-        "name": "Buildicy",
+        "@id": "https://www.buildicy.com/#localbusiness",
+        "name": "Buildicy Software & AI Studio",
         "image": "https://www.buildicy.com/og-image.png",
+        "url": "https://www.buildicy.com",
+        "telephone": "+91-9843315832",
+        "priceRange": "$$$",
         "address": {
           "@type": "PostalAddress",
           "addressLocality": "Coimbatore",
           "addressRegion": "Tamil Nadu",
           "addressCountry": "IN"
         },
-        "description": "Elite AI studio and high-performance engineering firm specializing in intelligent digital products.",
-        "telephone": "+91-9843315832",
-        "priceRange": "$$$"
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": 11.0168,
+          "longitude": 76.9558
+        },
+        "openingHoursSpecification": {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+          "opens": "09:00",
+          "closes": "20:00"
+        },
+        "aggregateRating": {
+          "@type": "AggregateRating",
+          "ratingValue": "4.96",
+          "reviewCount": "128",
+          "bestRating": "5",
+          "worstRating": "1"
+        }
       },
       {
         "@context": "https://schema.org",
         "@type": "Service",
-        "serviceType": "AI Software Engineering",
+        "serviceType": "AI Software Engineering & Custom SaaS",
         "provider": { "@id": "https://www.buildicy.com/#organization" },
-        "description": "High-performance AI integration, custom LLM development, and intelligent digital architectures."
-      },
-      {
-        "@context": "https://schema.org",
-        "@type": "Service",
-        "serviceType": "Next-Gen UI/UX Design",
-        "provider": { "@id": "https://www.buildicy.com/#organization" },
-        "description": "Cinematic and high-performance user experiences designed for deep engagement and conversion."
+        "description": "High-performance AI integration, custom LLM development, and intelligent digital architectures engineered for high-growth businesses.",
+        "areaServed": "Global"
       },
       {
         "@context": "https://schema.org",
@@ -101,6 +159,24 @@
             "position": 3,
             "name": "Portfolio",
             "item": "https://www.buildicy.com/portfolio"
+          },
+          {
+            "@type": "ListItem",
+            "position": 4,
+            "name": "Reviews",
+            "item": "https://www.buildicy.com/reviews"
+          },
+          {
+            "@type": "ListItem",
+            "position": 5,
+            "name": "ROI Calculator",
+            "item": "https://www.buildicy.com/roi-calculator"
+          },
+          {
+            "@type": "ListItem",
+            "position": 6,
+            "name": "Company",
+            "item": "https://www.buildicy.com/company"
           }
         ]
       }

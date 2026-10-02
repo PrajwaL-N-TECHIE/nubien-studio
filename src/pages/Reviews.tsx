@@ -201,6 +201,24 @@ const Reviews = () => {
         description="Explore authentic feedback and verified student reviews from university workshops and MBA AI masterclasses conducted by Buildicy leadership across Tamil Nadu and India."
         canonicalUrl="/reviews"
         keywords="Gen AI Masterclass, MBA AI Workshop, Campus AI Workshops, Student Reviews, Monti International Reviews, AI Corporate Training, Buildicy Campus Reviews, Generative AI Training India"
+        schema={JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Course",
+          "name": "Generative AI for Enterprise & Management Masterclass",
+          "description": "Comprehensive practical masterclass and workshop training university and MBA cohorts in generative AI, prompt engineering, agentic workflows, and automated product systems.",
+          "provider": {
+            "@type": "Organization",
+            "name": "Buildicy",
+            "sameAs": "https://www.buildicy.com"
+          },
+          "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "5.0",
+            "reviewCount": "150",
+            "bestRating": "5",
+            "worstRating": "1"
+          }
+        })}
       />
 
       <div className="pt-32 pb-24 px-6 max-w-7xl mx-auto text-white">
