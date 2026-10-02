@@ -14,9 +14,10 @@ const Services = () => {
   return (
     <PageTransition>
       <SEO 
-        title="Domains & Services | Edutech, IT Consulting, Products & Venture Dev | Buildicy"
+        title="Domains & Services | AI Automation, SaaS Development & Edutech | Buildicy"
         description="Explore Buildicy's 4 core domains: Edutech & Paid Internships, IT Consulting & AI Funnel Systems, Proprietary SaaS Products (Markeee & BizBrain), and Venture Engineering on a Profit-Sharing basis."
         canonicalUrl="/services"
+        keywords="AI Automation Services, Enterprise IT Consulting, Paid AI Internships Coimbatore, WhatsApp Billing Systems, Venture Engineering Profit Sharing, Full Stack Software Engineering, Custom LLM Development, Web3 Blockchain Services, Buildicy"
         schema={JSON.stringify({
           "@context": "https://schema.org",
           "@type": "Service",

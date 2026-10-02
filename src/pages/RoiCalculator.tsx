@@ -142,10 +142,10 @@ const RoiCalculator = () => {
   return (
     <PageTransition>
       <SEO 
-        title="SaaS vs Custom Software Calculator | Buildicy"
-        description="Find out exactly how much money your business is bleeding on SaaS subscriptions compared to building a custom software ecosystem."
+        title="SaaS vs Custom Software Cost ROI Calculator | Build vs Buy | Buildicy"
+        description="Calculate how much money your company saves by replacing expensive SaaS recurring subscriptions with custom-engineered software systems."
         canonicalUrl="/roi-calculator"
-        keywords="SaaS vs Custom Software Calculator, Build vs Buy Software Calculator, Custom Software Development Cost Calculator, Custom MVP Pricing, Buildicy Custom Software Agency, SaaS monthly cost calculator"
+        keywords="SaaS vs Custom Software Calculator, Build vs Buy Software Calculator, Software Development Cost Estimator, SaaS Cost Replacement, Custom Software ROI Analyzer, Custom MVP Pricing, Buildicy"
         schema={calculatorSchema}
       />
       

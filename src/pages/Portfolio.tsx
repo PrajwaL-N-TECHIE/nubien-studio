@@ -140,9 +140,10 @@ const Portfolio = () => {
   return (
     <PageTransition>
       <SEO 
-        title="Our Work | Custom SaaS & Enterprise Software Projects in Coimbatore"
+        title="Our Work & Portfolio | Custom SaaS, AI Platforms & Web3 | Buildicy"
         description="View our portfolio of custom software applications, B2B SaaS platforms, Web3 dApps, and Computer Vision solutions built by Coimbatore's top engineering agency."
         canonicalUrl="/portfolio"
+        keywords="Markeee Autonomous AI Marketing, BizBrain WhatsApp Billing, Buildicy Portfolio, B2B SaaS Case Studies, AI Products Showcase, Custom Web Applications, Web3 dApps, High Performance Software Projects, Coimbatore Software Agency"
         schema={JSON.stringify({
           "@context": "https://schema.org",
           "@type": "CollectionPage",

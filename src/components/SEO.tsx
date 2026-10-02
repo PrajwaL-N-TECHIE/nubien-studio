@@ -14,7 +14,7 @@ const SEO = ({
   description, 
   canonicalUrl, 
   ogImage = "https://www.buildicy.com/og-image.png",
-  keywords = "Custom SaaS Development Coimbatore, Web3 & Blockchain Coimbatore, Cinematic UI/UX Design, AI Automation Agency Coimbatore, AI Chatbots, Predictive Analytics, Computer Vision Solutions, Speech Recognition, Enterprise Software Systems, Buildicy Coimbatore",
+  keywords = "AI Studio Coimbatore, Software Development Company Coimbatore, Custom SaaS Development, AI Automation Agency, Generative AI Solutions India, Web3 Blockchain Development, Full Stack Engineering, UI UX Design Agency, Edutech Internships Coimbatore, Buildicy",
   schema
 }: SEOProps) => {
   const fullUrl = canonicalUrl ? `https://www.buildicy.com${canonicalUrl}` : "https://www.buildicy.com";
@@ -24,7 +24,7 @@ const SEO = ({
     "@type": "LocalBusiness",
     "name": "Buildicy",
     "image": "https://www.buildicy.com/og-image.png",
-    "description": "Buildicy is Coimbatore's elite Custom Software and SaaS Development agency. We specialize in AI Automation, Web3 & Blockchain, Cinematic UI/UX, and Enterprise Solutions.",
+    "description": "Buildicy is Coimbatore's premier AI Studio and Custom Software Development agency specializing in AI Automation, Custom SaaS, Web3, and High-Performance Digital Products.",
     "url": "https://www.buildicy.com",
     "telephone": "",
     "email": "buildicy@gmail.com",

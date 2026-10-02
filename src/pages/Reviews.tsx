@@ -197,9 +197,10 @@ const Reviews = () => {
   return (
     <PageTransition>
       <SEO
-        title="Campus Masterclasses & Reviews | Buildicy"
-        description="Explore authentic feedback and verified student reviews from university workshops (including Monti International Institute of Management Studies, Sep 22-25, 2026) conducted by Buildicy leadership."
+        title="Campus Masterclasses & Reviews | Buildicy AI Workshops"
+        description="Explore authentic feedback and verified student reviews from university workshops and MBA AI masterclasses conducted by Buildicy leadership across Tamil Nadu and India."
         canonicalUrl="/reviews"
+        keywords="Gen AI Masterclass, MBA AI Workshop, Campus AI Workshops, Student Reviews, Monti International Reviews, AI Corporate Training, Buildicy Campus Reviews, Generative AI Training India"
       />
 
       <div className="pt-32 pb-24 px-6 max-w-7xl mx-auto text-white">
