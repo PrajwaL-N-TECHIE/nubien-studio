@@ -14,31 +14,21 @@ import Preloader from "@/components/Preloader";
 import CustomCursor from "@/components/CustomCursor";
 import NoiseOverlay from "@/components/NoiseOverlay";
 import ContactScouter from "@/components/ContactScouter";
+import ExternalRedirect from "@/components/ExternalRedirect";
 
 import PageLoader from "@/components/PageLoader";
 import { useTheme } from "@/hooks/useTheme";
 import { PerformanceProvider } from "@/context/PerformanceContext";
+import { PORTAL_LINKS } from "@/config/links";
 
-// Pages - Lazy loaded
+// Core Pages - Lazy loaded
 const Home = lazy(() => import("./pages/Home"));
 const Services = lazy(() => import("./pages/Services"));
 const Reviews = lazy(() => import("./pages/Reviews"));
 const Portfolio = lazy(() => import("./pages/Portfolio"));
 const Company = lazy(() => import("./pages/Company"));
-const InternshipRegistration = lazy(() => import("./pages/InternshipRegistration"));
-const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
-const VerifyCertificate = lazy(() => import("./pages/VerifyCertificate"));
-const StudentDashboard = lazy(() => import("./pages/StudentDashboard"));
-const StudentLogin = lazy(() => import("./pages/StudentLogin"));
-const BuizClient = lazy(() => import("./pages/BuizClient"));
-const BuizHost = lazy(() => import("./pages/BuizHost"));
-const AiSdrDashboard = lazy(() => import("./pages/AiSdrDashboard"));
 const RoiCalculator = lazy(() => import("./pages/RoiCalculator"));
 const NotFound = lazy(() => import("./pages/NotFound"));
-
-const FinanceTracker = lazy(() => import("./pages/FinanceTracker"));
-const BForms = lazy(() => import("./pages/BForms"));
-const BFormView = lazy(() => import("./pages/BFormView"));
 
 const queryClient = new QueryClient();
 
@@ -50,23 +40,60 @@ const AnimatedRoutes = () => {
     <AnimatePresence mode="wait">
       <Suspense fallback={<PageLoader />}>
         <Routes location={location} key={location.pathname}>
+          {/* Core Agency Pages */}
           <Route path="/" element={<Home />} />
           <Route path="/services" element={<Services />} />
           <Route path="/reviews" element={<Reviews />} />
           <Route path="/portfolio" element={<Portfolio />} />
           <Route path="/company" element={<Company />} />
-          <Route path="/internship-registration" element={<InternshipRegistration />} />
-          <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/student-login" element={<StudentLogin />} />
-          <Route path="/student-dashboard" element={<StudentDashboard />} />
-          <Route path="/verify" element={<VerifyCertificate />} />
-          <Route path="/buiz" element={<BuizClient />} />
-          <Route path="/buiz/host" element={<BuizHost />} />
-          <Route path="/b-forms" element={<BForms />} />
-          <Route path="/b-forms/:id" element={<BFormView />} />
-          <Route path="/ai-sdr" element={<AiSdrDashboard />} />
           <Route path="/roi-calculator" element={<RoiCalculator />} />
-          <Route path="/finance" element={<FinanceTracker />} />
+
+          {/* Subdomain Micro-App Redirects */}
+          <Route
+            path="/internship-registration"
+            element={<ExternalRedirect url={PORTAL_LINKS.internship} title="Internship Application Portal" />}
+          />
+          <Route
+            path="/admin"
+            element={<ExternalRedirect url={PORTAL_LINKS.admin} title="Admin Portal" />}
+          />
+          <Route
+            path="/student-login"
+            element={<ExternalRedirect url={PORTAL_LINKS.student} title="Student Portal" />}
+          />
+          <Route
+            path="/student-dashboard"
+            element={<ExternalRedirect url={PORTAL_LINKS.student} title="Student Portal" />}
+          />
+          <Route
+            path="/verify"
+            element={<ExternalRedirect url={PORTAL_LINKS.verify} title="Certificate Verification Portal" />}
+          />
+          <Route
+            path="/buiz"
+            element={<ExternalRedirect url={PORTAL_LINKS.arena} title="Buiz Arena" />}
+          />
+          <Route
+            path="/buiz/host"
+            element={<ExternalRedirect url={PORTAL_LINKS.host} title="Buiz Host Studio" />}
+          />
+          <Route
+            path="/b-forms"
+            element={<ExternalRedirect url={PORTAL_LINKS.forms} title="B-Forms Engine" />}
+          />
+          <Route
+            path="/b-forms/*"
+            element={<ExternalRedirect url={PORTAL_LINKS.forms} title="B-Forms Engine" />}
+          />
+          <Route
+            path="/ai-sdr"
+            element={<ExternalRedirect url={PORTAL_LINKS.sdr} title="AI SDR Suite" />}
+          />
+          <Route
+            path="/finance"
+            element={<ExternalRedirect url={PORTAL_LINKS.finance} title="Finance Portal" />}
+          />
+
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
@@ -75,18 +102,11 @@ const AnimatedRoutes = () => {
 };
 
 const GlobalLayout = ({ children }: { children: React.ReactNode }) => {
-  const location = useLocation();
-  const isStandaloneRoute = location.pathname.includes('/student-dashboard') || location.pathname.includes('/student-login') || location.pathname.includes('/admin') || location.pathname.includes('/buiz') || location.pathname.includes('/finance') || location.pathname.includes('/b-forms');
-
   return (
     <div className="bg-[#050507] min-h-screen flex flex-col text-white">
-      {!isStandaloneRoute && <Navbar />}
-      
-      <main className="flex-grow">
-        {children}
-      </main>
-
-      {!isStandaloneRoute && <Footer />}
+      <Navbar />
+      <main className="flex-grow">{children}</main>
+      <Footer />
     </div>
   );
 };
@@ -98,37 +118,34 @@ const App = () => {
   // Allow triggering from anywhere via custom event for maximum flexibility
   useEffect(() => {
     const handleOpen = () => setIsScouterOpen(true);
-    window.addEventListener("open-scouter", handleOpen);
-    return () => window.removeEventListener("open-scouter", handleOpen);
+    window.addEventListener("openContactScouter", handleOpen);
+    return () => window.removeEventListener("openContactScouter", handleOpen);
   }, []);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <PerformanceProvider>
-        <Preloader />
-        <CustomCursor />
-        <NoiseOverlay />
+    <PerformanceProvider>
+      <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <SmoothScroll>
-              {/* Global Layout Wrapper handles conditional Navbar/Footer */}
-              <GlobalLayout>
-                <AnimatedRoutes />
-              </GlobalLayout>
+          <Sonner position="top-right" theme="dark" richColors />
+          <CustomCursor />
+          <NoiseOverlay />
+          <Preloader />
+          <SmoothScroll />
 
-              {/* Advanced Contact Onboarding Modal */}
-              <AnimatePresence>
-                {isScouterOpen && (
-                  <ContactScouter isOpen={isScouterOpen} onClose={() => setIsScouterOpen(false)} />
-                )}
-              </AnimatePresence>
-            </SmoothScroll>
+          <BrowserRouter>
+            <GlobalLayout>
+              <AnimatedRoutes />
+            </GlobalLayout>
           </BrowserRouter>
+
+          <ContactScouter
+            isOpen={isScouterOpen}
+            onClose={() => setIsScouterOpen(false)}
+          />
         </TooltipProvider>
-      </PerformanceProvider>
-    </QueryClientProvider>
+      </QueryClientProvider>
+    </PerformanceProvider>
   );
 };
 

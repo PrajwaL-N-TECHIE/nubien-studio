@@ -32,3 +32,6 @@ service-account.json
 server/.env
 .env
 .env*.local
+
+# Backups
+backups/

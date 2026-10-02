@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import { doc, getDoc, setDoc, increment } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { PORTAL_LINKS } from "@/config/links";
 
 // --------------------------------------------------------------------------
 // NEWSLETTER FORM COMPONENT
@@ -294,12 +295,12 @@ const Footer = () => {
     {
       title: "Edutech Hub",
       links: [
-        { name: "Paid Internships", path: "/internship-registration", isExternal: false, badge: "Stipend" },
+        { name: "Paid Internships", path: PORTAL_LINKS.internship, isExternal: true, badge: "Stipend" },
         { name: "Campus Reviews", path: "/reviews", isExternal: false, badge: "MBA" },
         { name: "School Coding Classes", path: "/#domains", isExternal: false },
         { name: "Webinars & Seminars", path: "/#domains", isExternal: false },
-        { name: "Verify Certificate", path: "/verify", isExternal: false },
-        { name: "Student Dashboard", path: "https://student.buildicy.com/", isExternal: true, badge: "Portal" }
+        { name: "Verify Certificate", path: PORTAL_LINKS.verify, isExternal: true },
+        { name: "Student Dashboard", path: PORTAL_LINKS.student, isExternal: true, badge: "Portal" }
       ]
     },
     {
@@ -317,8 +318,8 @@ const Footer = () => {
       links: [
         { name: "Markeee (AI Marketing)", path: "https://markeee.buildicy.com/", isExternal: true, badge: "Auto" },
         { name: "BizBrain (WhatsApp)", path: "https://bizzbrainn.vercel.app", isExternal: true, badge: "12+ Lang" },
-        { name: "B-Forms Engine", path: "https://bforms.buildicy.com", isExternal: true },
-        { name: "Buiz Arena", path: "/buiz", isExternal: false, badge: "500+ Live" }
+        { name: "B-Forms Engine", path: PORTAL_LINKS.forms, isExternal: true },
+        { name: "Buiz Arena", path: PORTAL_LINKS.arena, isExternal: true, badge: "500+ Live" }
       ]
     },
     {
@@ -327,7 +328,7 @@ const Footer = () => {
         { name: "Fractional Dev Team", path: "/#domains", isExternal: false },
         { name: "Idea to Product", path: "/#domains", isExternal: false },
         { name: "Profit-Sharing Model", path: "/#domains", isExternal: false, badge: "Partner" },
-        { name: "Host Buiz Studio", path: "/buiz/host", isExternal: false }
+        { name: "Host Buiz Studio", path: PORTAL_LINKS.host, isExternal: true }
       ]
     },
     {
@@ -335,8 +336,9 @@ const Footer = () => {
       links: [
         { name: "About Buildicy", path: "/company", isExternal: false },
         { name: "Selected Works", path: "/portfolio", isExternal: false },
-        { name: "Internal Finance", path: "/finance", isExternal: false, badge: "Host" },
-        { name: "Admin Portal", path: "/admin", isExternal: false }
+        { name: "Internal Finance", path: PORTAL_LINKS.finance, isExternal: true, badge: "Host" },
+        { name: "Admin Portal", path: PORTAL_LINKS.admin, isExternal: true },
+        { name: "AI SDR Suite", path: PORTAL_LINKS.sdr, isExternal: true }
       ]
     }
   ];
