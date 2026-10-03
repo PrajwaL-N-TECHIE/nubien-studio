@@ -352,7 +352,7 @@ const PAGES = [
     path: '/company',
     title: 'About Buildicy | Premier AI Studio & Engineering Lab in Coimbatore',
     description: 'Meet the engineering leadership behind Buildicy, Coimbatore\'s top AI software agency. We are a dedicated team architecting custom SaaS, Web3, and AI Automation platforms.',
-    keywords: 'About Buildicy, Elite AI Engineering Studio Coimbatore, Prajwal Tech Lead, Software Agency Team Tamil Nadu, AI R&D Laboratory, Buildicy Founders, Digital Engineering India',
+    keywords: 'About Buildicy, Elite AI Engineering Studio Coimbatore, Mayur Tech Lead, Software Agency Team Tamil Nadu, AI R&D Laboratory, Buildicy Founders, Digital Engineering India',
     canonical: 'https://www.buildicy.com/company',
     schema: {
       '@context': 'https://schema.org',
@@ -368,8 +368,8 @@ const PAGES = [
           'url': 'https://www.buildicy.com',
           'founder': {
             '@type': 'Person',
-            'name': 'Prajwal N',
-            'jobTitle': 'Founder & CEO'
+            'name': 'Mayur P',
+            'jobTitle': 'Founder & Tech Lead'
           }
         },
         {

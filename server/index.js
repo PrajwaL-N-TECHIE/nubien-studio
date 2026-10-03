@@ -196,7 +196,7 @@ app.get('/api/admin/internships', async (req, res) => {
   try {
     const { password } = req.query;
     
-    if (password !== 'PrAjWaL@123MaYuR@123' && password !== 'admin@123') {
+    if (password !== 'MaYuR@123' && password !== 'admin@123' && password !== 'PrAjWaL@123MaYuR@123') {
       return res.status(401).json({ error: 'Unauthorized: Invalid password' });
     }
 
@@ -213,7 +213,7 @@ app.delete('/api/admin/internships', async (req, res) => {
   try {
     const { password } = req.query;
     
-    if (password !== 'PrAjWaL@123MaYuR@123' && password !== 'admin@123') {
+    if (password !== 'MaYuR@123' && password !== 'admin@123' && password !== 'PrAjWaL@123MaYuR@123') {
       return res.status(401).json({ error: 'Unauthorized: Invalid password' });
     }
 
@@ -233,7 +233,7 @@ app.delete('/api/admin/internships/:id', async (req, res) => {
   try {
     const { password } = req.query;
     
-    if (password !== 'PrAjWaL@123MaYuR@123' && password !== 'admin@123') {
+    if (password !== 'MaYuR@123' && password !== 'admin@123' && password !== 'PrAjWaL@123MaYuR@123') {
       return res.status(401).json({ error: 'Unauthorized: Invalid password' });
     }
 
@@ -629,11 +629,11 @@ ${retained5Year > 0 ? `Even after retaining your core 3rd-party API costs (${cur
 Are you open to a quick 10-minute chat to see what a custom build would look like?
 
 Best,
-Prajwal
+Mayur
 Founder @ Buildicy`;
 
       await transporter.sendMail({
-        from: `"Prajwal @ Buildicy" <${process.env.GMAIL_USER}>`,
+        from: `"Mayur @ Buildicy" <${process.env.GMAIL_USER}>`,
         to: email,
         subject: 'Your Custom Software ROI Blueprint',
         text: emailBody,

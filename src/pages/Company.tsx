@@ -11,7 +11,7 @@ const Company = () => {
         title="About Buildicy | Premier AI Studio & Engineering Lab in Coimbatore"
         description="Meet the engineering leadership behind Buildicy, Coimbatore's top AI software agency. We are a dedicated team architecting custom SaaS, Web3, and AI Automation platforms."
         canonicalUrl="/company"
-        keywords="About Buildicy, Elite AI Engineering Studio Coimbatore, Prajwal Tech Lead, Software Agency Team Tamil Nadu, AI R&D Laboratory, Buildicy Founders, Digital Engineering India"
+        keywords="About Buildicy, Elite AI Engineering Studio Coimbatore, Mayur Tech Lead, Software Agency Team Tamil Nadu, AI R&D Laboratory, Buildicy Founders, Digital Engineering India"
         schema={JSON.stringify({
           "@context": "https://schema.org",
           "@graph": [
@@ -24,7 +24,7 @@ const Company = () => {
               "founder": [
                 {
                   "@type": "Person",
-                  "name": "Prajwal"
+                  "name": "Mayur P"
                 }
               ],
               "sameAs": [

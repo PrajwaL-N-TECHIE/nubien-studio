@@ -256,11 +256,10 @@ const LaboratorySection = () => {
                     <h2 className="text-5xl md:text-7xl font-bold tracking-tighter text-white font-['Syne'] leading-[1.1] mb-12">
                         Driven by <span className="italic bg-gradient-to-r from-white via-zinc-400 to-zinc-600 bg-clip-text text-transparent">Vision & Purpose.</span>
                     </h2>
-                    <div className="flex flex-col gap-12 max-w-6xl mx-auto">
-                        {/* Co-founders & Leadership */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 w-full px-0 md:px-8 mx-auto">
-                            <LeadershipCard name="Prajwal N" role="Founder & CEO" isCEO />
-                            <LeadershipCard name="Mayur P" role="Co-Founder & CTO" description="Pioneering decentralized applications and Web3 infrastructure, focusing on secure, scalable blockchain solutions for the modern web." imageSrc={MayurImage} />
+                    <div className="flex flex-col gap-12 max-w-2xl mx-auto">
+                        {/* Leadership */}
+                        <div className="w-full px-0 md:px-4 mx-auto">
+                            <LeadershipCard name="Mayur P" role="Founder & Tech Lead" description="Pioneering decentralized applications, Web3 infrastructure, and AI engineering, focusing on secure, scalable solutions for the modern web." imageSrc={MayurImage} isCEO />
                         </div>
                     </div>
                 </div>

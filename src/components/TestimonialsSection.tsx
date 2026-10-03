@@ -106,12 +106,12 @@ export const workshopReviews: StudentReview[] = [
     confidence: "Extremely Confident",
     primaryTool: "ChatGPT & Gamma",
     activity: "Logo quiz activity & HR / marketing concepts",
-    quote: "I thought AI was hard — now I think AI is crazy good! I really liked Mayur's training and Prajwal's ideas. Thank you for the amazing class both of you and best wishes for your future!",
-    trainerFeedback: "Liked Mayur's structured training and Prajwal's innovative ideas.",
+    quote: "I thought AI was hard — now I think AI is crazy good! I really liked Mayur's training and mentorship. Thank you for the amazing class and best wishes for your future!",
+    trainerFeedback: "Liked Mayur's structured training and innovative approach.",
     beforePerception: "Thought AI was hard and intimidating",
     afterPerception: "Now I think AI is crazy good and accessible",
     verdict: "Amazing",
-    finalMessage: "Thank you for the amazing class both of you and best wishes for your future!",
+    finalMessage: "Thank you for the amazing class and best wishes for your future!",
     category: "trainers",
     avatar: "MA"
   },
@@ -126,8 +126,8 @@ export const workshopReviews: StudentReview[] = [
     confidence: "Very Confident",
     primaryTool: "Perplexity AI",
     activity: "Interactive sessions & business research",
-    quote: "Both of them explained everything very clearly. Prajwal was very fun and talkative, and Mayur cleared our doubts about the purpose. Before this, I thought AI was not helpful; now I know it is very helpful!",
-    trainerFeedback: "Prajwal was fun & engaging, Mayur clarified core purpose & doubts.",
+    quote: "Everything was explained so clearly. Mayur cleared all our doubts about the purpose of each AI tool. Before this, I thought AI was not helpful; now I know it is very helpful!",
+    trainerFeedback: "Mayur was engaging and clearly explained the core purpose and cleared all doubts.",
     beforePerception: "Thought AI was not helpful",
     afterPerception: "Understood that AI is deeply helpful for management",
     verdict: "Useful & Clarifying",
@@ -305,8 +305,8 @@ export const workshopReviews: StudentReview[] = [
     confidence: "Very Confident",
     primaryTool: "ChatGPT & AI Slide Decks",
     activity: "Pitching an energetic drink for college students using AI tools",
-    quote: "Prajwal and Mayur well explained the use of AI tools that we were not familiar with. Creating product pitch decks using AI tools was such an insightful activity!",
-    trainerFeedback: "Prajwal and Mayur broke down unfamiliar AI tools with great clarity.",
+    quote: "Mayur well explained the use of AI tools that we were not familiar with. Creating product pitch decks using AI tools was such an insightful activity!",
+    trainerFeedback: "Mayur broke down unfamiliar AI tools with great clarity.",
     beforePerception: "Unfamiliar and skeptical about AI tools",
     afterPerception: "Empowered to use AI for market pitches and strategy",
     verdict: "Insightful",
@@ -484,7 +484,7 @@ export const workshopReviews: StudentReview[] = [
     primaryTool: "Gamma AI & NotebookLM",
     activity: "Hands-on activities & NotebookLM",
     quote: "Both trainers explained everything so well! Becoming familiar with new AI tools and testing activities was marvelous. Thank you for the session!",
-    trainerFeedback: "Both Prajwal and Mayur taught with enthusiasm and clarity.",
+    trainerFeedback: "Mayur taught with enthusiasm and clarity.",
     beforePerception: "Unsure of how AI tools function",
     afterPerception: "Familiar and confident with new AI tools",
     verdict: "Marvelous",
@@ -581,7 +581,7 @@ export const workshopReviews: StudentReview[] = [
     confidence: "Extremely Confident",
     primaryTool: "ChatGPT & AI Suite",
     activity: "AI tools mastery",
-    quote: "All good! From hard to use, to easy to use in business workflows. Prajwal and Mayur made the concepts super accessible and practical.",
+    quote: "All good! From hard to use, to easy to use in business workflows. Mayur made the concepts super accessible and practical.",
     trainerFeedback: "Clear, friendly, and practical guidance.",
     beforePerception: "Hard to use",
     afterPerception: "Easy to use in business workflows",
@@ -765,7 +765,7 @@ const TestimonialsSection = () => {
           </p>
 
           <p className="max-w-2xl mx-auto text-base md:text-lg text-zinc-400 font-normal leading-relaxed">
-            4-Day Intensive Bootcamp conducted on September 22, 23, 24, and 25, 2026 by Buildicy leadership (Prajwal & Mayur) at Monti International Institute of Management Studies, Perunthalmanna. Here is what the management cohort experienced firsthand.
+            4-Day Intensive Bootcamp conducted on September 22, 23, 24, and 25, 2026 by Buildicy leadership (Mayur) at Monti International Institute of Management Studies, Perunthalmanna. Here is what the management cohort experienced firsthand.
           </p>
 
           {/* Quick Metrics Bar */}
@@ -796,7 +796,7 @@ const TestimonialsSection = () => {
             {[
               { id: "all", label: `All Reviews (${workshopReviews.length})` },
               { id: "mindset", label: "Mindset Transformation" },
-              { id: "trainers", label: "Prajwal & Mayur Praise" },
+              { id: "trainers", label: "Mayur Praise & Mentorship" },
               { id: "tools", label: "AI Tools Mastery" }
             ].map((tab) => (
               <button

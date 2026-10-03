@@ -59,7 +59,7 @@ export const allSessions: WorkshopSession[] = [
     audience: "First Year MBA Students",
     topic: "Gen AI Tools For Business",
     date: "September 22 - 25, 2026",
-    trainers: ["Prajwal N (Founder & AI Engineer)", "Mayur P (Co-Founder & Tech Lead)"],
+    trainers: ["Mayur P (Founder & Tech Lead)"],
     satisfactionRate: "100%",
     mindsetShiftRate: "100%",
     reviewsCount: workshopReviews.length,
@@ -86,7 +86,7 @@ const Reviews = () => {
     audience: "",
     topic: "",
     date: "",
-    trainers: "Prajwal N, Mayur P",
+    trainers: "Mayur P",
     toolsCovered: "NotebookLM, Gamma, ChatGPT, Perplexity",
   });
 
@@ -182,7 +182,7 @@ const Reviews = () => {
         audience: "",
         topic: "",
         date: "",
-        trainers: "Prajwal N, Mayur P",
+        trainers: "Mayur P",
         toolsCovered: "NotebookLM, Gamma, ChatGPT, Perplexity",
       });
       toast.success("Workshop session added to database successfully!");
@@ -370,7 +370,7 @@ const Reviews = () => {
                   Book Buildicy For Next Cohort
                 </h3>
                 <p className="text-xs text-zinc-400 leading-relaxed mb-4">
-                  Invite Buildicy leadership (Prajwal & Mayur) for hands-on sessions on Gen AI Tools, SaaS Engineering, and Modern Tech Trends.
+                  Invite Buildicy leadership (Mayur) for hands-on sessions on Gen AI Tools, SaaS Engineering, and Modern Tech Trends.
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -447,7 +447,7 @@ const Reviews = () => {
             {[
               { id: "all", label: `All Reviews (${activeReviews.length})` },
               { id: "mindset", label: "Mindset Transformation" },
-              { id: "trainers", label: "Prajwal & Mayur Praise" },
+              { id: "trainers", label: "Mayur Praise & Mentorship" },
               { id: "tools", label: "AI Tools Mastery" }
             ].map((tab) => (
               <button

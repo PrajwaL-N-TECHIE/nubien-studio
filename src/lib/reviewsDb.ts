@@ -79,7 +79,7 @@ export async function getWorkshopSessionsFromDb(): Promise<WorkshopSession[]> {
           audience: data.audience || "Students",
           topic: data.topic || "AI Tools",
           date: data.date || "2024",
-          trainers: data.trainers || ["Prajwal N", "Mayur P"],
+          trainers: data.trainers || ["Mayur P"],
           satisfactionRate: data.satisfactionRate || "100%",
           mindsetShiftRate: data.mindsetShiftRate || "100%",
           reviewsCount: data.reviewsCount || 0,
