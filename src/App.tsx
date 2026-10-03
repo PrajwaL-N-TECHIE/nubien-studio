@@ -131,18 +131,18 @@ const App = () => {
           <CustomCursor />
           <NoiseOverlay />
           <Preloader />
-          <SmoothScroll />
-
           <BrowserRouter>
-            <GlobalLayout>
-              <AnimatedRoutes />
-            </GlobalLayout>
-          </BrowserRouter>
+            <SmoothScroll>
+              <GlobalLayout>
+                <AnimatedRoutes />
+              </GlobalLayout>
+            </SmoothScroll>
 
-          <ContactScouter
-            isOpen={isScouterOpen}
-            onClose={() => setIsScouterOpen(false)}
-          />
+            <ContactScouter
+              isOpen={isScouterOpen}
+              onClose={() => setIsScouterOpen(false)}
+            />
+          </BrowserRouter>
         </TooltipProvider>
       </QueryClientProvider>
     </PerformanceProvider>

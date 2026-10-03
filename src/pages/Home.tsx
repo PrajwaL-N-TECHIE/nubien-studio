@@ -5,6 +5,7 @@ import DomainsSection from "@/components/DomainsSection";
 import AboutSection from "@/components/AboutSection";
 import WhyBuildicySection from "@/components/WhyBuildicySection";
 import TestimonialsSection from "@/components/TestimonialsSection";
+import FAQSection from "@/components/FAQSection";
 import PageTransition from "@/components/PageTransition";
 
 const homeSchema = JSON.stringify({

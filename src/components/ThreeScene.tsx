@@ -110,7 +110,7 @@ const MorphingCore = ({ isVisible }: { isVisible: boolean }) => {
   const { scrollY } = useScroll();
 
   useEffect(() => {
-    return scrollY.onChange((latest) => {
+    return scrollY.on("change", (latest) => {
       // If we've scrolled past the hero (roughly 1200px), pause everything
       if (latest > 1200 && inViewport) setInViewport(false);
       if (latest <= 1200 && !inViewport) setInViewport(true);

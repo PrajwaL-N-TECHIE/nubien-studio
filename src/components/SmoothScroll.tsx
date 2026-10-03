@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import Lenis from 'lenis';
 import { useLocation } from 'react-router-dom';
 
-const SmoothScroll = ({ children }: { children: React.ReactNode }) => {
+const SmoothScroll = ({ children }: { children?: React.ReactNode }) => {
     const lenisRef = useRef<Lenis | null>(null);
     const location = useLocation();
 

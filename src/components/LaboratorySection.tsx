@@ -6,9 +6,6 @@ import TiltCard from "./TiltCard";
 import Magnetic from "./Magnetic";
 import { usePerformance } from "@/context/PerformanceContext";
 import MayurImage from "@/assets/mayur.jpg";
-import PrajwalImage from "@/assets/prajwal.jpg";
-import MizbhaImage from "@/assets/mizbha.jpg";
-import LathikaImage from "@/assets/lathika.jpg";
 // --------------------------------------------------------------------------
 // PHYSICS-BASED GLASS DISTORTION
 // --------------------------------------------------------------------------
@@ -193,7 +190,12 @@ const LeadershipCard = ({ name, role, description, isCEO, imageSrc, imageWrapper
                             <img src={imageSrc} alt={`${name} - ${role} at Buildicy AI Studio & Engineering Lab Coimbatore, Tamil Nadu`} loading="lazy" className={`w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ${imgClassName}`} />
                         </div>
                     ) : (
-                        <Users className="text-purple-400 group-hover:text-white transition-colors" size={64} />
+                        <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-purple-950/20 via-[#12121A] to-purple-900/10 p-6">
+                            <div className="w-20 h-20 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center group-hover:scale-110 group-hover:border-purple-500/40 transition-all duration-500 shadow-inner">
+                                <Users className="text-purple-400 group-hover:text-white transition-colors" size={38} />
+                            </div>
+                            <span className="text-[10px] font-mono tracking-widest text-zinc-500 uppercase mt-4">Core Leadership</span>
+                        </div>
                     )}
                 </div>
                 <h4 className="text-3xl md:text-5xl font-bold text-white mb-4 font-['Syne'] tracking-tighter whitespace-normal md:whitespace-nowrap">{name}</h4>
@@ -255,12 +257,10 @@ const LaboratorySection = () => {
                         Driven by <span className="italic bg-gradient-to-r from-white via-zinc-400 to-zinc-600 bg-clip-text text-transparent">Vision & Purpose.</span>
                     </h2>
                     <div className="flex flex-col gap-12 max-w-6xl mx-auto">
-                        {/* Co-founders & Team */}
+                        {/* Co-founders & Leadership */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 w-full px-0 md:px-8 mx-auto">
-                            <LeadershipCard name="Prajwal N" role="Founder & CEO" isCEO imageSrc={PrajwalImage} />
+                            <LeadershipCard name="Prajwal N" role="Founder & CEO" isCEO />
                             <LeadershipCard name="Mayur P" role="Co-Founder & CTO" description="Pioneering decentralized applications and Web3 infrastructure, focusing on secure, scalable blockchain solutions for the modern web." imageSrc={MayurImage} />
-                            <LeadershipCard name="Mizbha Fathima" role="Creative Lead" description="Crafting intuitive and immersive user experiences with a keen eye for aesthetic detail and functional design principles." imageSrc={MizbhaImage} />
-                            <LeadershipCard name="Lathika J" role="FSD & Client Success Lead" imageSrc={LathikaImage} imageWrapperClassName="bg-white" imgClassName="object-cover object-center" />
                         </div>
                     </div>
                 </div>
