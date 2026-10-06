@@ -1,5 +1,6 @@
 import SEO from "@/components/SEO";
 import { useRef } from "react";
+import { Link } from "react-router-dom";
 import { motion, useInView } from "framer-motion";
 import { ExternalLink, Sparkles, ArrowRight } from "lucide-react";
 import PageTransition from "@/components/PageTransition";

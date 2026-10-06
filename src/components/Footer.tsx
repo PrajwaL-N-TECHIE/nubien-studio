@@ -1,7 +1,5 @@
 import { useRef, useState, useEffect, Suspense, useMemo } from "react";
 import { motion, useMotionValue, useSpring, useTransform, useScroll, AnimatePresence, useInView } from "framer-motion";
-import { Canvas, useFrame } from "@react-three/fiber";
-import * as THREE from "three";
 import {
   ArrowUpRight, Sparkles, MapPin, Clock, Linkedin, Mail, Send,
   Heart, ChevronRight, Briefcase, Activity, Eye, Users, Cpu, CheckCircle2, Instagram,

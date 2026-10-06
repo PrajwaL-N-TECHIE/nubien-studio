@@ -246,7 +246,19 @@ const ProcessSection = () => {
       <div className="absolute inset-0 pointer-events-none z-0">
         {!isLowEnd && (
           <Suspense fallback={null}>
-            <Canvas camera={{ position: [0, 0, 15], fov: 60 }} dpr={dpr}>
+            <Canvas
+              camera={{ position: [0, 0, 15], fov: 60 }}
+              dpr={dpr}
+              gl={{
+                alpha: true,
+                powerPreference: "low-power",
+                preserveDrawingBuffer: false,
+                failIfMajorPerformanceCaveat: false
+              }}
+              onCreated={({ gl }) => {
+                gl.domElement.addEventListener("webglcontextlost", (e) => e.preventDefault(), false);
+              }}
+            >
               <DataWave />
             </Canvas>
           </Suspense>

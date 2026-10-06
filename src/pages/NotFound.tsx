@@ -162,7 +162,18 @@ const NotFound = () => {
       {/* 3D Scene */}
       <div className="absolute inset-0 z-0">
         {!isLowEnd && (
-          <Canvas dpr={dpr}>
+          <Canvas
+            dpr={dpr}
+            gl={{
+              alpha: true,
+              powerPreference: "low-power",
+              preserveDrawingBuffer: false,
+              failIfMajorPerformanceCaveat: false
+            }}
+            onCreated={({ gl }) => {
+              gl.domElement.addEventListener("webglcontextlost", (e) => e.preventDefault(), false);
+            }}
+          >
             <PerspectiveCamera makeDefault position={[0, 0, 5]} fov={75} />
             <ambientLight intensity={0.5} />
             <pointLight position={[10, 10, 10]} intensity={1} color="#a855f7" />

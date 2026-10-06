@@ -223,7 +223,16 @@ const ThreeScene = () => {
           antialias: !isLowEnd,
           alpha: true,
           powerPreference: "high-performance",
-          precision: isLowEnd ? "mediump" : "highp"
+          precision: isLowEnd ? "mediump" : "highp",
+          preserveDrawingBuffer: false,
+          failIfMajorPerformanceCaveat: false
+        }}
+        onCreated={({ gl }) => {
+          const handleContextLost = (event: Event) => {
+            event.preventDefault();
+            console.warn("ThreeScene: WebGL context lost handled gracefully");
+          };
+          gl.domElement.addEventListener("webglcontextlost", handleContextLost, false);
         }}
         style={{ pointerEvents: "auto", width: "100%", height: "100%" }}
       >

@@ -127,7 +127,19 @@ const SupportSection = () => {
       {/* 3D Glitch Sphere Background */}
       <div className="absolute inset-0 z-0 opacity-40">
         {!isLowEnd && (
-          <Canvas camera={{ position: [0, 0, 5], fov: 75 }} dpr={dpr}>
+          <Canvas
+            camera={{ position: [0, 0, 5], fov: 75 }}
+            dpr={dpr}
+            gl={{
+              alpha: true,
+              powerPreference: "low-power",
+              preserveDrawingBuffer: false,
+              failIfMajorPerformanceCaveat: false
+            }}
+            onCreated={({ gl }) => {
+              gl.domElement.addEventListener("webglcontextlost", (e) => e.preventDefault(), false);
+            }}
+          >
             <ambientLight intensity={0.5} />
             <pointLight position={[10, 10, 10]} />
             <GlitchSphere />
