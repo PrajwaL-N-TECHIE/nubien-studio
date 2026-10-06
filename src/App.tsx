@@ -86,6 +86,14 @@ const AnimatedRoutes = () => {
             element={<ExternalRedirect url={PORTAL_LINKS.forms} title="B-Forms Engine" />}
           />
           <Route
+            path="/qr"
+            element={<ExternalRedirect url={PORTAL_LINKS.qr} title="Buildicy QR Studio" />}
+          />
+          <Route
+            path="/b-qr"
+            element={<ExternalRedirect url={PORTAL_LINKS.qr} title="Buildicy QR Studio" />}
+          />
+          <Route
             path="/ai-sdr"
             element={<ExternalRedirect url={PORTAL_LINKS.sdr} title="AI SDR Suite" />}
           />

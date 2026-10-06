@@ -31,4 +31,8 @@ export const PORTAL_LINKS = {
 
   // 9. AI SDR Lead Discovery & Pitch Suite
   sdr: "https://sdr.buildicy.com",
+
+  // 10. Buildicy QR Studio (Vector QR & Stage Engine)
+  qr: "https://qr.buildicy.com",
 };
+

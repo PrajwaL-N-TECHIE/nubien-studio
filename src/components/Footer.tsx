@@ -317,9 +317,11 @@ const Footer = () => {
         { name: "Markeee (AI Marketing)", path: "https://markeee.buildicy.com/", isExternal: true, badge: "Auto" },
         { name: "BizBrain (WhatsApp)", path: "https://bizzbrainn.vercel.app", isExternal: true, badge: "12+ Lang" },
         { name: "B-Forms Engine", path: PORTAL_LINKS.forms, isExternal: true },
+        { name: "Buildicy QR Studio", path: PORTAL_LINKS.qr, isExternal: true, badge: "Studio" },
         { name: "Buiz Arena", path: PORTAL_LINKS.arena, isExternal: true, badge: "500+ Live" }
       ]
     },
+
     {
       title: "Collaborations",
       links: [
