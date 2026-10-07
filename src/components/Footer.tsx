@@ -337,7 +337,6 @@ const Footer = () => {
         { name: "About Buildicy", path: "/company", isExternal: false },
         { name: "Selected Works", path: "/portfolio", isExternal: false },
         { name: "Internal Finance", path: PORTAL_LINKS.finance, isExternal: true, badge: "Host" },
-        { name: "Buildicy CRM", path: PORTAL_LINKS.crm, isExternal: true, badge: "OS" },
         { name: "Admin Portal", path: PORTAL_LINKS.admin, isExternal: true },
         { name: "AI SDR Suite", path: PORTAL_LINKS.sdr, isExternal: true }
       ]

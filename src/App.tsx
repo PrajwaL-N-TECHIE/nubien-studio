@@ -98,14 +98,6 @@ const AnimatedRoutes = () => {
             element={<ExternalRedirect url={PORTAL_LINKS.sdr} title="AI SDR Suite" />}
           />
           <Route
-            path="/crm"
-            element={<ExternalRedirect url={PORTAL_LINKS.crm} title="Buildicy CRM" />}
-          />
-          <Route
-            path="/b-crm"
-            element={<ExternalRedirect url={PORTAL_LINKS.crm} title="Buildicy CRM" />}
-          />
-          <Route
             path="/finance"
             element={<ExternalRedirect url={PORTAL_LINKS.finance} title="Finance Portal" />}
           />

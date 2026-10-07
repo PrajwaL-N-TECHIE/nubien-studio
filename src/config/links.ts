@@ -34,8 +34,5 @@ export const PORTAL_LINKS = {
 
   // 10. Buildicy QR Studio (Vector QR & Stage Engine)
   qr: "https://qr.buildicy.com",
-
-  // 11. Buildicy CRM (Commercial Pipeline & Deal Console)
-  crm: "https://crm.buildicy.com",
 };
 
