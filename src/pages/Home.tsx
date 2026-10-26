@@ -81,13 +81,7 @@ const homeSchema = JSON.stringify({
         "latitude": 11.0168,
         "longitude": 76.9558
       },
-      "aggregateRating": {
-        "@type": "AggregateRating",
-        "ratingValue": "4.98",
-        "reviewCount": "150",
-        "bestRating": "5",
-        "worstRating": "1"
-      },
+      "parentOrganization": { "@id": "https://www.buildicy.com/#organization" },
       "review": [
         {
           "@type": "Review",
